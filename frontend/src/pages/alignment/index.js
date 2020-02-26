@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { post } from 'axios';
 import './styles.scss';
 
 export default class Alignment extends Component {
@@ -21,59 +22,37 @@ export default class Alignment extends Component {
     }
 
     handleChange = (event) => {
-        switch(event.target.name){
-            case 'extension':
-                this.setState({ extension: event.target.value });
-                break;
+        if(event.target.name !== 's0upload'
+            && event.target.name !== 's1upload'){
+                this.setState({ [event.target.name]: event.target.value });
+            }
+        else {
+            // Handles the file uploads
+            const file = event.target.files[0];
+            console.log(file);
+            this.setState({ [event.target.name]: file });
             
-            case 's0type':
-                this.setState({ s0type: event.target.value });
-                break;
+            // let reader = new FileReader();
+            // reader.readAsDataURL(file[0]);
 
-            case 's1type':
-                this.setState({ s1type: event.target.value });
-                break;
-
-            case 's0name':
-                this.setState({ s0name: event.target.value });
-                break;
-
-            case 's1name':
-                this.setState({ s1name: event.target.value });
-                break;
-
-            case 's0upload':
-                // handles file upload
-                break;
-
-            case 's1upload':
-                // handles file upload
-                break;
-
-            case 's0text':
-                this.setState({ s0text: event.target.value });
-                break;
-
-            case 's1text':
-                this.setState({ s1text: event.target.value });
-                break;
-
-            case 's0edge':
-                this.setState({ s0edge: event.target.value });
-                break;
-
-            case 's1edge':
-                this.setState({ s1edge: event.target.value });
-                break;
-
-            default:
-                console.log('Error! Not suposed to reach a \'default\' value!');
+            // if(event.target.name === 's0upload'){
+            //     reader.onload = (e) => {
+            //         this.setState({ s0upload: e.target.result });
+            //     }
+            // } else {
+            //     reader.onload = (e) => {
+            //         this.setState({ s1upload: e.target.result })
+            //     }
+            // }
         }
     }
 
     handleSubmit = (event) => {
         event.preventDefault();
+
+        const url = "http://localhost:3001/alignments";
         console.log(this.state);
+        return post(url, this.state);
     }
 
     render() {
@@ -163,12 +142,12 @@ export default class Alignment extends Component {
                     <div className="row">
                         {/* S0 Sequence Upload */}
                         <div className="col">
-                            <input type="file" name="s0upload" className="form-control"/>
+                            <input type="file" name="s0upload" onChange={this.handleChange} className="form-control"/>
                         </div>
 
                         {/* S1 Sequence Upload */}
                         <div className="col">
-                            <input type="file" name="s1upload" className="form-control"/>
+                            <input type="file" name="s1upload" onChange={this.handleChange} className="form-control"/>
                         </div>
                     </div>
 
