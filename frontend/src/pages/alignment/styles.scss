@@ -22,10 +22,12 @@
 
 .col {
     width: 100%;
+    margin: 0 20px;
 
     @for $i from 1 to 12 {
         &-#{$i} {
             flex: #{$i};
+            @extend .col
         }
     }
 }
@@ -38,4 +40,8 @@
     display: flex;
     flex-direction: row;
     justify-content: space-around;
+}
+
+textarea {
+    resize: none;
 }
