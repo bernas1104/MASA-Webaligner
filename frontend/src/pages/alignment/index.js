@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { post } from 'axios';
 import './styles.scss';
 
+const FormData = require('form-data');
+
 export default class Alignment extends Component {
     constructor(props) {
         super(props);
@@ -22,28 +24,14 @@ export default class Alignment extends Component {
     }
 
     handleChange = (event) => {
-        if(event.target.name !== 's0upload'
+        if(event.target.name !== 'sequences'
             && event.target.name !== 's1upload'){
                 this.setState({ [event.target.name]: event.target.value });
             }
         else {
             // Handles the file uploads
             const file = event.target.files[0];
-            console.log(file);
             this.setState({ [event.target.name]: file });
-            
-            // let reader = new FileReader();
-            // reader.readAsDataURL(file[0]);
-
-            // if(event.target.name === 's0upload'){
-            //     reader.onload = (e) => {
-            //         this.setState({ s0upload: e.target.result });
-            //     }
-            // } else {
-            //     reader.onload = (e) => {
-            //         this.setState({ s1upload: e.target.result })
-            //     }
-            // }
         }
     }
 
@@ -52,7 +40,19 @@ export default class Alignment extends Component {
 
         const url = "http://localhost:3001/alignments";
         console.log(this.state);
-        return post(url, this.state);
+        
+        const form = new FormData();
+
+        if(this.state.sequences !== '')
+            form.append('s0upload', this.state.s0upload, this.state.s0upload.name);
+        if(this.state.s1upload !== '')
+            form.append('s1upload', this.state.s1upload, this.state.s1upload.name);
+
+        for(const key in this.state){
+            form.append(key.toString(), this.state[key]);
+        }
+
+        post(url, form);
     }
 
     render() {
@@ -142,7 +142,7 @@ export default class Alignment extends Component {
                     <div className="row">
                         {/* S0 Sequence Upload */}
                         <div className="col">
-                            <input type="file" name="s0upload" onChange={this.handleChange} className="form-control"/>
+                            <input type="file" name="s1upload" onChange={this.handleChange} className="form-control"/>
                         </div>
 
                         {/* S1 Sequence Upload */}

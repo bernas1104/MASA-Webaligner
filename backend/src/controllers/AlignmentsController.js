@@ -32,9 +32,9 @@ module.exports = {
         const alignment = await Alignment.create({ extension, s0type, s1type,               // Creates the alignment
                                                    s0edge, s1edge, s0, s1, alignmentFile: binPath });
 
-        await User.updateOne({ _id: user_id }, {                                            // Adds the new alignment to the user who requested it
-            $push: { alignments: alignment._id },
-        });
+        // await User.updateOne({ _id: user_id }, {                                            // Adds the new alignment to the user who requested it
+        //     $push: { alignments: alignment._id },
+        // });
 
         return res.json(alignment);                                                         // Returns the new created alignment
     },
@@ -57,8 +57,19 @@ async function getSequenceName(num, id, type, sName = '', files = [], input = ''
             data = fs.readFileSync(`${filePath}/${fileName}`, 'utf-8');                         // Reads the file
             break;
         case '2':                                                                           // Uploaded sequence
-            fileName = files[num].filename;                                                     // Retrieve the uploaded file name
-            data = fs.readFileSync(`${filePath}/${files[num].filename}`, 'utf-8');              // Reads the file
+            // Retrieves the filename of the s0upload file
+            if(num === 0){
+                const { s0upload } = files;
+                fileName = s0upload[0].filename;
+            }
+
+            // Retrieves the filename of the s1upload file
+            if(num === 1){
+                const { s1upload } = files;
+                fileName = s1upload[0].filename;
+            }
+
+            data = fs.readFileSync(`${filePath}/${fileName}`, 'utf-8');              // Reads the file
             break;
         case '3':                                                                           // Manual sequence input
             fileName = saveInputToFile(id, input);                                              // Retrieve the input sequence name
