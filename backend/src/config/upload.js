@@ -5,9 +5,9 @@ module.exports = {
     storage: multer.diskStorage({
         destination: path.resolve(__dirname, '..', '..', 'uploads'),
         filename: (req, file, cb) => {
-            const { user_id } = req.headers;
+            const rand = Math.floor(Math.random() * (999999 - 1 + 1)) + 1;
             const ext = path.extname(file.originalname);
-            cb(null, `${user_id}-${Date.now()}${ext}`);
+            cb(null, `${rand}-${Date.now()}${ext}`);
         },
     }),
 };

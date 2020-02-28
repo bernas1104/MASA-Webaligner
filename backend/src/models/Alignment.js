@@ -14,7 +14,6 @@ const AlignmentSchema = new mongoose.Schema({
     },
     s0edge: String,
     s1edge: String,
-    alignmentFile: String,
     createdAt: {
         type: Date,
         default: Date.now(),
