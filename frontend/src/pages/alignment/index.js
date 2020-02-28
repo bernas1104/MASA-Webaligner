@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
-import { post } from 'axios';
+import api from '../../services/api';
 import './styles.scss';
 
 const FormData = require('form-data');
 
-export default class Alignment extends Component {
+export default class NewAlignment extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
             extension: '',
             s0type: '',
-            s1type: '1',
+            s1type: '',
             s0name: '',
             s1name: '',
             s0upload: '',
@@ -24,7 +24,7 @@ export default class Alignment extends Component {
     }
 
     handleChange = (event) => {
-        if(event.target.name !== 'sequences'
+        if(event.target.name !== 's0upload'
             && event.target.name !== 's1upload'){
                 this.setState({ [event.target.name]: event.target.value });
             }
@@ -35,24 +35,20 @@ export default class Alignment extends Component {
         }
     }
 
-    handleSubmit = (event) => {
+    handleSubmit = async (event) => {
         event.preventDefault();
 
-        const url = "http://localhost:3001/alignments";
-        console.log(this.state);
+        const url = '/alignments';
         
         const form = new FormData();
 
-        if(this.state.sequences !== '')
-            form.append('s0upload', this.state.s0upload, this.state.s0upload.name);
-        if(this.state.s1upload !== '')
-            form.append('s1upload', this.state.s1upload, this.state.s1upload.name);
-
         for(const key in this.state){
-            form.append(key.toString(), this.state[key]);
+            if(this.state[key] !== '')
+                form.append(key, this.state[key]);
         }
 
-        post(url, form);
+        const { data: { _id } } = await api.post(url, form);
+        this.props.history.push(`/alignments/${_id}`);
     }
 
     render() {
@@ -112,7 +108,7 @@ export default class Alignment extends Component {
                         <div className="col-6">
                             <label htmlFor="alignment" name="s1type">s1 Input Type</label>
                             <div>
-                                <input type="radio" name="s1type" onChange={this.handleChange} value="1" defaultChecked/> NCBI API
+                                <input type="radio" name="s1type" onChange={this.handleChange} value="1"/> NCBI API
                                 <input type="radio" name="s1type" onChange={this.handleChange} value="2" /> File Upload
                                 <input type="radio" name="s1type" onChange={this.handleChange} value="3" /> Text Input
                             </div>
@@ -142,7 +138,7 @@ export default class Alignment extends Component {
                     <div className="row">
                         {/* S0 Sequence Upload */}
                         <div className="col">
-                            <input type="file" name="s1upload" onChange={this.handleChange} className="form-control"/>
+                            <input type="file" name="s0upload" onChange={this.handleChange} className="form-control"/>
                         </div>
 
                         {/* S1 Sequence Upload */}
@@ -170,6 +166,7 @@ export default class Alignment extends Component {
                         <div className="col">
                             <label htmlFor="alignment" name="s0edge">Edge</label>
                             <select name="s0edge" id="" value={this.state.s0edge} onChange={this.handleChange}>
+                                <option value="">select an edge</option>
                                 <option value="+">+</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
@@ -182,6 +179,7 @@ export default class Alignment extends Component {
                         <div className="col">
                             <label htmlFor="alignment" name="s1edge">Edge</label>
                             <select name="s1edge" id="" value={this.state.s1edge} onChange={this.handleChange} className="custom-select">
+                                <option value="">select an edge</option>
                                 <option value="+">+</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>

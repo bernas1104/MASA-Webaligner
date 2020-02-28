@@ -2,13 +2,15 @@ import React from 'react';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 
 import Main from './pages/main';
-import Alignment from './pages/alignment/';
+import NewAlignment from './pages/alignment/';
+import ShowAlignment from './pages/alignment/show';
 
 const Routes = () => (
     <BrowserRouter>
         <Switch>
             <Route exact path="/" component={Main}/>
-            <Route path="/alignments/new" component={Alignment}></Route>
+            <Route path="/alignments/new" component={NewAlignment}></Route>
+            <Route path="/alignments/:id" component={ShowAlignment}></Route>
         </Switch>
     </BrowserRouter>
 );
