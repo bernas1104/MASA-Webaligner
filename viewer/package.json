@@ -1,0 +1,6 @@
+{
+  "name": "viewer",
+  "version": "1.0.0",
+  "main": "start.js",
+  "license": "GPLv3"
+}
