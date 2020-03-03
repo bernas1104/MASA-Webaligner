@@ -9,6 +9,9 @@ const SequenceModifiers = require('./SequenceModifiers');
 const Alignment = require('./Alignment');
 const AlignmentParams = require('./AlignmentParams');
 
+const Gap = require('./Gap');
+const GapList = require('./GapList');
+
 const getKeyByValue = (obj, value) => (
     Object.keys(obj).find(key => obj[key] === value)
 );
@@ -213,7 +216,52 @@ function fread_alignment_params(sequences, is) {
 }
 
 function fread_alignment_result(alignment, is) {
-    // TODO Next
+    const results = fread_int4(is);
+    
+    if(results > 1)
+        throw `Too many results: ${results}.\n`;
+
+    let count = alignment.getAlignmentParams().getSequencesCount();
+    let field;
+
+    while((field = fread_int1(is)) !== END_OF_FIELDS){
+        switch(field){
+            case FIELD_RESULT_RAW_SCORE:
+                alignment.setRawScore(fread_int4(is));
+                break;
+            case FIELD_RESULT_SCORE_STATISTICS:
+                alignment.setMatches(fread_int4(is));
+                alignment.setMismatches(fread_int4(is));
+                alignment.setGapOpen(fread_int4(is));
+                alignment.setGapExtensions(fread_int4(is));
+                break;
+            case FIELD_RESULT_GAP_LIST:
+                for(let i = 0; i < count; i++){
+                    let start = fread_int4(is);
+                    let end = fread_int4(is);
+                    alignment.setBoundaryPositions(i, start, end);
+                    alignment.setGaps(i, fread_gaps(is));
+                }
+                break;
+            case FIELD_RESULT_BLOCKS:
+                let h = fread_int4(is);
+                let w = fread_int4(is);
+
+                let blocks = new Array(h);
+                for(let i = 0; i < h; i++){ blocks[i] = new Array(w); }
+
+                for(let i = 0; i < h; i++){
+                    for(let j = 0; j < w; j++){
+                        blocks[i][j] = fread_int4(is);
+                    }
+                }
+
+                alignment.setBlocks(blocks);
+                break;
+            default:
+                throw `Sanity Check: Unknown field ${field}.\n`;
+        }   
+    }
 }
 
 function fread_array(len, is) {
@@ -223,7 +271,16 @@ function fread_array(len, is) {
 }
 
 function fread_uint4_compressed(is) {
-    //
+    // TODO next...
+    let b = fread_int1(is);
+    let i = (b & 0x7F);
+    while(b >= 128) {
+        b = fread_int1(is);
+        i <<= 7;
+        i |= (b & 0x7F);
+    }
+
+    return i;
 }
 
 function fread_int4(is) {
@@ -235,7 +292,7 @@ function fread_int2(is) {
 }
 
 function fread_int1(is) {
-    return is.slice(byte, ++byte).readIntBE(0, 1);
+    return is.slice(byte, ++byte).readUIntBE(0, 1);
 }
 
 function fread_str(is) {
@@ -253,7 +310,19 @@ function fread_str(is) {
 }
 
 function fread_gaps(is) {
-    //
+    let count = fread_int4(is);
+    let gaps = new GapList.module(0);
+
+    let last = 0;
+    for(let i = 0; i < count; i++){
+        let pos = last + fread_uint4_compressed(is);
+        last = pos;
+        let len = fread_uint4_compressed(is);
+        let gap = new Gap.module(pos, len);
+        gaps.push(gap);
+    }
+
+    return gaps;
 }
 
 function fread_dummy(len, is) {

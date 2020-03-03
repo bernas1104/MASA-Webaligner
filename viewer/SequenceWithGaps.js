@@ -3,7 +3,7 @@ class SequenceWithGaps {
     _endOffset;
     _offset;
     _done = true;
-    _sb;
+    _sb = '';
 
     constructor(sequence, gaps){
         this._gaps = gaps;
@@ -15,12 +15,50 @@ class SequenceWithGaps {
         let chars = new Array(SIZE).fill('-');
 
         let pos = start;
-        gaps.forEach(gap => {
-            //
+        this._gaps.forEach(gap => {
+            let nextPos = gap.getPosition();
+            sb += sequence.getData(pos - 1, nextPos - 1);
+            pos = nextPos;
+
+            let count = gap.getLength();
+            while(count > 0) {
+                let len = Math.min(count, SIZE);
+                sb += chars.slice(0, len);
+                count -= len;
+            }
         });
+
+        sb += sequence.getData(pos - 1, end);
+        if(this._gaps.getStartPosition() > this._gaps.getEndPosition()) {
+            sb = sb.split('').reverse().join('');   // sb.reverse();
+        }
+    }
+
+    reset = (startOffset, endOffset) => {
+        this._offset = startOffset;
+        this._endOffset = endOffset;
+        this._done = false;
+    }
+
+    getCurrentPosition = () => ( this._gaps.getPosition(this._offset) );
+
+    isDone = () => ( this._done );
+
+    getNextChunk = (length) => {
+        if(this.isDone()) {
+            return '';
+        } else {
+            let nextOffset = Math.min(this._endOffset + 1, this._offset + length);
+
+            let chunk = sb.slice(this._offset, nextOffset);
+            
+            if(nextOffset == this._endOffset + 1)
+                this._done = true;
+
+            this._offset = nextOffset;
+            return chunk;
+        }
     }
 }
-
-const x = new SequenceWithGaps
 
 exports.module = SequenceWithGaps;

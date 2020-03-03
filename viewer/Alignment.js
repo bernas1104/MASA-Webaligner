@@ -43,42 +43,42 @@ class Alignment {
 
     getAlignmentParams = () => ( this._alignmentParams );
 
-    setRawScore = (rawScore) => { _rawScore = rawScore };
+    setRawScore = (rawScore) => { this._rawScore = rawScore };
     getRawScore = () => ( _rawScore );
     
     setGaps = (id, gapList) => {
-        _gaps[id] = gapList;
-        _gaps[id].computeOffsets(_startPosition[id], _endPosition[id]);
+        this._gaps[id] = gapList;
+        this._gaps[id].computeOffsets(this._startPosition[id], this._endPosition[id]);
 
-        _startOffset[id] = 0;
-        _endOffset[id] = Math.abs(_endPosition[id] - _startPosition[id])
+        this._startOffset[id] = 0;
+        this._endOffset[id] = Math.abs(this._endPosition[id] - this._startPosition[id])
             + gapList.getGapsCount();
     }
-    getGaps = (id) => ( _gaps[id] );
+    getGaps = (id) => ( this._gaps[id] );
 
     setBoundaryPositions = (i, start, end) => {
-        _startOffset[i] = start;
-        _endOffset[i] = end;
+        this._startOffset[i] = start;
+        this._endOffset[i] = end;
     }
 
     setBoundaryOffset = (i, start, end) => {
-        _startOffset[i] = start;
-        _endOffset[i] = end;
+        this._startOffset[i] = start;
+        this._endOffset[i] = end;
     }
 
-    getSequenceStartPosition = (id) => ( _startPosition[id] );
+    getSequenceStartPosition = (id) => ( this._startPosition[id] );
 
-    getSequenceEndPosition = (id) => ( _endPosition[id] );
+    getSequenceEndPosition = (id) => ( this._endPosition[id] );
 
-    getSequenceStartOffset = (id) => ( _startOffset[id] );
+    getSequenceStartOffset = (id) => ( this._startOffset[id] );
 
-    getSequenceEndOffset = (id) => ( _endOffset[id] );
+    getSequenceEndOffset = (id) => ( this._endOffset[id] );
 
-    getSequenceDirection = (id) => ( _dir[id] );
+    getSequenceDirection = (id) => ( this._dir[id] );
 
-    getSequenceOffset = (id, position) => ( _gaps[id].getOffset(position) );
+    getSequenceOffset = (id, position) => ( this._gaps[id].getOffset(position) );
 
-    getSequencePosition = (id, offset) => ( _gaps[id].getOffset(offset) );
+    getSequencePosition = (id, offset) => ( this._gaps[id].getOffset(offset) );
 
     // FUNÇÕES COM DEPENDENCIAS
 
@@ -152,23 +152,20 @@ class Alignment {
 
     // FUNÇÕES COM DEPENDENCIAS
 
-    setBlocks = (blocks) => { _blocks = blocks };
-    getBlocks = () => ( _blocks );
+    setBlocks = (blocks) => { this._blocks = blocks };
+    getBlocks = () => ( this._blocks );
 
-    setMatches = (matches) => { _matches = matches };
-    getMatches = () => ( _matches );
+    setMatches = (matches) => { this._matches = matches };
+    getMatches = () => ( this._matches );
 
-    setMismatches = (mismatches) => { _mismatches = mismatches };
-    getMismatches = () => ( _mismatches );
+    setMismatches = (mismatches) => { this._mismatches = mismatches };
+    getMismatches = () => ( this._mismatches );
 
-    setGapOpen = (gapOpen) => { _gapOpen = gapOpen };
-    getGapOpen = () => ( _gapOpen );
+    setGapOpen = (gapOpen) => { this._gapOpen = gapOpen };
+    getGapOpen = () => ( this._gapOpen );
 
-    setGapExtensions = (gapExtensions) => { _gapExtensions = gapExtensions };
-    getGapExtensions = () => ( _gapExtensions );
+    setGapExtensions = (gapExtensions) => { this._gapExtensions = gapExtensions };
+    getGapExtensions = () => ( this._gapExtensions );
 }
-
-const x = new Alignment();
-console.log(x._sequenceWithGaps[0] === undefined);
 
 exports.module = Alignment;
