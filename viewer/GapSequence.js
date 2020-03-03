@@ -10,7 +10,6 @@ class GapSequence {
     _gapType;
 
     constructor(args){
-        console.log(args);
         if(!!args.first){
             const { first: { i0, j0, i1, j1 } } = args;
 

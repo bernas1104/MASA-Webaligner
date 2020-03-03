@@ -1,0 +1,30 @@
+###############################
+#  STATISTICS FOR STAGE #2.0  #
+###############################
+SW PARAM: 1/-3/-3/-2
+--Alignment sequences:
+>>ZZ999998.1 Bernas Teste, complete lorem ipsum 1
+ (8)
+>>ZZ999999.1 Bernas Teste, complete lorem ipsum 2
+ (9)
+Flush limit: 0
+Predicted Traceback: NO
+Stage2 times:
+        PREPARE:       0.0370 (   1)  avg.:   0.0370
+           STEP:       0.1260 (   1)  avg.:   0.1260
+            END:       0.0370 (   1)  avg.:   0.0370
+          TOTAL:       0.2000
+        Total: 0.2000
+        Cells: 0.0000e+00
+        MCUPS: 0.0000
+Millions Cells Updates: 0.000
+
+=====  PRUNING STATS   =====
+Pruned Blocks: 0
+Pruned Blocks: 0.0000%
+
+===== RUNTIME VARIABLES =====
+      Block Width: 8-8
+     Block Height: 9-9
+       Grid Width: 1-1
+      Grid Height: 1-1

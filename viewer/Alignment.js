@@ -17,7 +17,7 @@ class Alignment {
     _endPosition = new Array(SEQUENCES_NUMBER);
     _startOffset = new Array(SEQUENCES_NUMBER);
     _endOffset = new Array(SEQUENCES_NUMBER);
-    _gaps = new GapList.module(2);
+    _gaps = new GapList.module(SEQUENCES_NUMBER);
     _dir = new Array(SEQUENCES_NUMBER);
     _gapSequence;
     _sequenceWithGaps = new Array(SEQUENCES_NUMBER);
@@ -53,12 +53,17 @@ class Alignment {
         this._startOffset[id] = 0;
         this._endOffset[id] = Math.abs(this._endPosition[id] - this._startPosition[id])
             + gapList.getGapsCount();
+
+        if(this._gaps[0] !== undefined && this._gaps[1] !== undefined)
+            this._createGapSequence();
     }
     getGaps = (id) => ( this._gaps[id] );
 
-    setBoundaryPositions = (i, start, end) => {
-        this._startOffset[i] = start;
-        this._endOffset[i] = end;
+    setBoundaryPositions = (id, start, end) => {
+        this._startPosition[id] = start;
+        this._endPosition[id] = end;
+
+        this._dir[id] = (start < end) ? 1 : -1;
     }
 
     setBoundaryOffset = (i, start, end) => {
@@ -83,7 +88,7 @@ class Alignment {
     // FUNÇÕES COM DEPENDENCIAS
 
     _createGapSequence = () => {
-        gapSequence = new Array();
+        this._gapSequence = new Array();
 
         let i = this._startPosition[0];
         let j = this._startPosition[1];
@@ -99,17 +104,17 @@ class Alignment {
             let gap1 = null;
 
             if(c1 >= 0 && c1 < this._gaps[1].length){
-                gap1 = new GapSequence({ second: { gaps: this._gaps[1][c1], i, j, dir: dirI,
+                gap1 = new GapSequence.module({ second: { gap: this._gaps[1][c1], i, j, dir: dirI,
                     gapType: GapSequence.module.GapType.SEQUENCE_1 } });
             }
 
             if(c0 >= 0 && c0 < this._gaps[0].length){
-                gap2 = new GapSequence({ second: { gaps: this._gaps[0][c0], i, j, dir: dirJ,
+                gap0 = new GapSequence.module({ second: { gap: this._gaps[0][c0], i, j, dir: dirJ,
                     gapType: GapSequence.module.GapType.SEQUENCE_0 } });
             }
 
             let gap;
-            if(gap1 == null || (gap0 != null && gap0.getDist(i, j) < gap1.getDist(i, j))){
+            if(gap1 === null || (gap0 !== null && gap0.getDist(i, j) < gap1.getDist(i, j))){
                 gap = gap0;
                 c0 += dirI;
             } else {
@@ -117,7 +122,7 @@ class Alignment {
                 c1 += dirJ;
             }
 
-            gapSequence.add(gap);
+            this._gapSequence.push(gap);
             i = gap.getI1();
             j = gap.getJ1();
         }
