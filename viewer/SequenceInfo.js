@@ -23,7 +23,7 @@ class SequenceInfo {
         this.getData = () => ( _data );
         this.setData = (data) => { _data = data };
 
-        this.getAccessionNumber = () => { return this.getAccessionNumber(_description) }
+        this.getAccessionNumber = () => { return SequenceInfo.getAccessionNumber(_description) }
     }
 
     static getAccessionNumber(description) {
