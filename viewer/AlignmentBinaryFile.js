@@ -85,9 +85,11 @@ const read = (file) => {
 
     const params = fread_alignment_params(sequences, ds);
     const alignment = new Alignment.module(params);
-    // fread_alignment_result(alignment, ds);
+    fread_alignment_result(alignment, ds);
 
-    // return alignment;
+    console.log(alignment);
+
+    return alignment;
 }
 
 function fread_header(is) {
