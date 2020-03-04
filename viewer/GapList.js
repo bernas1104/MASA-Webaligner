@@ -24,8 +24,6 @@ class GapList extends Array {
             let offset = this._startOffset;
             this._gapsCount = 0;
 
-            // console.log(this);
-
             this.forEach(gap => {
                 offset += gap.getPosition() - pos;
                 gap.setOffset(offset);

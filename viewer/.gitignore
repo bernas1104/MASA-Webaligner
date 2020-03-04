@@ -6,3 +6,5 @@ test.js
 
 files/
 files/*
+
+*.fasta

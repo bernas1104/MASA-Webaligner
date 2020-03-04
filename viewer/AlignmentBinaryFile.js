@@ -90,7 +90,7 @@ const read = (file) => {
     const alignment = new Alignment.module(params);
     fread_alignment_result(alignment, ds);
 
-    console.log(alignment);
+    // console.log(alignment);
 
     return alignment;
 }
