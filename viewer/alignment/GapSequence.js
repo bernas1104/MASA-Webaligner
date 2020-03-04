@@ -1,5 +1,3 @@
-const Gap = require('./Gap');
-
 class GapSequence {
     static GapType = { SEQUENCE_0: 'SEQUENCE_0', SEQUENCE_1: 'SEQUENCE_1' };
     
