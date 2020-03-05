@@ -148,11 +148,13 @@ class Alignment {
 
     getAlignmentWithGaps = (id) => {
         if(this._sequenceWithGaps[id] === undefined){
-            this._sequenceWithGaps[id] = new SequenceWithGaps(
+            this._sequenceWithGaps[id] = new SequenceWithGaps.module(
                 this._alignmentParams.getSequence(id).getData(),
                 this._gaps[id]
             );
         }
+
+        return this._sequenceWithGaps[id];
     }
 
     // FUNÇÕES COM DEPENDENCIAS

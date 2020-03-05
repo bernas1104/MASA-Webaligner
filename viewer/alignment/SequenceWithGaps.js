@@ -17,20 +17,20 @@ class SequenceWithGaps {
         let pos = start;
         this._gaps.forEach(gap => {
             let nextPos = gap.getPosition();
-            sb += sequence.getData(pos - 1, nextPos - 1);
+            this._sb += sequence.getData(pos - 1, nextPos - 1);
             pos = nextPos;
 
             let count = gap.getLength();
             while(count > 0) {
                 let len = Math.min(count, SIZE);
-                sb += chars.slice(0, len);
+                this._sb += chars.slice(0, len);
                 count -= len;
             }
         });
 
-        sb += sequence.getData(pos - 1, end);
+        this._sb += sequence.getData(pos - 1, end);
         if(this._gaps.getStartPosition() > this._gaps.getEndPosition()) {
-            sb = sb.split('').reverse().join('');   // sb.reverse();
+            this._sb = this._sb.split('').reverse().join('');   // sb.reverse();
         }
     }
 
@@ -50,7 +50,7 @@ class SequenceWithGaps {
         } else {
             let nextOffset = Math.min(this._endOffset + 1, this._offset + length);
 
-            let chunk = sb.slice(this._offset, nextOffset);
+            let chunk = this._sb.slice(this._offset, nextOffset);
             
             if(nextOffset == this._endOffset + 1)
                 this._done = true;

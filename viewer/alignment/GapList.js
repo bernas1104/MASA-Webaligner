@@ -93,7 +93,7 @@ class GapList extends Array {
         return offset;
     }
 
-    getPosition = (offset) => ( getPositionInfo(offset)[0] );
+    getPosition = (offset) => ( this.getPositionInfo(offset)[0] );
 
     getPositionRemainer = (offset) => ( getPositionInfo(offset)[1] );
 
@@ -113,7 +113,7 @@ class GapList extends Array {
         let position;
         let remaining;
 
-        if(this.length === 0 || ofset < this[i0].getOffset()) {
+        if(this.length === 0 || offset < this[i0].getOffset()) {
             gapIndex = -1;
         } else if(offset > this[i1].getOffset()) {
             gapIndex = i1;

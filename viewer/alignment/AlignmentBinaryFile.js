@@ -203,7 +203,6 @@ class AlignmentBinaryFile {
                         modifiers.setFlags(flags);
                         modifiers.setTrimPositions(trimStart, trimEnd);
 
-                        console.log(new Sequence.module(sequences[id], modifiers).getInfo().getDescription());
                         params.addSequence(new Sequence.module(sequences[id], modifiers));
                     }
                     break;

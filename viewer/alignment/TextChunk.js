@@ -1,3 +1,9 @@
+Number.prototype.pad = function(size) {
+    var s = String(this);
+    while(s.length < (size || 2)) { s = ' ' + s }
+    return s;
+}
+
 class TextChunk {
     _chunk0;
     _chunk1;
@@ -31,9 +37,9 @@ class TextChunk {
     }
 
     getTextString = () => {
-        return `     Query:          ${i0} ${this._chunk0}         ${i1}\n` +
-            `                ${getMatchString()} ${this._suffix}\n` +
-            `     ${Subjct}:         ${j0} ${this._chunk1}         ${j1}\n`;
+        return `Query: ${this._i0.pad(8)} ${this._chunk0} ${this._i1.pad(8)}\n` +
+            `                ${this.getMatchString()} ${this._suffix}\n` +
+            `Sbjct: ${this._j0.pad(8)} ${this._chunk1} ${this._j1.pad(8)}\n`;
     }
 
     getHTMLString = () => {
@@ -41,9 +47,9 @@ class TextChunk {
         let c1 = this._chunk1.replace(/[-]/g, '<font bgcolor="#FF9090">-</font>');
 
         return `<pre>` +
-            `     Query:          ${i0} ${this._chunk0}         ${i1}<br>` +
-            `                ${getMatchString()} ${this._suffix}<br>` +
-            `     ${Subjct}:         ${j0} ${this._chunk1}         ${j1}<br>` + 
+            `     Query:          ${this._i0} ${c0}         ${this._i1}<br>` +
+            `                ${this.getMatchString()} ${this._suffix}<br>` +
+            `     Sbjct:         ${this._j0} ${c1}         ${this._j1}<br>` + 
             `</pre>`;
     }
 
@@ -52,7 +58,7 @@ class TextChunk {
             let sb = '';
             for(let k = 0; k < this._size; k++){
                 let q = this._chunk0[k];
-                let s = thus._chunk1[k];
+                let s = this._chunk1[k];
 
                 sb += q === s ? '|' : ' ';
             }

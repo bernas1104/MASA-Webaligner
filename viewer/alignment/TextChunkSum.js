@@ -23,32 +23,30 @@ class TextChunkSum {
     sumChunk(chunk) {
         let tmp = 0;
 
-        let c0 = chunk.getChunk0();
-        let c1 = chunk.getChunk1();
         for(let k = 0; k < chunk.getSize(); k++){
-            let q = c0[k];
-            let s = c1[k];
+            let q = chunk.getChunk0()[k];
+            let s = chunk.getChunk1()[k];
 
             if(q === '-'){
-                if(!qgap) {
+                if(!this._qgap) {
                     tmp += this._gapOpenScore;
                     this._gapOpeningsCount++;
                 }
 
                 tmp += this._gapExtScore;
                 this._gapExtensionsCount++;
-                qgap = true;
-                sgap = false;
+                this._qgap = true;
+                this._sgap = false;
             } else if(s === '-'){
-                if(!sgap){
+                if(!this._sgap){
                     tmp += this._gapOpenScore;
                     this._gapOpeningsCount++;
                 }
 
                 tmp += this._gapExtScore;
                 this._gapExtensionsCount++;
-                qgap = false;
-                sgap = true;
+                this._qgap = false;
+                this._sgap = true;
             } else {
                 if(q === s){
                     tmp += this._matchScore;
@@ -58,8 +56,8 @@ class TextChunkSum {
                     this._mismatchesCount++;
                 }
                 
-                qgap = false;
-                sgap = false;
+                this._qgap = false;
+                this._sgap = false;
             }
         }
         this._score += tmp;
