@@ -23,7 +23,8 @@ class SequenceWithGaps {
             let count = gap.getLength();
             while(count > 0) {
                 let len = Math.min(count, SIZE);
-                this._sb += chars.slice(0, len);
+                let x= chars.slice(0, len);
+                this._sb += chars.slice(0, len).join('');
                 count -= len;
             }
         });
