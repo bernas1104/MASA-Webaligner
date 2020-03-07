@@ -32,25 +32,13 @@ module.exports = {
 
     async show(req, res) {
         const { id } = req.params;                                                          // Gets the Alignment id from the request
-        const alignment = await Alignment.findById(id);                                     // Finds the Alignment
 
-        const filePath = path.resolve(__dirname, '..', '..', 'uploads');
-        
-        let s0name = fs.readFileSync(`${filePath}/${alignment.s0}`, 'utf-8').match(/[A-Z]{2}_?[0-9]+\.[0-9]/g)[0];
-        if(!s0name) s0name = `default-${alignment._id}-0`;
-
-        let s1name = fs.readFileSync(`${filePath}/${alignment.s1}`, 'utf-8').match(/[A-Z]{2}_?[0-9]+\.[0-9]/g)[0];
-        if(!s1name) s1name = `default-${alignment._id}-1`;
-
-        const data = {
-            s0name,
-            s1name,
-            s0file: alignment.s0.match(/.*[^\.fasta]/g)[0],
-            s1file: alignment.s1.match(/.*[^\.fasta]/g)[0],
-            // Whatever else
+        try{
+            const alignment = await Alignment.findById(id, '_id');                          // Finds the Alignment
+            return res.json(alignment);                                                     // Returns it as JSON
+        } catch (err) {
+            res.status(400).send(err);
         }
-
-        return res.json(data);                                                              // Returns it as JSON
     }
 }
 

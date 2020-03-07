@@ -3,6 +3,12 @@ const mongoose = require('mongoose');
 const routes = require('./routes');
 const cors = require('cors');
 
+const path = require('path');
+const { exec } = require('child_process');
+
+const rootDir = path.resolve(__dirname, '..');
+exec(`mkdir ${rootDir}/uploads ${rootDir}/results`);
+
 const app = express();
 
 mongoose.connect(
