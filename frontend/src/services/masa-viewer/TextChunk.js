@@ -1,4 +1,4 @@
-function pad(int, size) {
+export function pad(int, size) {
     var s = String(int);
     while(s.length < (size || 2)) { s = ' ' + s }
     return s;
@@ -43,8 +43,8 @@ export default class TextChunk {
     }
 
     getHTMLString = () => {
-        let c0 = this._chunk0.replace(/[-]/g, '<font bgcolor="#FF9090">-</font>');
-        let c1 = this._chunk1.replace(/[-]/g, '<font bgcolor="#FF9090">-</font>');
+        let c0 = this._chunk0.replace(/[-]/g, '<span style="background: #FF9090">-</span>');
+        let c1 = this._chunk1.replace(/[-]/g, '<span style="background: #FF9090">-</span>');
 
         return `<pre>` +
             `Query: ${pad(this._i0, 8)} ${c0} ${pad(this._i1, 8)}<br>` +

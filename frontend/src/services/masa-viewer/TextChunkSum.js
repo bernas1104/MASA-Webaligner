@@ -1,3 +1,5 @@
+import { pad } from './TextChunk';
+
 export default class TextChunkSum {
     _score = 0;
     _gapOpeningsCount = 0;
@@ -76,11 +78,11 @@ export default class TextChunkSum {
 
     getHTMLString = () => (
         `<pre>` +
-        `Total Score:             ${this._score}<br>` + 
-        `Matches:                 ${this._matchCount} (+${this._matchScore})<br>` +
-        `Mismatches:              ${this._mismatchesCount} (${this._mismatchScore})<br>` +
-        `Gap Openings:            ${this._gapOpeningsCount} (${this._gapOpenScore})<br>` +
-        `Gap Extensions:          ${this._gapExtensionsCount} (${this._gapExtScore})<br>` +
+        `Total Score:         ${pad(this._score, 8)}<br>` + 
+        `Matches:             ${pad(this._matchesCount, 8)} (+${this._matchScore})<br>` +
+        `Mismatches:          ${pad(this._mismatchesCount, 8)} (${this._mismatchScore})<br>` +
+        `Gap Openings:        ${pad(this._gapOpeningsCount, 8)} (${this._gapOpenScore})<br>` +
+        `Gap Extensions:      ${pad(this._gapExtensionsCount, 8)} (${this._gapExtScore})<br>` +
         `</pre>`
     );
 }
