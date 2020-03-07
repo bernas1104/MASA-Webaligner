@@ -8,3 +8,6 @@ files/
 files/*
 
 *.fasta
+
+.vscode/
+.vscode/*
