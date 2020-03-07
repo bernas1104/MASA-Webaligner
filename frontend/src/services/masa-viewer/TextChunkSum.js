@@ -77,13 +77,13 @@ export default class TextChunkSum {
     getGapExtScore = () => ( this._gapExtScore );
 
     getHTMLString = () => (
-        `<pre>` +
+        `<div><pre>` +
         `Total Score:         ${pad(this._score, 8)}<br>` + 
         `Matches:             ${pad(this._matchesCount, 8)} (+${this._matchScore})<br>` +
         `Mismatches:          ${pad(this._mismatchesCount, 8)} (${this._mismatchScore})<br>` +
         `Gap Openings:        ${pad(this._gapOpeningsCount, 8)} (${this._gapOpenScore})<br>` +
         `Gap Extensions:      ${pad(this._gapExtensionsCount, 8)} (${this._gapExtScore})<br>` +
-        `</pre>`
+        `</pre></div>`
     );
 }
 

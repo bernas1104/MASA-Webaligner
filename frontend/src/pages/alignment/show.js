@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Dypragh from 'dygraphs';
 
 import api from '../../services/api';
 import AlignmentBinaryFile from '../../services/masa-viewer/AlignmentBinaryFile';
@@ -19,6 +20,9 @@ export default class ShowAlignment extends Component {
             sequences: null,
             textChunkSum: null,
             chunks: null,
+            description: null,
+            xRange: null,
+            yRange: null,
             render: true
         };
     }
@@ -30,6 +34,48 @@ export default class ShowAlignment extends Component {
 
             const chunks = await this.buildResults();
             this.setState({ chunks });
+
+            const s0gapped = this.state.alignment.getAlignmentWithGaps(0).getSB();
+            const s1gapped = this.state.alignment.getAlignmentWithGaps(1).getSB();
+            console.log(s0gapped.length);
+            
+            let data = '';
+            for(var i = 0, j = 1, l = 1; i < s0gapped.length; i++){
+                if(s0gapped[i] === s1gapped[i]){
+                    data += `${j++},${l++}\n`;
+                } else {
+                    if(s0gapped[i] !== '-' && s1gapped[i] !== '-'){
+                        data += `${j++},${l++}\n`;
+                    } else if (s0gapped[i] === '-'){
+                        data += `${j},${l++}\n`;
+                    } else {
+                        data += `${j++},${l}\n`;
+                    }
+                }
+            }
+
+            const graph = new Dypragh(
+                'alignmentPlot',
+                'Seq0,Seq1\n' +
+                data, {
+                    showRangeSelector: true,
+                    drawGrid: false,
+                    valueRange: [0, this.state.alignment.getSequenceEndPosition(1)]
+                }
+            );
+
+            const rangeSliders = document.querySelectorAll('body');
+            rangeSliders.forEach(rangerSlider => {
+                rangerSlider.onkeyup = (event) => {
+                    if(event.keyCode === 13){
+                        this.setState({ 
+                            xRange: graph.xAxisRange(),
+                            yRange: graph.yAxisRange(),
+                        });
+                        console.log(this.state.xRange, this.state.yRange);
+                    }
+                }
+            });
         } catch (err) {
             this.setState({
                 render: false
@@ -43,6 +89,11 @@ export default class ShowAlignment extends Component {
 
         this.setState({ alignment: AlignmentBinaryFile.read(buff) });
         this.setState({ sequences: this.state.alignment.getAlignmentParams().getSequences() });
+
+        const description = [];
+        description.push(this.state.alignment.getAlignmentParams().getSequence(0).getInfo().getDescription());
+        description.push(this.state.alignment.getAlignmentParams().getSequence(1).getInfo().getDescription());
+        this.setState({ description });
 
         try{
             const { data: { s0file, s1file }} = await api.get(`/fasta/${this.state._id}`);
@@ -70,8 +121,6 @@ export default class ShowAlignment extends Component {
 
                 chunks.push(this.state.textChunkSum.getHTMLString());
             }
-
-            console.log(this.state.textChunkSum);
 
             return chunks;
         } catch (err) {
@@ -131,8 +180,9 @@ export default class ShowAlignment extends Component {
     render(){
         if(this.state.render){
             return (
-                <div dangerouslySetInnerHTML={{ __html: this.htmlDecode(this.state.chunks) }}>
-
+                <div className="results">
+                    <div id="alignmentPlot"></div>
+                    <div className="alignmentText" dangerouslySetInnerHTML={{ __html: this.htmlDecode(this.state.chunks) }}></div>
                 </div>
             );
         } else {

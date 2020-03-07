@@ -45,3 +45,29 @@
 textarea {
     resize: none;
 }
+
+.results {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+#alignmentPlot {
+    flex: 3;
+    width: 100%;
+    margin: 50px 20px;
+    // background: black
+}
+
+.alignmentText {
+    flex: 2;
+    width: 100%;
+    overflow-y: auto;
+    margin: 50px 20px;
+    border: 1px solid #d5d5d5;
+
+    div{
+        width: 80%;
+        margin: 0 auto;
+    }
+}

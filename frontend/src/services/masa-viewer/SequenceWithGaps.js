@@ -59,6 +59,8 @@ export default class SequenceWithGaps {
             return chunk;
         }
     }
+
+    getSB = () => ( this._sb );
 }
 
 // exports.module = SequenceWithGaps;

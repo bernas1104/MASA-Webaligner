@@ -46,11 +46,11 @@ export default class TextChunk {
         let c0 = this._chunk0.replace(/[-]/g, '<span style="background: #FF9090">-</span>');
         let c1 = this._chunk1.replace(/[-]/g, '<span style="background: #FF9090">-</span>');
 
-        return `<pre>` +
+        return `<div><pre>` +
             `Query: ${pad(this._i0, 8)} ${c0} ${pad(this._i1, 8)}<br>` +
             `                ${this.getMatchString()} ${this._suffix}<br>` +
             `Sbjct: ${pad(this._j0, 8)} ${c1} ${pad(this._j1, 8)}<br>` + 
-            `</pre>`;
+            `</pre></div>`;
     }
 
     getMatchString = () => {
