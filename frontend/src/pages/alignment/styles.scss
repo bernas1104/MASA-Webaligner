@@ -56,7 +56,11 @@ textarea {
     flex: 3;
     width: 100%;
     margin: 50px 20px;
-    // background: black
+
+    .dygraph-legend {
+        position: absolute;
+        left: 200px !important;
+    }
 }
 
 .alignmentText {

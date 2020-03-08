@@ -21,8 +21,6 @@ export default class ShowAlignment extends Component {
             textChunkSum: null,
             chunks: null,
             description: null,
-            xRange: null,
-            yRange: null,
             render: true
         };
     }
@@ -32,24 +30,27 @@ export default class ShowAlignment extends Component {
             const { data: { _id } } = await api.get(`/alignments/${this.props.match.params.id}`);
             this.setState({ _id });
 
-            const chunks = await this.buildResults();
-            this.setState({ chunks });
+            await this.buildResults();
 
             const s0gapped = this.state.alignment.getAlignmentWithGaps(0).getSB();
             const s1gapped = this.state.alignment.getAlignmentWithGaps(1).getSB();
-            console.log(s0gapped.length);
             
             let data = '';
-            for(var i = 0, j = 1, l = 1; i < s0gapped.length; i++){
+            const values = []
+            for(var i = 0, j = 0, l = 0; i < s0gapped.length; i++){
                 if(s0gapped[i] === s1gapped[i]){
                     data += `${j++},${l++}\n`;
+                    values.push(l-1);
                 } else {
                     if(s0gapped[i] !== '-' && s1gapped[i] !== '-'){
                         data += `${j++},${l++}\n`;
+                        values.push(l-1);
                     } else if (s0gapped[i] === '-'){
                         data += `${j},${l++}\n`;
+                        values.push(l-1);
                     } else {
                         data += `${j++},${l}\n`;
+                        values.push(l);
                     }
                 }
             }
@@ -60,23 +61,57 @@ export default class ShowAlignment extends Component {
                 data, {
                     showRangeSelector: true,
                     drawGrid: false,
-                    valueRange: [0, this.state.alignment.getSequenceEndPosition(1)]
+                    valueRange: [0, this.state.alignment.getSequenceEndPosition(1)],
+                    rangeSelectorHeight: 20,
                 }
             );
 
-            const rangeSliders = document.querySelectorAll('body');
-            rangeSliders.forEach(rangerSlider => {
-                rangerSlider.onkeyup = (event) => {
-                    if(event.keyCode === 13){
-                        this.setState({ 
-                            xRange: graph.xAxisRange(),
-                            yRange: graph.yAxisRange(),
-                        });
-                        console.log(this.state.xRange, this.state.yRange);
+            const adjustText = document.querySelector('body');
+            adjustText.onkeyup = (event) => {
+                if(event.keyCode === 13){
+                    let alignment = this.state.alignment;
+
+                    let xRange = graph.xAxisRange();
+                    let lowX = xRange[0] >= 0 ? Math.ceil(xRange[0]) : 0;
+                    let highX = Math.floor(xRange[1]);
+                
+                    let lowY = values[alignment.getSequenceOffset(0, lowX)];
+                    let highY = values[alignment.getSequenceOffset(0, highX)] + 1;
+
+                    let offsetY0 = alignment.getSequenceOffset(1, lowY);
+                    let offsetY1 = alignment.getSequenceOffset(1, highY) + 1;
+                    let offsetX0 = alignment.getSequenceOffset(0, lowX);
+                    let offsetX1 = alignment.getSequenceOffset(0, highX);
+
+                    let tmp;
+                    if(offsetX0 > offsetX1){
+                        tmp = offsetX0;
+                        offsetX0 = offsetX1;
+                        offsetX1 = tmp;
                     }
+                    if(offsetY0 > offsetY1){
+                        tmp = offsetY0;
+                        offsetY0 = offsetY1;
+                        offsetY1 = tmp;
+                    }
+                    
+                    let offset0 = Math.max(offsetY0, offsetX0);
+                    let offset1 = Math.max(offsetY1, offsetX1);
+                    
+                    if(offset0 < 0)
+                        offset0 = 0;
+                    if(offset1 < 0)
+                        offset1 = 0;
+
+                    if(offset0 > offset1)
+                        return;
+
+                    this.setState({ alignment: alignment.truncate(offset0, offset1) });
+                    this.buildTextResults();
                 }
-            });
+            }
         } catch (err) {
+            console.log(err);
             this.setState({
                 render: false
             })
@@ -100,32 +135,36 @@ export default class ShowAlignment extends Component {
             this.state.sequences[0].setData(new SequenceData({ file: s0file, modifiers: this.state.sequences[0].getModifiers() }));
             this.state.sequences[1].setData(new SequenceData({ file: s1file, modifiers: this.state.sequences[1].getModifiers() }));
 
-            if(this.state.alignment !== undefined && this.state.alignment.getAlignmentParams().getSequence(0).getData() !== undefined &&
-            this.state.alignment.getAlignmentParams().getSequence(1).getData() !== undefined){
-                
-                this.state.alignment.getAlignmentWithGaps(0).reset(this.state.alignment.getSequenceStartOffset(0), this.state.alignment.getSequenceEndOffset(0));
-                this.state.alignment.getAlignmentWithGaps(1).reset(this.state.alignment.getSequenceStartOffset(1), this.state.alignment.getSequenceEndOffset(1));
-                this.setState({ textChunkSum: new TextChunkSum(
-                    this.state.alignment.getAlignmentParams().getMatch(),
-                    this.state.alignment.getAlignmentParams().getMismatch(),
-                    this.state.alignment.getAlignmentParams().getGapOpen(),
-                    this.state.alignment.getAlignmentParams().getGapExtension()
-                )});
-
-
-                var chunks = [];
-                while(this.hasMoreChunks()) {
-                    let chunk = this.getNextChunk(60);
-                    chunks.push(chunk.getHTMLString());
-                }
-
-                chunks.push(this.state.textChunkSum.getHTMLString());
-            }
-
-            return chunks;
+            this.buildTextResults();
         } catch (err) {
             console.log(err);
         }
+    }
+
+    buildTextResults = () => {
+        if(this.state.alignment !== undefined && this.state.alignment.getAlignmentParams().getSequence(0).getData() !== undefined &&
+            this.state.alignment.getAlignmentParams().getSequence(1).getData() !== undefined){
+                
+            this.state.alignment.getAlignmentWithGaps(0).reset(this.state.alignment.getSequenceStartOffset(0), this.state.alignment.getSequenceEndOffset(0));
+            this.state.alignment.getAlignmentWithGaps(1).reset(this.state.alignment.getSequenceStartOffset(1), this.state.alignment.getSequenceEndOffset(1));
+            this.setState({ textChunkSum: new TextChunkSum(
+                this.state.alignment.getAlignmentParams().getMatch(),
+                this.state.alignment.getAlignmentParams().getMismatch(),
+                this.state.alignment.getAlignmentParams().getGapOpen(),
+                this.state.alignment.getAlignmentParams().getGapExtension()
+            )});
+
+
+            var chunks = [];
+            while(this.hasMoreChunks()) {
+                let chunk = this.getNextChunk(60);
+                chunks.push(chunk.getHTMLString());
+            }
+
+            chunks.push(this.state.textChunkSum.getHTMLString());
+        }
+
+        this.setState({ chunks });
     }
 
     getSeq0WithGaps = () => {

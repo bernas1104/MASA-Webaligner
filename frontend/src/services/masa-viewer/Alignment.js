@@ -140,7 +140,7 @@ export default class Alignment {
 
     truncate = (cutOffset0, cutOffset1) => {
         let cutI0 = this._gaps[0].getPosition(cutOffset0);
-        let cutI1 = this._gaps[0].getPosition(cutOffset1);
+        let cutI1 = this._gaps[0].getPosition(cutOffset1) - 1;
 
         let cutJ0 = this._gaps[1].getPosition(cutOffset0);
         let cutJ1 = this._gaps[1].getPosition(cutOffset1);
