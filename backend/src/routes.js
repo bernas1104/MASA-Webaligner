@@ -10,7 +10,7 @@ const routes = express.Router();
 const upload = multer(uploadConfig);
 
 // Alignments Routes
-routes.post('/alignments', upload.fields([{name: 's0upload', maxCount: 1}, {name: 's1upload', maxCount: 1}]), AlignmentsController.create);
+routes.post('/alignments', upload.fields([{name: 's0input', maxCount: 1}, {name: 's1input', maxCount: 1}]), AlignmentsController.create);
 routes.get('/alignments/:id', AlignmentsController.show);
 
 // MASA Retrieve files Routes

@@ -8,12 +8,12 @@ const { exec } = require('child_process');
 module.exports = {
     async create(req, res) {
         const { extension, s0type, s1type, s0edge, s1edge,
-                s0name, s1name, s0text, s1text } = req.body;
+                s0input, s1input } = req.body;
 
-        const s0 = await getFileName(0, s0type, s0name, req.files, s0text);                 // Gets the s0 sequence name
-        const s1 = await getFileName(1, s1type, s1name, req.files, s1text);                 // Gets the s1 sequence name
-        const s0folder = s0.match(/.*[^\.fasta]/g)[0];                                      // Gets the filename minus .fasta
-        const s1folder = s1.match(/.*[^\.fasta]/g)[0];                                      // Gets the filename minus .fasta
+        const s0 = await getFileName(0, s0type, s0input, req.files);                                                // Gets the s0 sequence name
+        const s1 = await getFileName(1, s1type, s1input, req.files);                                                // Gets the s1 sequence name
+        const s0folder = s0.match(/.*[^\.fasta]/g)[0];                                                              // Gets the filename minus .fasta
+        const s1folder = s1.match(/.*[^\.fasta]/g)[0];                                                              // Gets the filename minus .fasta
 
         // Executes the alignment tool
         // extension === 1 => CUDAlign; extension === 2 => OpenMP
@@ -24,18 +24,18 @@ module.exports = {
         if(extension === '2')
             await exec(`masa-openmp --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder}`);
 
-        const alignment = await Alignment.create({ extension, s0type, s1type,               // Creates the alignment
+        const alignment = await Alignment.create({ extension, s0type, s1type,                                       // Creates the alignment
                                                    s0edge, s1edge, s0, s1 });
 
-        return res.json(alignment);                                                         // Returns the new created alignment
+        return res.json(alignment);                                                                                 // Returns the new created alignment
     },
 
     async show(req, res) {
-        const { id } = req.params;                                                          // Gets the Alignment id from the request
+        const { id } = req.params;                                                                                  // Gets the Alignment id from the request
 
         try{
-            const alignment = await Alignment.findById(id, '_id');                          // Finds the Alignment
-            return res.json(alignment);                                                     // Returns it as JSON
+            const alignment = await Alignment.findById(id, '_id');                                                  // Finds the Alignment
+            return res.json(alignment);                                                                             // Returns it as JSON
         } catch (err) {
             res.status(400).send(err);
         }
@@ -44,30 +44,30 @@ module.exports = {
 
 // Private Functions
 
-async function getFileName(num, type, sName = '', files = [], input = ''){
+async function getFileName(num, type, sInput = '', files = []){
     let fileName;
 
-    const rand = Math.floor(Math.random() * (999999 - 1 + 1)) + 1;                          // Random number to compose the filename
+    const rand = Math.floor(Math.random() * (999999 - 1 + 1)) + 1;                                                  // Random number to compose the filename
 
     switch(type){
-        case '1':                                                                           // NCBI API fetching
-            fileName = await downloadNCBIFile(rand, sName);                                     // Downloads the DNA sequence and return its file name
+        case '1':                                                                                                   // NCBI API fetching
+            fileName = await downloadNCBIFile(rand, sInput);                                                            // Downloads the DNA sequence and return its file name
             break;
-        case '2':                                                                           // Uploaded sequence
+        case '2':                                                                                                   // Uploaded sequence
             // Retrieves the filename of the s0upload file
             if(num === 0){
-                const { s0upload } = files;
-                fileName = s0upload[0].filename;
+                const { s0input } = files;
+                fileName = s0input[0].filename;
             }
 
             // Retrieves the filename of the s1upload file
             if(num === 1){
-                const { s1upload } = files;
-                fileName = s1upload[0].filename;
+                const { s1input } = files;
+                fileName = s1input[0].filename;
             }
             break;
-        case '3':                                                                           // Manual sequence input
-            fileName = saveInputToFile(rand, input);                                            // Retrieve the input sequence name
+        case '3':                                                                                                   // Manual sequence input
+            fileName = saveInputToFile(rand, sInput);                                                                   // Retrieve the input sequence name
             break;
     }
 
