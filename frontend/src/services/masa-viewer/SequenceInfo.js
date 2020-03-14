@@ -40,5 +40,3 @@ for(let key in SequenceInfo.SequenceType) {
         writable: false,
     });
 }
-
-// exports.module = SequenceInfo;

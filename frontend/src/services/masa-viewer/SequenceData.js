@@ -1,5 +1,3 @@
-// const fs = require('fs');
-
 export default class SequenceData {
     _sb;
 
@@ -13,7 +11,6 @@ export default class SequenceData {
         else {
             const { file, modifiers } = args;
 
-            // const reader = fs.readFileSync(file, 'utf-8');
             const reader = file;
 
             let complement_map = new Array(256);
@@ -66,5 +63,3 @@ export default class SequenceData {
         }
     }
 }
-
-// exports.module = SequenceData;

@@ -86,5 +86,3 @@ export default class TextChunkSum {
         `</pre></div>`
     );
 }
-
-// exports.module = TextChunkSum;

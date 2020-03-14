@@ -10,5 +10,3 @@ export default class AlignmentUtils {
             return `${length/1000000000} GBP`;
     }
 }
-
-// exports.module = AlignmentUtils;

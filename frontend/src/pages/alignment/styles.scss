@@ -50,10 +50,16 @@ textarea {
     display: flex;
     flex-direction: row;
     height: 100%;
+    width: 100%;
+}
+
+.graph {
+    display: block;
+    width: 100%;
 }
 
 #alignmentPlot {
-    flex: 3;
+    // flex: 3;
     width: 100%;
     margin: 50px 20px;
 
@@ -64,14 +70,14 @@ textarea {
 }
 
 .alignmentText {
-    flex: 2;
+    // flex: 2;
     width: 100%;
     overflow-y: auto;
     margin: 50px 20px;
     border: 1px solid #d5d5d5;
 
     div{
-        width: 80%;
+        width: 50%;
         margin: 0 auto;
     }
 }

@@ -9,7 +9,6 @@ import TextChunkSum from '../../services/masa-viewer/TextChunkSum';
 
 import './styles.scss';
 
-
 export default class ShowAlignment extends Component {
     constructor(props){
         super(props);

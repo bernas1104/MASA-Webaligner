@@ -75,5 +75,3 @@ export default class TextChunk {
 
     setSuffix = (suffix) => { this._suffix = suffix };
 }
-
-// exports.module = TextChunk;

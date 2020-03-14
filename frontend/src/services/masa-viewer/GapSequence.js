@@ -53,5 +53,3 @@ export default class GapSequence {
 
     getDist = (i, j) => ( Math.max(Math.abs(i - this._i0), Math.abs(j - this._j0)) );
 }
-
-// exports.module = GapSequence;

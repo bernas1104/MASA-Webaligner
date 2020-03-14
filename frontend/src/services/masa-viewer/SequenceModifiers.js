@@ -36,5 +36,3 @@ for(let key in SequenceModifiers._flags){
         writable: false
     });
 }
-
-// exports.module = SequenceModifiers;

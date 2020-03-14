@@ -8,10 +8,6 @@ export default class GapList extends Array {
     _endOffset;
     _gapsCount;
 
-    // constructor(length) {
-    //     super(length);
-    // }
-
     computeOffsets = (startPosition, endPosition, startOffset = 0) => {
         if(!this._initialized){
             this._startPosition = startPosition;
@@ -165,5 +161,3 @@ export default class GapList extends Array {
 
     getEndOffset = () => ( this._endOffset );
 }
-
-// exports.module = GapList;

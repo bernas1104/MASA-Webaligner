@@ -1,6 +1,3 @@
-// const GapList = require('./GapList');
-// const GapSequence = require('./GapSequence');
-// const SequenceWithGaps = require('./SequenceWithGaps');
 import GapList from './GapList';
 import GapSequence from './GapSequence';
 import SequenceWithGaps from './SequenceWithGaps';
@@ -177,5 +174,3 @@ export default class Alignment {
     setGapExtensions = (gapExtensions) => { this._gapExtensions = gapExtensions };
     getGapExtensions = () => ( this._gapExtensions );
 }
-
-// exports.module = Alignment;

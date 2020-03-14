@@ -17,5 +17,3 @@ export default class Sequence {
     getData = () => ( this._data );
     setData = (data) => { this._data = data };
 }
-
-// exports.module = Sequence;

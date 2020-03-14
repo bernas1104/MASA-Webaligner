@@ -17,5 +17,3 @@ export default class Gap {
     getLength = () => ( this._length );
     setLength = (length) => { this._length = length };
 }
-
-// exports.module = Gap;

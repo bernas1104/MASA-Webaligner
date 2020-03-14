@@ -1,17 +1,3 @@
-// 'use strict';
-
-// const fs = require('fs');
-
-// const Sequence = require('./Sequence');
-// const SequenceInfo = require('./SequenceInfo');
-// const SequenceModifiers = require('./SequenceModifiers');
-
-// const Alignment = require('./Alignment');
-// const AlignmentParams = require('./AlignmentParams');
-
-// const Gap = require('./Gap');
-// const GapList = require('./GapList');
-
 import Sequence from './Sequence';
 import SequenceInfo from './SequenceInfo';
 import SequenceModifiers from './SequenceModifiers';
@@ -339,5 +325,3 @@ export default class AlignmentBinaryFile {
     }
 
 }
-
-// exports.module = AlignmentBinaryFile

@@ -73,5 +73,3 @@ for(let key in AlignmentParams.ScoreSystem) {
         writable: false,
     });
 };
-
-// exports.module = AlignmentParams;

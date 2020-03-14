@@ -62,5 +62,3 @@ export default class SequenceWithGaps {
 
     getSB = () => ( this._sb );
 }
-
-// exports.module = SequenceWithGaps;
