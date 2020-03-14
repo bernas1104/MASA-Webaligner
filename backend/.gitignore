@@ -11,3 +11,6 @@ src/results/
 src/results/*
 results/
 results/*
+
+.env
+.env.test
