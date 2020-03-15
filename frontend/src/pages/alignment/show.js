@@ -36,7 +36,7 @@ export default class ShowAlignment extends Component {
             
             let data = '';
             const values = []
-            for(var i = 0, j = 0, l = 0; i < s0gapped.length; i++){
+            for(var i = 0, j = 1, l = 1; i < s0gapped.length; i++){
                 if(s0gapped[i] === s1gapped[i]){
                     data += `${j++},${l++}\n`;
                     values.push(l-1);
@@ -78,7 +78,7 @@ export default class ShowAlignment extends Component {
                     let highY = values[alignment.getSequenceOffset(0, highX)] + 1;
 
                     let offsetY0 = alignment.getSequenceOffset(1, lowY);
-                    let offsetY1 = alignment.getSequenceOffset(1, highY) + 1;
+                    let offsetY1 = alignment.getSequenceOffset(1, highY);
                     let offsetX0 = alignment.getSequenceOffset(0, lowX);
                     let offsetX1 = alignment.getSequenceOffset(0, highX);
 

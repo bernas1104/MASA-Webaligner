@@ -3,7 +3,7 @@ const Alignment = require('../models/Alignment');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 
 module.exports = {
     async create(req, res) {
@@ -15,17 +15,34 @@ module.exports = {
         const s0folder = s0.match(/.*[^\.fasta]/g)[0];                                                              // Gets the filename minus .fasta
         const s1folder = s1.match(/.*[^\.fasta]/g)[0];                                                              // Gets the filename minus .fasta
 
+        const alignment = await Alignment.create({ extension, s0type, s1type,                                       // Creates the alignment
+            s0edge, s1edge, s0, s1 });
+
         // Executes the alignment tool
         // extension === 1 => CUDAlign; extension === 2 => OpenMP
         const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
         const results = path.resolve(__dirname, '..', '..', 'results');
+        
+        let masa;
         if(extension === '1')
-            await exec(`cudalign --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder}`);
-        if(extension === '2')
-            await exec(`masa-openmp --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder}`);
+            masa = 'cudalign';
+        else
+            masa = 'masa-openmp';
 
-        const alignment = await Alignment.create({ extension, s0type, s1type,                                       // Creates the alignment
-                                                   s0edge, s1edge, s0, s1 });
+        const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -1`);
+        child.on('exit', () => {
+            const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -2`);
+            child.on('exit', () => {
+                const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -3`);
+                child.on('exit', () => {
+                    const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -4`);
+                    child.on('exit', () => {
+                        exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -5`);
+                        // Update the model and send a msg through the Websocket!
+                    })
+                })
+            })
+        });
 
         return res.json(alignment);                                                                                 // Returns the new created alignment
     },
@@ -34,7 +51,7 @@ module.exports = {
         const { id } = req.params;                                                                                  // Gets the Alignment id from the request
 
         try{
-            const alignment = await Alignment.findById(id, '_id');                                                  // Finds the Alignment
+            const alignment = await Alignment.findById(id);                                                  // Finds the Alignment
             return res.json(alignment);                                                                             // Returns it as JSON
         } catch (err) {
             res.status(400).send(err);
