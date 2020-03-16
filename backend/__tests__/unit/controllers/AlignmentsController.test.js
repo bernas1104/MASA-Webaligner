@@ -7,7 +7,7 @@ const Alignment = require('../../../src/models/Alignment');
 const app = require('../../../src/controllers/ApplicationController');
 const textInputs = require('../../utils/textInputs');
 
-describe('Create new Alignment (Happy Path)', () => {
+describe('Performe a new Alignment (Happy Path)', () => {
     var response;
 
     afterAll(async () => {
@@ -87,7 +87,6 @@ describe('Create new Alignment (Happy Path)', () => {
         const s0exists = await fs.exists(s0file);
         
         expect(s0exists).toBe(true);
-        
     })
 
     it('should create the s1 sequence file on the server', async () => {
@@ -101,4 +100,60 @@ describe('Create new Alignment (Happy Path)', () => {
     })
 })
 
-// describe('S')
+describe('Perfome a new Alignment (Sad Paths)', () => {
+    it('should return a 400 status code if the NCBI API is selected, but no ID is passed', async () => {
+        const response = await request(app)
+            .post('/alignments')
+            .send({
+                extension: Math.floor(Math.random() * 3) + 1,
+                s0type: '1',
+                s1type: '1',
+                s0input: '',
+                s1input: '',
+                s0edge: '*',
+                s1edge: '*'
+            });
+        
+        const { s0, s1 } = response.body;
+
+        expect(response.status).toBe(400);
+        expect(s0.message).toBe('Path `s0` is required.');
+        expect(s1.message).toBe('Path `s1` is required.');
+    });
+
+    it('should return a 400 status code if the Upload File is selected, but no file is uploaded', async() => {
+        const response = await request(app)
+            .post('/alignments')
+            .send({
+                extension: Math.floor(Math.random() * 3) + 1,
+                s0type: '2',
+                s1type: '2',
+                s0edge: '*',
+                s1edge: '*'
+            });
+
+        const { s0, s1 } = response.body;
+
+        expect(response.status).toBe(400);
+        expect(s0.message).toBe('Path `s0` is required.');
+        expect(s1.message).toBe('Path `s1` is required.');
+    });
+
+    it('should return a 400 status code if the Text Input is selected, but no input is given', async () => {
+        const response = await request(app)
+            .post('/alignments')
+            .send({
+                extension: Math.floor(Math.random() * 3) + 1,
+                s0type: '3',
+                s0type: '3',
+                s0edge: '*',
+                s1edge: '*',
+            });
+
+        const { s0, s1 } = response.body;
+
+        expect(response.status).toBe(400);
+        expect(s0.message).toBe('Path `s0` is required.');
+        expect(s1.message).toBe('Path `s1` is required.');
+    });
+});
