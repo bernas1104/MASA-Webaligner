@@ -21,6 +21,8 @@ describe('Create new Alignment (Happy Path)', () => {
     })
 
     beforeAll(async () => {
+        await Alignment.deleteMany({});
+
         const files = path.resolve(__dirname, '..', '..', 'utils');
         const s0FilePath = `${files}/AF133821.1.fasta`;
         const s1FilePath = `${files}/AY352275.1.fasta`;

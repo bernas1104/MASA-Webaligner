@@ -11,31 +11,31 @@ const AlignmentSchema = new mongoose.Schema({
     s0type: {
         type: Number,
         default: null,
-        require: true,
+        required: true,
         min: [1, 'Must be a number between 1 and 3.'],
         max: [3, 'Must be a number between 1 and 3.']
     },
     s1type: {
         type: Number,
         default: null,
-        require: true,
+        required: true,
         min: [1, 'Must be a number between 1 and 3.'],
         max: [3, 'Must be a number between 1 and 3.']
     },
     s0: {
         type: String,
         default: null,
-        require: true
+        required: true
     },
     s1: {
         type: String,
         default: null,
-        require: true
+        required: true
     },
     s0edge: {
         type: String,
-        default: '*',
-        require: true,
+        default: null,
+        required: true,
         validate: {
             validator: (edge) => (
                 /(\+|\*|[1-3]{1})/.test(edge)
@@ -45,8 +45,8 @@ const AlignmentSchema = new mongoose.Schema({
     },
     s1edge: {
         type: String,
-        default: '*',
-        require: true,
+        default: null,
+        required: true,
         validate: {
             validator: (edge) => (
                 /(\+|\*|[1-3]{1})/.test(edge)
