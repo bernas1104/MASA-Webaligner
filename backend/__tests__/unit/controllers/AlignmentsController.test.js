@@ -15,8 +15,8 @@ describe('Create new Alignment (Happy Path)', () => {
 
         const uploads = path.resolve(__dirname, '..', '..', '..', 'uploads');
         const results = path.resolve(__dirname, '..', '..', '..', 'results');
-        await exec(`rm -rf ${uploads}/*`);
-        await exec(`rm -rf ${results}/*`);
+        /*await*/ exec(`rm -rf ${uploads}/*`);
+        /*await*/ exec(`rm -rf ${results}/*`);
         
     })
 

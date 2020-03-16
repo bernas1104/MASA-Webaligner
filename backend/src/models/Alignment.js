@@ -5,22 +5,22 @@ const AlignmentSchema = new mongoose.Schema({
         type: Number,
         default: null,
         required: true,
-        min: [1, 'Must be a number between 1 and 3'],
-        max: [3, 'Must be a number between 1 and 3']
+        min: [1, 'Must be a number between 1 and 3.'],
+        max: [3, 'Must be a number between 1 and 3.']
     },
     s0type: {
         type: Number,
         default: null,
         require: true,
-        min: [1, 'Must be a number between 1 and 3'],
-        max: [3, 'Must be a number between 1 and 3']
+        min: [1, 'Must be a number between 1 and 3.'],
+        max: [3, 'Must be a number between 1 and 3.']
     },
     s1type: {
         type: Number,
         default: null,
         require: true,
-        min: [1, 'Must be a number between 1 and 3'],
-        max: [3, 'Must be a number between 1 and 3']
+        min: [1, 'Must be a number between 1 and 3.'],
+        max: [3, 'Must be a number between 1 and 3.']
     },
     s0: {
         type: String,
@@ -40,7 +40,7 @@ const AlignmentSchema = new mongoose.Schema({
             validator: (edge) => (
                 /(\+|\*|[1-3]{1})/.test(edge)
             ),
-            message: () => 'Alignment edge must be one of: *, 1, 2, 3 or +'
+            message: () => 'Alignment edge must be one of: *, 1, 2, 3 or +.'
         }
     },
     s1edge: {
@@ -51,7 +51,7 @@ const AlignmentSchema = new mongoose.Schema({
             validator: (edge) => (
                 /(\+|\*|[1-3]{1})/.test(edge)
             ),
-            message: () => 'Alignment edge must be one of: *, 1, 2, 3 or +'
+            message: () => 'Alignment edge must be one of: *, 1, 2, 3 or +.'
         }
     },
     createdAt: {
