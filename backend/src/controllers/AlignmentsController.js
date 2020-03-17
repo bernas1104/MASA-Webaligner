@@ -153,5 +153,5 @@ function saveInputToFile(id, sText){
 }
 
 function checkFastaFormat(sequence){
-    return sequence.match(/^>[A-Z]{1,2}[0-9]{5,6}\.[0-9]+([\w\d\s,-]+)\n[AGCTN\n]+$/g);
+    return sequence.match(/^(>[A-Z]{1,2}_?[0-9]{5,6}\.[0-9]([\w\d\s,-]+))?\n[AGCTN\n]+$/g);
 }
