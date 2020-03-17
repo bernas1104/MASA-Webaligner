@@ -10,17 +10,34 @@ module.exports = {
         const { extension, s0type, s1type, s0edge, s1edge,
                 s0input, s1input } = req.body;
         
-        const s0 = await getFileName(0, s0type, s0input, req.files);                                                // Gets the s0 sequence name
-        const s1 = await getFileName(1, s1type, s1input, req.files);                                                // Gets the s1 sequence name
-        const s0folder = s0 !== '' ? s0.match(/.*[^\.fasta]/g)[0] : null;                                           // Gets the filename minus .fasta
-        const s1folder = s1 !== '' ? s1.match(/.*[^\.fasta]/g)[0] : null;                                           // Gets the filename minus .fasta
+        let s0, s1;
+        let s0folder, s1folder;
+        
+        try{
+            s0 = await getFileName(0, s0type, s0input, req.files);
+            s0folder = s0 !== undefined ? s0.match(/.*[^\.fasta]/g)[0] : null;
+        } catch (err) {
+            s0 = { error: err.message };
+        }
+        
+        try{
+            s1 = await getFileName(1, s1type, s1input, req.files);
+            s1folder = s1 !== undefined ? s1.match(/.*[^\.fasta]/g)[0] : null;
+        } catch (err) {
+            s1 = { error: err.message };
+        }
+
+        if(typeof(s0) === 'object' || typeof(s1) === 'object'){
+            return res.status(400).json({
+                s0: typeof(s0) === 'object' ? s0 : null,
+                s1: typeof(s1) === 'object' ? s1 : null
+            })
+        }
         
         try {
-            const alignment = await Alignment.create({ extension, s0type, s1type,                                   // Creates the alignment
+            const alignment = await Alignment.create({ extension, s0type, s1type,
                 s0edge, s1edge, s0, s1 });
 
-            // Executes the alignment tool
-            // extension === 1 => CUDAlign; extension === 2 => OpenMP
             const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
             const results = path.resolve(__dirname, '..', '..', 'results');
             
@@ -45,18 +62,18 @@ module.exports = {
                 })
             });
 
-            return res.json(alignment);    
+            return res.json(alignment);
         } catch (err) {
             return res.status(400).json(err.errors);
-        }                                                                             // Returns the new created alignment
+        }
     },
 
     async show(req, res) {
-        const { id } = req.params;                                                                                  // Gets the Alignment id from the request
+        const { id } = req.params;
 
         try{
-            const alignment = await Alignment.findById(id);                                                  // Finds the Alignment
-            return res.json(alignment);                                                                             // Returns it as JSON
+            const alignment = await Alignment.findById(id);
+            return res.json(alignment);
         } catch (err) {
             res.status(400).send(err);
         }
@@ -64,82 +81,77 @@ module.exports = {
 }
 
 // Private Functions
-
 async function getFileName(num, type, sInput = '', files = []){
     let fileName;
 
-    const rand = Math.floor(Math.random() * (999999 - 1 + 1)) + 1;                                                  // Random number to compose the filename
+    const rand = Math.floor(Math.random() * (999999 - 1 + 1)) + 1;
 
     switch(type){
-        case '1':                                                                                                   // NCBI API fetching
-            // console.log(`sInput: ${sInput}`);
-            if(sInput !== '' && sInput != undefined)
-                fileName = await downloadNCBIFile(rand, sInput);                                                        // Downloads the DNA sequence and return its file name
-            else
-                fileName = '';
-            // console.log(`fileName: ${fileName}`);
-            break;
-        case '2':                                                                                                   // Uploaded sequence
-            // Retrieves the filename of the s0upload file
-            if(num === 0){
-                const { s0input } = files;
-
-                if(s0input !== undefined)
-                    fileName = s0input[0].filename;
-                else
-                    fileName = '';
-            }
-
-            // Retrieves the filename of the s1upload file
-            if(num === 1){
-                const { s1input } = files;
-
-                if(s1input !== undefined)
-                    fileName = s1input[0].filename;
-                else
-                    fileName = '';
+        case '1':
+            if(sInput !== '' && sInput != undefined){
+                try{
+                    fileName = await downloadNCBIFile(rand, sInput);
+                } catch (err) {
+                    throw err;
+                }
             }
             break;
-        case '3':                                                                                                   // Manual sequence input
-            if(sInput !== '' && sInput !== null)
-                fileName = saveInputToFile(rand, sInput);                                                               // Retrieve the input sequence name
-            else
-                fileName = '';
+        case '2':
+            const file = files[`s${num}input`];
+            if(file !== undefined){
+                fileName = file[0].filename;
+                if(checkFastaFormat(fs.readFileSync(path.resolve(__dirname, '..', '..', 'uploads', fileName), 'utf-8')) === null)
+                    throw new Error('Sequence is not FASTA type.');
+            }
+            break;
+        case '3':
+            if(sInput !== '' && sInput !== null){
+                fileName = saveInputToFile(rand, sInput);
+                if(checkFastaFormat(fs.readFileSync(path.resolve(__dirname, '..', '..', 'uploads', fileName), 'utf-8')) === null)
+                    throw new Error('Sequence is not FASTA type.');
+            }
             break;
         default:
-            fileName = '';
+            throw new Error('Type must be a number between 1 and 3.');
     }
 
     return fileName;
 }
 
 async function downloadNCBIFile(id, sName){
-    const filePath = path.resolve(__dirname, '..', '..', `uploads/${id}-${Date.now()}.fasta`);                      // Resolves the folder and filename
-    const writer = fs.createWriteStream(filePath);                                                                  // Creates the write stream
-    
-    const response = await axios({                                                                                  // Fetches the sequence file from the NCBI API
-        url: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=${sName}&rettype=fasta`,
-        method: 'GET',
-        responseType: 'stream',
-    });
-
-    response.data.pipe(writer);                                                                                     // Writes the stream to the file
-
-    let name;
-    await new Promise((resolve, reject) => {                                                                        // Resolves or Rejects the stream
-        writer.on('finish', () => {
-            name = path.basename(filePath);                                                                             // On resolving, gets the filename
-            resolve();
+    const filePath = path.resolve(__dirname, '..', '..', `uploads/${id}-${Date.now()}.fasta`);
+    const writer = fs.createWriteStream(filePath);
+    try{
+        const response = await axios({
+            url: `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=${sName}&rettype=fasta`,
+            method: 'GET',
+            responseType: 'stream',
         });
-        writer.on('error', reject);
-    });
 
-    return name;                                                                                                    // Returns the filename
+        response.data.pipe(writer);
+
+        let name;
+        await new Promise((resolve, reject) => {
+            writer.on('finish', () => {
+                name = path.basename(filePath);
+                resolve();
+            });
+            writer.on('error', reject);
+        });
+
+        return name;
+    } catch (err) {
+        throw new Error('Invalid NCBI Sequence ID.');
+    }
 }
 
 function saveInputToFile(id, sText){
-    const filePath = path.resolve(__dirname, '..', '..', `uploads/${id}-${Date.now()}.fasta`);                      // Resolves the folder and filename
-    fs.writeFileSync(filePath, sText);                                                                              // Writes the data to the file
+    const filePath = path.resolve(__dirname, '..', '..', `uploads/${id}-${Date.now()}.fasta`);
+    fs.writeFileSync(filePath, sText);
 
-    return path.basename(filePath);                                                                                 // Returns the filename
+    return path.basename(filePath);
+}
+
+function checkFastaFormat(sequence){
+    return sequence.match(/^>[A-Z]{1,2}[0-9]{5,6}\.[0-9]+([\w\d\s,-]+)\n[AGCTN\n]+$/g);
 }
