@@ -54,9 +54,9 @@ module.exports = {
                     const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -3`);
                     child.on('exit', () => {
                         const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -4`);
-                        child.on('exit', () => {
+                        child.on('exit', async () => {
                             exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -5`);
-                            // Update the model and send a msg through the Websocket!
+                            await Alignment.updateOne({ _id: alignment._id }, { $set: { resultsAvailable: true } });
                         })
                     })
                 })
@@ -107,8 +107,10 @@ async function getFileName(num, type, sInput = '', files = []){
         case '3':
             if(sInput !== '' && sInput !== null){
                 fileName = saveInputToFile(rand, sInput);
-                if(checkFastaFormat(fs.readFileSync(path.resolve(__dirname, '..', '..', 'uploads', fileName), 'utf-8')) === null)
+                if(checkFastaFormat(fs.readFileSync(path.resolve(__dirname, '..', '..', 'uploads', fileName), 'utf-8')) === null){
+                    console.log('deu ruim :S');
                     throw new Error('Sequence is not FASTA type.');
+                }
             }
             break;
         default:
@@ -153,5 +155,6 @@ function saveInputToFile(id, sText){
 }
 
 function checkFastaFormat(sequence){
+    // Text Input fails. What's the problem?
     return sequence.match(/^(>[A-Z]{1,2}_?[0-9]{5,6}\.[0-9]([\w\d\s,-]+))?\n[AGCTN\n]+$/g);
 }

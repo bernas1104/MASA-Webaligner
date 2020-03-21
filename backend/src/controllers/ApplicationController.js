@@ -41,8 +41,6 @@ class ApplicationController {
                 console.log('Connection closed!');
             })
         });
-
-        // server.listen(8080);
     }
 }
 

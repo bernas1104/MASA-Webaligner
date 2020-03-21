@@ -12,27 +12,31 @@ export default class NewAlignment extends Component {
             extension: '',
             s0type: '',
             s1type: '',
-            s0name: '',
-            s1name: '',
-            s0upload: '',
-            s1upload: '',
-            s0text: '',
-            s1text: '',
+            s0input: '',
+            s1input: '',
             s0edge: '',
             s1edge: '',
         }
     }
 
-    handleChange = (event) => {
-        if(event.target.name !== 's0upload'
-            && event.target.name !== 's1upload'){
-                this.setState({ [event.target.name]: event.target.value });
-            }
-        else {
-            // Handles the file uploads
-            const file = event.target.files[0];
-            this.setState({ [event.target.name]: file });
+    handleChangeFields = (event) => {
+        const fields = ['s0name', 's1name', 's0text', 's1text'];
+
+        if(fields.indexOf(event.target.name) === -1)
+            this.setState({ [event.target.name]: event.target.value });
+        else{
+            if(event.target.name.includes('s0'))
+                this.setState({ s0input: event.target.value });
+            else
+                this.setState({ s1input: event.target.value });
         }
+    }
+
+    handleFileUpload = (event) => {
+        if(event.target.name.includes('s0'))
+            this.setState({ s0input: event.target.files[0] });
+        else
+            this.setState({ s1input: event.target.files[0] });
     }
 
     handleSubmit = async (event) => {
@@ -43,8 +47,8 @@ export default class NewAlignment extends Component {
         const form = new FormData();
 
         for(const key in this.state){
-            if(this.state[key] !== '')
-                form.append(key, this.state[key]);
+            console.log(this.state[key]);
+            form.append(key, this.state[key]);
         }
 
         const { data: { _id } } = await api.post(url, form);
@@ -54,8 +58,6 @@ export default class NewAlignment extends Component {
     render() {
         return (
             <div className="alignment-form">
-                {/* <iframe src="https://www.ncbi.nlm.nih.gov/nuccore" title="NCBI" className="ncbi-db"></iframe> */}
-
                 <div className="row">
                     <div className="form-header">
                         <h2>Awesome Title</h2>
@@ -74,13 +76,13 @@ export default class NewAlignment extends Component {
                         <label htmlFor="alignment" name="extension" className="col-2">Extension</label>
                         <div className="col-8 form-check">
                             <div>
-                                <input type="radio" name="extension" onChange={this.handleChange} value="1"/> MASA-CUDAlign
+                                <input type="radio" name="extension" onChange={this.handleChangeFields} value="1"/> MASA-CUDAlign
                             </div>
                             <div>
-                                <input type="radio" name="extension" onChange={this.handleChange} value="2" /> MASA-OpenMP
+                                <input type="radio" name="extension" onChange={this.handleChangeFields} value="2" /> MASA-OpenMP
                             </div>
                             <div>
-                                <input type="radio" name="extension" onChange={this.handleChange} value="3" /> Auto
+                                <input type="radio" name="extension" onChange={this.handleChangeFields} value="3" /> Auto
                             </div>
                         </div>
                         <div className="col-2"></div>
@@ -93,13 +95,13 @@ export default class NewAlignment extends Component {
                             <label htmlFor="alignment" name="s0type">s0 Input Type</label>
                             <div className="form-check">
                                 <div>
-                                    <input type="radio" name="s0type" onChange={this.handleChange} value="1" /> NCBI API
+                                    <input type="radio" name="s0type" onChange={this.handleChangeFields} value="1" /> NCBI API
                                 </div>
                                 <div>
-                                    <input type="radio" name="s0type" onChange={this.handleChange} value="2" /> File Upload
+                                    <input type="radio" name="s0type" onChange={this.handleChangeFields} value="2" /> File Upload
                                 </div>
                                 <div>
-                                    <input type="radio" name="s0type" onChange={this.handleChange} value="3" /> Text Input
+                                    <input type="radio" name="s0type" onChange={this.handleChangeFields} value="3" /> Text Input
                                 </div>
                             </div>
                         </div>
@@ -108,9 +110,9 @@ export default class NewAlignment extends Component {
                         <div className="col-6">
                             <label htmlFor="alignment" name="s1type">s1 Input Type</label>
                             <div>
-                                <input type="radio" name="s1type" onChange={this.handleChange} value="1"/> NCBI API
-                                <input type="radio" name="s1type" onChange={this.handleChange} value="2" /> File Upload
-                                <input type="radio" name="s1type" onChange={this.handleChange} value="3" /> Text Input
+                                <input type="radio" name="s1type" onChange={this.handleChangeFields} value="1"/> NCBI API
+                                <input type="radio" name="s1type" onChange={this.handleChangeFields} value="2" /> File Upload
+                                <input type="radio" name="s1type" onChange={this.handleChangeFields} value="3" /> Text Input
                             </div>
                         </div>
                     </div>
@@ -121,7 +123,7 @@ export default class NewAlignment extends Component {
                         <div className="col">
                             <label htmlFor="alignment" name="s0name">S0</label>
                             <div>
-                                <input type="text" name="s0name" value={this.state.s0name} onChange={this.handleChange} placeholder="AF133821.1" className="form-control"/>
+                                <input type="text" name="s0name" value={this.state.s0name} onChange={this.handleChangeFields} placeholder="AF133821.1" className="form-control"/>
                             </div>
                         </div>
 
@@ -129,7 +131,7 @@ export default class NewAlignment extends Component {
                         <div className="col">
                             <label htmlFor="alignment" name="s1name">S1</label>
                             <div>
-                                <input type="text" name="s1name" value={this.state.s1name} onChange={this.handleChange} placeholder="AY352275.1" className="form-control"/>
+                                <input type="text" name="s1name" value={this.state.s1name} onChange={this.handleChangeFields} placeholder="AY352275.1" className="form-control"/>
                             </div>
                         </div>
                     </div>
@@ -138,12 +140,12 @@ export default class NewAlignment extends Component {
                     <div className="row">
                         {/* S0 Sequence Upload */}
                         <div className="col">
-                            <input type="file" name="s0upload" onChange={this.handleChange} className="form-control"/>
+                            <input type="file" name="s0upload" onChange={this.handleFileUpload} className="form-control"/>
                         </div>
 
                         {/* S1 Sequence Upload */}
                         <div className="col">
-                            <input type="file" name="s1upload" onChange={this.handleChange} className="form-control"/>
+                            <input type="file" name="s1upload" onChange={this.handleFileUpload} className="form-control"/>
                         </div>
                     </div>
 
@@ -151,12 +153,12 @@ export default class NewAlignment extends Component {
                     <div className="row">
                         {/* S0 Sequence Input */}
                         <div className="col">
-                            <textarea name="s0text" value={this.state.s0text} onChange={this.handleChange} id="" cols="30" rows="10" className="form-control"></textarea>
+                            <textarea name="s0text" value={this.state.s0text} onChange={this.handleChangeFields} id="" cols="30" rows="10" className="form-control"></textarea>
                         </div>
 
                         {/* S1 Sequence Input */}
                         <div className="col">
-                            <textarea name="s1text" value={this.state.s1text} onChange={this.handleChange} id="" cols="30" rows="10" className="form-control"></textarea>
+                            <textarea name="s1text" value={this.state.s1text} onChange={this.handleChangeFields} id="" cols="30" rows="10" className="form-control"></textarea>
                         </div>
                     </div>
 
@@ -165,7 +167,7 @@ export default class NewAlignment extends Component {
                         {/* S0 Alignment Edge */}
                         <div className="col">
                             <label htmlFor="alignment" name="s0edge">Edge</label>
-                            <select name="s0edge" id="" value={this.state.s0edge} onChange={this.handleChange}>
+                            <select name="s0edge" id="" value={this.state.s0edge} onChange={this.handleChangeFields}>
                                 <option value="">select an edge</option>
                                 <option value="+">+</option>
                                 <option value="1">1</option>
@@ -178,7 +180,7 @@ export default class NewAlignment extends Component {
                         {/* S1 Alignment Edge */}
                         <div className="col">
                             <label htmlFor="alignment" name="s1edge">Edge</label>
-                            <select name="s1edge" id="" value={this.state.s1edge} onChange={this.handleChange} className="custom-select">
+                            <select name="s1edge" id="" value={this.state.s1edge} onChange={this.handleChangeFields} className="custom-select">
                                 <option value="">select an edge</option>
                                 <option value="+">+</option>
                                 <option value="1">1</option>
