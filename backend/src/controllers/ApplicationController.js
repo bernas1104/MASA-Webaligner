@@ -17,6 +17,7 @@ class ApplicationController {
 
         this.middlewares();
         this.routes();
+        this.websocket();
     }
 
     middlewares() {
@@ -28,6 +29,21 @@ class ApplicationController {
         this.express.use(require('../routes'));
         this.express.use('/results', express.static('results'));
     }
+
+    websocket() {
+        this.server = require('http').createServer(this.express);
+        const io = require('socket.io')(this.server, {origins: '*:*'});
+
+        io.on('connection', socket => {
+            console.log(socket.id)
+
+            socket.on('disconnect', () => {
+                console.log('Connection closed!');
+            })
+        });
+
+        // server.listen(8080);
+    }
 }
 
-module.exports = new ApplicationController().express;
+module.exports = new ApplicationController();
