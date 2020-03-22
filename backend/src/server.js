@@ -14,4 +14,3 @@ mongoose.connect(
 );
 
 app.express.listen(process.env.PORT || 3001);   // Utilizando a porta 3001
-app.server.listen(8080);                        // Utilizando a porta 8080

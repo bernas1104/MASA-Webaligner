@@ -47,20 +47,14 @@ module.exports = {
             else
                 masa = 'masa-openmp';
 
-            const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -1`);
-            child.on('exit', () => {
-                const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -2`);
-                child.on('exit', () => {
-                    const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -3`);
-                    child.on('exit', () => {
-                        const child = exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -4`);
-                        child.on('exit', async () => {
-                            exec(`${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -5`);
-                            await Alignment.updateOne({ _id: alignment._id }, { $set: { resultsAvailable: true } });
-                        })
-                    })
-                })
-            });
+            const child = exec(`
+                ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -1 &&
+                ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -2 &&
+                ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -3 &&
+                ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -4 &&
+                ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -5
+            `);
+            child.on('exit', async () => { await Alignment.updateOne({ _id: alignment._id }, { $set: { resultsAvailable: true } }) });
 
             return res.json(alignment);
         } catch (err) {

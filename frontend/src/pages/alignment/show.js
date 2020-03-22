@@ -7,6 +7,8 @@ import SequenceData from '../../services/masa-viewer/SequenceData';
 import TextChunk from '../../services/masa-viewer/TextChunk';
 import TextChunkSum from '../../services/masa-viewer/TextChunkSum';
 
+// import {buildResults, buildTextResults} from './functions/render';
+
 import './styles.scss';
 
 export default class ShowAlignment extends Component {
@@ -20,15 +22,48 @@ export default class ShowAlignment extends Component {
             textChunkSum: null,
             chunks: null,
             description: null,
-            render: true
+            alignmentInfo: null,
+            render: true,
+            fetchTimeout: null
         };
     }
 
     async componentDidMount() {
-        try {
-            const { data: { _id } } = await api.get(`/alignments/${this.props.match.params.id}`);
-            this.setState({ _id });
+        const { data } = await api.get(`/alignments/${this.props.match.params.id}`);
 
+        if(!data.resultsAvailable){
+            this.setState({
+                fetchTimeout: setTimeout(this.fetchTimeout(0), 5000)
+            });
+        } else {
+            this.setState({ 
+                _id: data._id,
+                alignmentInfo: data
+            });
+            
+            await this.fetchResults();
+        }
+    }
+
+    fetchTimeout = async (counter) => {
+        const { data } = await api.get(`/alignments/${this.props.match.params.id}`);
+
+        if(data.resultsAvailable) {
+            this.setState({ 
+                _id: data._id,
+                alignmentInfo: data
+            });
+            clearTimeout(this.state.fetchTimeout);
+            await this.fetchResults();
+        } else {
+            this.setState({
+                fetchTimeout: setTimeout(this.fetchTimeout(counter+5), (counter+5)*1000)
+            })
+        }
+    }
+
+    fetchResults = async () => {
+        try {
             await this.buildResults();
 
             const s0gapped = this.state.alignment.getAlignmentWithGaps(0).getSB();
@@ -194,7 +229,7 @@ export default class ShowAlignment extends Component {
             chunk.setChunks(chunk0, chunk1);
     
             let chunkScore = this.state.textChunkSum.sumChunk(chunk);
-            chunk.setSuffix(`[${chunkScore}]/${this.state.textChunkSum.getScore()}]`);
+            chunk.setSuffix(`[${chunkScore}]/[${this.state.textChunkSum.getScore()}]`);
         }
     
         return chunk;
