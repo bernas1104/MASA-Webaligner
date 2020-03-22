@@ -31,7 +31,7 @@ module.exports = {
             return res.status(400).json({
                 s0: typeof(s0) === 'object' ? s0 : null,
                 s1: typeof(s1) === 'object' ? s1 : null
-            })
+            });
         }
         
         try {
@@ -54,7 +54,9 @@ module.exports = {
                 ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -4 &&
                 ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -5
             `);
-            child.on('exit', async () => { await Alignment.updateOne({ _id: alignment._id }, { $set: { resultsAvailable: true } }) });
+            child.on('exit', async () => {
+                await Alignment.updateOne({ _id: alignment._id }, { $set: { resultsAvailable: true } });
+            });
 
             return res.json(alignment);
         } catch (err) {
@@ -101,10 +103,8 @@ async function getFileName(num, type, sInput = '', files = []){
         case '3':
             if(sInput !== '' && sInput !== null){
                 fileName = saveInputToFile(rand, sInput);
-                if(checkFastaFormat(fs.readFileSync(path.resolve(__dirname, '..', '..', 'uploads', fileName), 'utf-8')) === null){
-                    console.log('deu ruim :S');
+                if(checkFastaFormat(fs.readFileSync(path.resolve(__dirname, '..', '..', 'uploads', fileName), 'utf-8')) === null)
                     throw new Error('Sequence is not FASTA type.');
-                }
             }
             break;
         default:

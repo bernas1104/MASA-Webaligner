@@ -13,6 +13,7 @@ export default class ShowAlignment extends Component {
     static alignment  = 0x0001;
     static binFiles   = 0x0002;
     static fastaFiles = 0x0004;
+    timeOut = 0;
 
     constructor(props){
         super(props);
@@ -25,51 +26,34 @@ export default class ShowAlignment extends Component {
             chunks: null,
             description: null,
             alignmentInfo: null,
-            fetchTimeout: null,
             render: true,
-            errors: 0x0000
+            errors: 0x0000,
         };
     }
 
-    async componentDidMount() {
+    isAlignmentReady = async () => {
         try {
-            const { data } = await api.get(`/alignments/${this.props.match.params.id}`);
+            const { data } = await api.get(`/alignments/${ this.props.match.params.id }`);
+            this.setState({
+                _id: data._id,
+                alignmentInfo: data
+            })
 
-            if(!data.resultsAvailable){
-                this.setState({
-                    fetchTimeout: setTimeout(this.fetchTimeout(0), 5000)
-                });
-            } else {
-                this.setState({ 
-                    _id: data._id,
-                    alignmentInfo: data
-                });
-
+            if(data.resultsAvailable){
                 await this.fetchResults();
+            } else {
+                this.timeOut += 5000;
+                setTimeout(this.isAlignmentReady, this.state.timeOut);
             }
         } catch (err) {
             this.setState({
-                render: false,
                 errors: this.state.errors | ShowAlignment.alignment
-            });
+            })
         }
     }
 
-    fetchTimeout = async (counter) => {
-        const { data } = await api.get(`/alignments/${this.props.match.params.id}`);
-
-        if(data.resultsAvailable) {
-            this.setState({ 
-                _id: data._id,
-                alignmentInfo: data
-            });
-            clearTimeout(this.state.fetchTimeout);
-            await this.fetchResults();
-        } else {
-            this.setState({
-                fetchTimeout: setTimeout(this.fetchTimeout(counter+5), (counter+5)*1000)
-            });
-        }
+    async componentDidMount() {
+        setTimeout(this.isAlignmentReady, 1000);
     }
 
     fetchResults = async () => {
@@ -114,50 +98,49 @@ export default class ShowAlignment extends Component {
         const adjustText = document.querySelector('body');
         adjustText.onkeyup = (event) => {
             if(event.keyCode === 13){
-                let alignment = this.state.alignment;
-                console.log(alignment);
+                this.setState({ chunks: null });
 
-                let xRange = graph.xAxisRange();
-                let lowX = xRange[0] >= 0 ? Math.ceil(xRange[0]) : 0;
-                let highX = Math.floor(xRange[1]);
-                console.log(xRange, lowX, highX);
-            
-                let lowY = values[alignment.getSequenceOffset(0, lowX)];
-                let highY = values[alignment.getSequenceOffset(0, highX)];
-                console.log(lowY, highY);
+                setTimeout(() => {
+                    let alignment = this.state.alignment;
 
-                let offsetY0 = alignment.getSequenceOffset(1, lowY);
-                let offsetY1 = alignment.getSequenceOffset(1, highY);
-                let offsetX0 = alignment.getSequenceOffset(0, lowX);
-                let offsetX1 = alignment.getSequenceOffset(0, highX);
-                console.log(offsetY0, offsetY1, offsetX0, offsetX1);
-
-                let tmp;
-                if(offsetX0 > offsetX1){
-                    tmp = offsetX0;
-                    offsetX0 = offsetX1;
-                    offsetX1 = tmp;
-                }
-                if(offsetY0 > offsetY1){
-                    tmp = offsetY0;
-                    offsetY0 = offsetY1;
-                    offsetY1 = tmp;
-                }
+                    let xRange = graph.xAxisRange();
+                    let lowX = xRange[0] >= 0 ? Math.ceil(xRange[0]) : 0;
+                    let highX = Math.floor(xRange[1]);
                 
-                let offset0 = Math.max(offsetY0, offsetX0);
-                let offset1 = Math.max(offsetY1, offsetX1);
-                
-                if(offset0 < 0)
-                    offset0 = 0;
-                if(offset1 < 0)
-                    offset1 = 0;
+                    let lowY = values[alignment.getSequenceOffset(0, lowX)];
+                    let highY = values[alignment.getSequenceOffset(0, highX)] + 1;
 
-                if(offset0 > offset1)
-                    return;
+                    let offsetY0 = alignment.getSequenceOffset(1, lowY);
+                    let offsetY1 = alignment.getSequenceOffset(1, highY) + 1;
+                    let offsetX0 = alignment.getSequenceOffset(0, lowX);
+                    let offsetX1 = alignment.getSequenceOffset(0, highX);
 
-                this.setState({ alignment: alignment.truncate(offset0, offset1) });
-                this.buildTextResults();
-                console.log(this.state.alignment);
+                    let tmp;
+                    if(offsetX0 > offsetX1){
+                        tmp = offsetX0;
+                        offsetX0 = offsetX1;
+                        offsetX1 = tmp;
+                    }
+                    if(offsetY0 > offsetY1){
+                        tmp = offsetY0;
+                        offsetY0 = offsetY1;
+                        offsetY1 = tmp;
+                    }
+                    
+                    let offset0 = Math.max(offsetY0, offsetX0);
+                    let offset1 = Math.max(offsetY1, offsetX1);
+                    
+                    if(offset0 < 0)
+                        offset0 = 0;
+                    if(offset1 < 0)
+                        offset1 = 0;
+
+                    if(offset0 > offset1)
+                        return;
+
+                    this.setState({ alignment: alignment.truncate(offset0, offset1) });
+                    this.buildTextResults();
+                }, 500);    
             }
         }
     }
@@ -169,7 +152,6 @@ export default class ShowAlignment extends Component {
 
             this.setState({ alignment: AlignmentBinaryFile.read(buff) });
             this.setState({ sequences: this.state.alignment.getAlignmentParams().getSequences() });
-            console.log(this.state.alignment);
 
             const description = [];
             description.push(this.state.alignment.getAlignmentParams().getSequence(0).getInfo().getDescription());
@@ -189,6 +171,7 @@ export default class ShowAlignment extends Component {
                 });
             }
         } catch (err) {
+            console.log(err);
             this.setState({
                 render: false,
                 errors: this.state.errors | ShowAlignment.binFiles

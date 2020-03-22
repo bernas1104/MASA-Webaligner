@@ -49,8 +49,13 @@ export default class NewAlignment extends Component {
         for(const key in this.state)
             form.append(key, this.state[key]);
 
-        const { data: { _id } } = await api.post(url, form);
-        this.props.history.push(`/alignments/${_id}`);
+        try {
+            const { data } = await api.post(url, form)
+            this.props.history.push(`/alignments/${data._id}`);
+            alert('Starting alignment process');
+        } catch (err) {
+            alert(err);
+        }
     }
 
     render() {
