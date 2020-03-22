@@ -54,7 +54,8 @@ textarea {
 
 #alignmentPlot {
     flex: 3;
-    width: 100%;
+    max-width: 100%;
+    display: inline-block;
     margin: 50px 20px;
 
     .dygraph-legend {

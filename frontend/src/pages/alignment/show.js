@@ -80,7 +80,9 @@ export default class ShowAlignment extends Component {
         
         let data = '';
         const values = []
-        for(var i = 0, j = 1, l = 1; i < s0gapped.length; i++){
+        for(var i = 0, 
+                j = this.state.alignment.getSequenceStartPosition(0),
+                l = this.state.alignment.getSequenceStartPosition(1); i < s0gapped.length; i++){
             if(s0gapped[i] === s1gapped[i]){
                 data += `${j++},${l++}\n`;
                 values.push(l-1);
@@ -113,18 +115,22 @@ export default class ShowAlignment extends Component {
         adjustText.onkeyup = (event) => {
             if(event.keyCode === 13){
                 let alignment = this.state.alignment;
+                console.log(alignment);
 
                 let xRange = graph.xAxisRange();
                 let lowX = xRange[0] >= 0 ? Math.ceil(xRange[0]) : 0;
                 let highX = Math.floor(xRange[1]);
+                console.log(xRange, lowX, highX);
             
                 let lowY = values[alignment.getSequenceOffset(0, lowX)];
-                let highY = values[alignment.getSequenceOffset(0, highX)] + 1;
+                let highY = values[alignment.getSequenceOffset(0, highX)];
+                console.log(lowY, highY);
 
                 let offsetY0 = alignment.getSequenceOffset(1, lowY);
                 let offsetY1 = alignment.getSequenceOffset(1, highY);
                 let offsetX0 = alignment.getSequenceOffset(0, lowX);
                 let offsetX1 = alignment.getSequenceOffset(0, highX);
+                console.log(offsetY0, offsetY1, offsetX0, offsetX1);
 
                 let tmp;
                 if(offsetX0 > offsetX1){
@@ -151,6 +157,7 @@ export default class ShowAlignment extends Component {
 
                 this.setState({ alignment: alignment.truncate(offset0, offset1) });
                 this.buildTextResults();
+                console.log(this.state.alignment);
             }
         }
     }
@@ -162,6 +169,7 @@ export default class ShowAlignment extends Component {
 
             this.setState({ alignment: AlignmentBinaryFile.read(buff) });
             this.setState({ sequences: this.state.alignment.getAlignmentParams().getSequences() });
+            console.log(this.state.alignment);
 
             const description = [];
             description.push(this.state.alignment.getAlignmentParams().getSequence(0).getInfo().getDescription());
