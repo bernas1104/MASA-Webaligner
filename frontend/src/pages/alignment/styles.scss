@@ -66,12 +66,14 @@ textarea {
 .alignmentText {
     flex: 2;
     width: 100%;
+    display: inline-block;
     overflow-y: auto;
     margin: 50px 20px;
     border: 1px solid #d5d5d5;
 
     div{
-        width: 80%;
+        display: inline-block;
         margin: 0 auto;
+        // margin-left: 20%;
     }
 }
