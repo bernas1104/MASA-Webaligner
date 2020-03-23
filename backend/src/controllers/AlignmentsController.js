@@ -1,4 +1,5 @@
 const Alignment = require('../models/Alignment');
+const { checkFastaFormat, deleteUploadedFile } = require('./../helpers/checkFastaFormat');
 
 const path = require('path');
 const fs = require('fs');
@@ -28,6 +29,12 @@ module.exports = {
         }
 
         if(typeof(s0) === 'object' || typeof(s1) === 'object'){
+            if(typeof(s0) === 'string')
+                deleteUploadedFile(s0);
+
+            if(typeof(s1) === 'string')
+                deleteUploadedFile(s1);
+
             return res.status(400).json({
                 s0: typeof(s0) === 'object' ? s0 : null,
                 s1: typeof(s1) === 'object' ? s1 : null
@@ -60,6 +67,9 @@ module.exports = {
 
             return res.json(alignment);
         } catch (err) {
+            deleteUploadedFile(s0);
+            deleteUploadedFile(s1);
+
             return res.status(400).json(err.errors);
         }
     },
@@ -84,28 +94,32 @@ async function getFileName(num, type, sInput = '', files = []){
 
     switch(type){
         case '1':
-            if(sInput !== '' && sInput != undefined){
-                try{
-                    fileName = await downloadNCBIFile(rand, sInput);
-                } catch (err) {
-                    throw err;
-                }
+            if(sInput === '' || sINput === undefined)
+                throw Error('Invalid NCBI Sequence ID.');
+
+            try {
+                fileName = await downloadNCBIFile(rand, sInput);
+            } catch (err) {
+                throw err;
             }
+
             break;
         case '2':
             const file = files[`s${num}input`];
-            if(file !== undefined){
-                fileName = file[0].filename;
-                if(checkFastaFormat(fs.readFileSync(path.resolve(__dirname, '..', '..', 'uploads', fileName), 'utf-8')) === null)
-                    throw new Error('Sequence is not FASTA type.');
-            }
+            fileName = file[0].filename;
+
+            const filePath = path.resolve(__dirname, '..', '..', 'uploads', fileName);
+            const fileData = fs.readFileSync(filePath, 'utf-8');
+            
+            if(checkFastaFormat(fileData) === null)
+                throw new Error('Sequence is not FASTA type.');
+
             break;
         case '3':
-            if(sInput !== '' && sInput !== null){
-                fileName = saveInputToFile(rand, sInput);
-                if(checkFastaFormat(fs.readFileSync(path.resolve(__dirname, '..', '..', 'uploads', fileName), 'utf-8')) === null)
-                    throw new Error('Sequence is not FASTA type.');
-            }
+            if(checkFastaFormat(sInput) === null)
+                throw new Error('Sequence is not FASTA type.');
+            fileName = saveInputToFile(rand, sInput);
+            
             break;
         default:
             throw new Error('Type must be a number between 1 and 3.');
@@ -146,9 +160,4 @@ function saveInputToFile(id, sText){
     fs.writeFileSync(filePath, sText);
 
     return path.basename(filePath);
-}
-
-function checkFastaFormat(sequence){
-    // Text Input fails. What's the problem?
-    return sequence.match(/^(>[A-Z]{1,2}_?[0-9]{5,6}\.[0-9]([\w\d\s,-]+))?\n[AGCTN\n]+$/g);
 }

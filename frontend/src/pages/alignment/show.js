@@ -53,7 +53,7 @@ export default class ShowAlignment extends Component {
     }
 
     async componentDidMount() {
-        setTimeout(this.isAlignmentReady, 1000);
+        setTimeout(this.isAlignmentReady, 5000);
     }
 
     fetchResults = async () => {

@@ -1,6 +1,8 @@
 const multer = require('multer');
 const path = require('path');
 
+const { checkFastaFormat } = require('./../helpers/checkFastaFormat');
+
 module.exports = {
     storage: multer.diskStorage({
         destination: path.resolve(__dirname, '..', '..', 'uploads'),
