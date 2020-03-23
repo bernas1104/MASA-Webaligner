@@ -34,16 +34,17 @@ export default class ShowAlignment extends Component {
     isAlignmentReady = async () => {
         try {
             const { data } = await api.get(`/alignments/${ this.props.match.params.id }`);
+
             this.setState({
                 _id: data._id,
                 alignmentInfo: data
             })
 
             if(data.resultsAvailable){
-                await this.fetchResults();
+                await this.renderResults();
             } else {
                 this.timeOut += 5000;
-                setTimeout(this.isAlignmentReady, this.state.timeOut);
+                setTimeout(this.isAlignmentReady, this.timeOut);
             }
         } catch (err) {
             this.setState({
@@ -53,11 +54,12 @@ export default class ShowAlignment extends Component {
     }
 
     async componentDidMount() {
-        setTimeout(this.isAlignmentReady, 5000);
+        await this.isAlignmentReady();
     }
 
-    fetchResults = async () => {
+    renderResults = async () => {
         await this.buildResults();
+        await this.buildTextResults();
 
         const s0gapped = this.state.alignment.getAlignmentWithGaps(0).getSB();
         const s1gapped = this.state.alignment.getAlignmentWithGaps(1).getSB();
@@ -157,19 +159,6 @@ export default class ShowAlignment extends Component {
             description.push(this.state.alignment.getAlignmentParams().getSequence(0).getInfo().getDescription());
             description.push(this.state.alignment.getAlignmentParams().getSequence(1).getInfo().getDescription());
             this.setState({ description });
-        
-            try {
-                const { data: { s0file, s1file }} = await api.get(`/fasta/${this.state._id}`);
-                this.state.sequences[0].setData(new SequenceData({ file: s0file, modifiers: this.state.sequences[0].getModifiers() }));
-                this.state.sequences[1].setData(new SequenceData({ file: s1file, modifiers: this.state.sequences[1].getModifiers() }));
-
-                this.buildTextResults();
-            } catch (err) {
-                this.setState({
-                    render: false,
-                    errors: this.state.errors + ShowAlignment.fastaFiles
-                });
-            }
         } catch (err) {
             console.log(err);
             this.setState({
@@ -179,30 +168,41 @@ export default class ShowAlignment extends Component {
         }
     }
 
-    buildTextResults = () => {
-        if(this.state.alignment !== undefined && this.state.alignment.getAlignmentParams().getSequence(0).getData() !== undefined &&
-            this.state.alignment.getAlignmentParams().getSequence(1).getData() !== undefined){
-                
-            this.state.alignment.getAlignmentWithGaps(0).reset(this.state.alignment.getSequenceStartOffset(0), this.state.alignment.getSequenceEndOffset(0));
-            this.state.alignment.getAlignmentWithGaps(1).reset(this.state.alignment.getSequenceStartOffset(1), this.state.alignment.getSequenceEndOffset(1));
-            this.setState({ textChunkSum: new TextChunkSum(
-                this.state.alignment.getAlignmentParams().getMatch(),
-                this.state.alignment.getAlignmentParams().getMismatch(),
-                this.state.alignment.getAlignmentParams().getGapOpen(),
-                this.state.alignment.getAlignmentParams().getGapExtension()
-            )});
+    buildTextResults = async () => {
+        try {
+            const { data: { s0file, s1file }} = await api.get(`/fasta/${this.state._id}`);
+            this.state.sequences[0].setData(new SequenceData({ file: s0file, modifiers: this.state.sequences[0].getModifiers() }));
+            this.state.sequences[1].setData(new SequenceData({ file: s1file, modifiers: this.state.sequences[1].getModifiers() }));
+
+            if(this.state.alignment !== undefined && this.state.alignment.getAlignmentParams().getSequence(0).getData() !== undefined &&
+                this.state.alignment.getAlignmentParams().getSequence(1).getData() !== undefined){
+                    
+                this.state.alignment.getAlignmentWithGaps(0).reset(this.state.alignment.getSequenceStartOffset(0), this.state.alignment.getSequenceEndOffset(0));
+                this.state.alignment.getAlignmentWithGaps(1).reset(this.state.alignment.getSequenceStartOffset(1), this.state.alignment.getSequenceEndOffset(1));
+                this.setState({ textChunkSum: new TextChunkSum(
+                    this.state.alignment.getAlignmentParams().getMatch(),
+                    this.state.alignment.getAlignmentParams().getMismatch(),
+                    this.state.alignment.getAlignmentParams().getGapOpen(),
+                    this.state.alignment.getAlignmentParams().getGapExtension()
+                )});
 
 
-            var chunks = [];
-            while(this.hasMoreChunks()) {
-                let chunk = this.getNextChunk(60);
-                chunks.push(chunk.getHTMLString());
+                var chunks = [];
+                while(this.hasMoreChunks()) {
+                    let chunk = this.getNextChunk(60);
+                    chunks.push(chunk.getHTMLString());
+                }
+
+                chunks.push(this.state.textChunkSum.getHTMLString());
             }
 
-            chunks.push(this.state.textChunkSum.getHTMLString());
+            this.setState({ chunks });
+        } catch (err) {
+            this.setState({
+                render: false,
+                errors: this.state.errors + ShowAlignment.fastaFiles
+            });
         }
-
-        this.setState({ chunks });
     }
 
     getSeq0WithGaps = () => {
