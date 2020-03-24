@@ -32,6 +32,18 @@ export default class ShowAlignment extends Component {
     }
 
     isAlignmentReady = async () => {
+        const { s0, s1 } = this.state.alignmentInfo;
+        const { data: { isReady } } = await api.get(`/isAlignmentReady?s0=${ s0 }&s1=${ s1 }`);
+
+        if(isReady === true){
+            await this.renderResults();
+        } else {
+            this.timeOut += 5000;
+            setTimeout(this.isAlignmentReady, this.timeOut);
+        }
+    }
+
+    async componentDidMount() {
         try {
             const { data } = await api.get(`/alignments/${ this.props.match.params.id }`);
 
@@ -40,21 +52,13 @@ export default class ShowAlignment extends Component {
                 alignmentInfo: data
             })
 
-            if(data.resultsAvailable){
-                await this.renderResults();
-            } else {
-                this.timeOut += 5000;
-                setTimeout(this.isAlignmentReady, this.timeOut);
-            }
+            await this.isAlignmentReady();
         } catch (err) {
             this.setState({
+                render: false,
                 errors: this.state.errors | ShowAlignment.alignment
             })
         }
-    }
-
-    async componentDidMount() {
-        await this.isAlignmentReady();
     }
 
     renderResults = async () => {

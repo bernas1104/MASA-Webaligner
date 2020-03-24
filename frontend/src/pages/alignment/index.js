@@ -73,7 +73,9 @@ export default class NewAlignment extends Component {
                     </div>
                 </div>
 
-                <form onSubmit={ this.handleSubmit }>
+                <br />
+
+                <form onSubmit={ this.handleSubmit } style={{ position: "relative" }}>
                     {/* MASA Alignment Tool */}
                     <div className="row">
                         <label htmlFor="alignment" name="extension" className="col-2">Extension</label>
@@ -90,6 +92,10 @@ export default class NewAlignment extends Component {
                         </div>
                         <div className="col-2"></div>
                     </div>
+
+                    <br />
+                    <hr />
+                    <br />
 
                     {/* Sequences Input Types */}
                     <div className="row">
@@ -112,10 +118,16 @@ export default class NewAlignment extends Component {
                         {/* S1 Input Type */}
                         <div className="col-6">
                             <label htmlFor="alignment" name="s1type">s1 Input Type</label>
-                            <div>
-                                <input type="radio" name="s1type" onChange={this.handleChangeFields} value="1"/> NCBI API
-                                <input type="radio" name="s1type" onChange={this.handleChangeFields} value="2" /> File Upload
-                                <input type="radio" name="s1type" onChange={this.handleChangeFields} value="3" /> Text Input
+                            <div className="form-check">
+                                <>
+                                    <input type="radio" name="s1type" onChange={this.handleChangeFields} value="1"/> NCBI API
+                                </>
+                                <>
+                                    <input type="radio" name="s1type" onChange={this.handleChangeFields} value="2" /> File Upload
+                                </>
+                                <>
+                                    <input type="radio" name="s1type" onChange={this.handleChangeFields} value="3" /> Text Input
+                                </>
                             </div>
                         </div>
                     </div>
@@ -170,7 +182,7 @@ export default class NewAlignment extends Component {
                         {/* S0 Alignment Edge */}
                         <div className="col">
                             <label htmlFor="alignment" name="s0edge">Edge</label>
-                            <select name="s0edge" id="" value={this.state.s0edge} onChange={this.handleChangeFields}>
+                            <select name="s0edge" id="" value={this.state.s0edge} onChange={this.handleChangeFields} style={{ marginLeft: "20px"}}>
                                 <option value="">select an edge</option>
                                 <option value="+">+</option>
                                 <option value="1">1</option>
@@ -183,7 +195,7 @@ export default class NewAlignment extends Component {
                         {/* S1 Alignment Edge */}
                         <div className="col">
                             <label htmlFor="alignment" name="s1edge">Edge</label>
-                            <select name="s1edge" id="" value={this.state.s1edge} onChange={this.handleChangeFields} className="custom-select">
+                            <select name="s1edge" id="" value={this.state.s1edge} onChange={this.handleChangeFields} className="custom-select" style={{ marginLeft: "20px"}}>
                                 <option value="">select an edge</option>
                                 <option value="+">+</option>
                                 <option value="1">1</option>
@@ -194,7 +206,9 @@ export default class NewAlignment extends Component {
                         </div>
                     </div>
 
-                    <input type="submit" value="Align"/>
+                    <br />
+
+                    <input type="submit" value="Align" style={{ right: "0", marginRight: "40px", position: "absolute" }}/>
                 </form>
             </div>
         );

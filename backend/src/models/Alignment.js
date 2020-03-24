@@ -54,10 +54,6 @@ const AlignmentSchema = new mongoose.Schema({
             message: () => 'Alignment edge must be one of: *, 1, 2, 3 or +.'
         }
     },
-    resultsAvailable: {
-        type: Boolean,
-        default: false
-    },
     createdAt: {
         type: Date,
         default: Date.now(),

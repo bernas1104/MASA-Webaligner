@@ -12,4 +12,13 @@ module.exports = {
             cb(null, `${rand}-${Date.now()}${ext}`);
         },
     }),
+    fileFilter: (req, file, cb) => {
+        if(file.fieldname.includes('s0') && req.body.s0type !== '2'){
+            cb(null, false);
+        } else if(file.fieldname.includes('s1') && req.body.s1type !== '2'){
+            cb(null, false);
+        } else{
+            cb(null, true);
+        }
+    }
 };

@@ -2,8 +2,18 @@ const Alignment = require('../models/Alignment');
 
 const path = require('path');
 const fs = require('fs');
+const mz = require('mz/fs');
 
 module.exports = {
+    async isAlignmentReady(req, res){
+        const { s0, s1 } = req.query;
+        const filePath = path.resolve(__dirname, '..', '..', 'results', path.parse(s0).name + '-' + path.parse(s1).name, 'alignment.00.bin');
+
+        let isReady = await mz.exists(filePath);
+
+        res.json({isReady});
+    },
+
     async fetchBinary(req, res){
         const { id } = req.params;
 
