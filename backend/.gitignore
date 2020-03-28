@@ -14,3 +14,5 @@ results/*
 
 .env
 .env.test
+yarn-*.*
+yarn.lock

@@ -23,7 +23,7 @@ describe('Delete Uploaded File', () => {
 
 describe('Saves an user sequence input to file on the \'uploads\' folder', () => {
     it('should save the user input to a .fasta file', async () => {
-        const id = Math.random();
+        const id = Math.floor(Math.random()) + 1;
         const sText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
 
         const response = saveInputToFile(id, sText);
@@ -31,5 +31,7 @@ describe('Saves an user sequence input to file on the \'uploads\' folder', () =>
 
         expect(await fsmz.exists(filePath)).toBe(true);
         expect(path.extname(filePath)).toBe('.fasta');
+
+        deleteUploadedFile(filePath);
     });
 });
