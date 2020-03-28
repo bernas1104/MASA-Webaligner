@@ -2,26 +2,16 @@ const request = require('supertest');
 const fsmz = require('mz/fs');
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
+const exec = require('child_process').execSync;
 
 const Alignment = require('../../../src/models/Alignment');
-const app = require('../../../src/controllers/ApplicationController');
-const textInputs = require('../../utils/textInputs');
+const app = require('../../../src/controllers/ApplicationController').express;
+// const textInputs = require('../../utils/textInputs');
 
 describe('Performe a new Alignment (Happy Path)', () => {
     var response;
 
-    afterAll(async () => {
-        await Alignment.deleteMany({});
-
-        const uploads = path.resolve(__dirname, '..', '..', '..', 'uploads');
-        const results = path.resolve(__dirname, '..', '..', '..', 'results');
-        /*await*/ exec(`rm -rf ${uploads}/*`);
-        /*await*/ exec(`rm -rf ${results}/*`);
-        
-    })
-
-    beforeAll(async () => {
+    beforeEach(async () => {
         await Alignment.deleteMany({});
 
         const files = path.resolve(__dirname, '..', '..', 'utils');
@@ -39,8 +29,8 @@ describe('Performe a new Alignment (Happy Path)', () => {
                 .field('extension', extension)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
-                .field('s0input', s0type === 1 ? 'AF133821.1' : fs.readFileSync(s0FilePath, 'utf-8'))
-                .field('s1input', s1type === 1 ? 'AY352275.1' : fs.readFileSync(s1FilePath, 'utf-8'))
+                .field('s0input', s0type === 1 ? 'AF133821.1' : /*textInputs.s0input)*/fs.readFileSync(s0FilePath, 'utf-8'))
+                .field('s1input', s1type === 1 ? 'AY352275.1' : /*textInputs.s1input)*/fs.readFileSync(s1FilePath, 'utf-8'))
                 .field('s0edge', '*')
                 .field('s1edge', '*')
         } else if(s0type === 2 && s1type !== 2) {
@@ -49,7 +39,7 @@ describe('Performe a new Alignment (Happy Path)', () => {
                 .field('extension', extension)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
-                .field('s1input', s1type === 1 ? 'AY352275.1' : fs.readFileSync(s1FilePath, 'utf-8'))
+                .field('s1input', s1type === 1 ? 'AY352275.1' : /*textInputs.s1input)*/fs.readFileSync(s1FilePath, 'utf-8'))
                 .field('s0edge', '*')
                 .field('s1edge', '*')
                 .attach('s0input', s0FilePath)
@@ -59,7 +49,7 @@ describe('Performe a new Alignment (Happy Path)', () => {
                 .field('extension', extension)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
-                .field('s0input', s0type === 1 ? 'AF133821.1' : fs.readFileSync(s0FilePath, 'utf-8'))
+                .field('s0input', s0type === 1 ? 'AF133821.1' : /*textInputs.s0input)*/fs.readFileSync(s0FilePath, 'utf-8'))
                 .field('s0edge', '*')
                 .field('s1edge', '*')
                 .attach('s1input', s1FilePath)
@@ -115,11 +105,11 @@ describe('Perfome a new Alignment (Sad Paths)', () => {
                 s1edge: '*'
             });
         
-        const { s0, s1 } = response.body;
+        const { s0, s1 } = response.body.message;
 
         expect(response.status).toBe(400);
-        expect(s0.message).toBe('Path `s0` is required.');
-        expect(s1.message).toBe('Path `s1` is required.');
+        expect(s0.error).toBe('Invalid NCBI Sequence ID.');
+        expect(s1.error).toBe('Invalid NCBI Sequence ID.');
     });
 
     it('should return a 400 status code if the NCBI API is select, but an invalid s0 ID is passed', async () => {
@@ -135,7 +125,7 @@ describe('Perfome a new Alignment (Sad Paths)', () => {
                 s1edge: '*'
             });
 
-        const { s0, s1 } = response.body;
+        const { s0, s1 } = response.body.message;
 
         expect(response.status).toBe(400);
         expect(s0.error).toBe('Invalid NCBI Sequence ID.');
@@ -153,11 +143,11 @@ describe('Perfome a new Alignment (Sad Paths)', () => {
                 s1edge: '*'
             });
 
-        const { s0, s1 } = response.body;
+        const { s0, s1 } = response.body.message;
 
         expect(response.status).toBe(400);
-        expect(s0.message).toBe('Path `s0` is required.');
-        expect(s1.message).toBe('Path `s1` is required.');
+        expect(s0.error).toBe('FASTA file was not uploaded.');
+        expect(s1.error).toBe('FASTA file was not uploaded.');
     });
 
     it('should return a 400 status code if the Upload File is select, but a non-fasta file is uploaded', async () => {
@@ -175,7 +165,7 @@ describe('Perfome a new Alignment (Sad Paths)', () => {
             .attach('s0input', s0FilePath)
             .attach('s1input', s1FilePath);
 
-        const { s0, s1 } = response.body;
+        const { s0, s1 } = response.body.message;
 
         expect(response.status).toBe(400);
         expect(s0.error).toBe('Sequence is not FASTA type.');
@@ -193,11 +183,11 @@ describe('Perfome a new Alignment (Sad Paths)', () => {
                 s1edge: '*',
             });
 
-        const { s0, s1 } = response.body;
+        const { s0, s1 } = response.body.message;
 
         expect(response.status).toBe(400);
-        expect(s0.message).toBe('Path `s0` is required.');
-        expect(s1.message).toBe('Path `s1` is required.');
+        expect(s0.error).toBe('Sequence is not FASTA type.');
+        expect(s1.error).toBe('Sequence is not FASTA type.');
     });
 
     it('should return a 400 status code if the Text Input is selected, but a non-fasta input is given', async () => {
@@ -213,10 +203,22 @@ describe('Perfome a new Alignment (Sad Paths)', () => {
                 s1edge: '*',
             });
 
-        const { s0, s1 } = response.body;
+        const { s0, s1 } = response.body.message;
 
         expect(response.status).toBe(400);
         expect(s0.error).toBe('Sequence is not FASTA type.');
         expect(s1.error).toBe('Sequence is not FASTA type.');
     });
+
+    afterAll(async () => {
+        await Alignment.deleteMany({});
+
+        const uploads = path.resolve(__dirname, '..', '..', '..', 'uploads');
+        const results = path.resolve(__dirname, '..', '..', '..', 'results');
+
+        await exec(`rm -rf ${uploads}/*`);
+        await exec(`rm -rf ${results}/*`);
+        
+        await app.mongoose.connection.close();
+    })
 });

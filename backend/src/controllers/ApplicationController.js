@@ -5,6 +5,7 @@ require('dotenv').config({
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const { errors } = require('celebrate');
 
 class ApplicationController {
     constructor() {
@@ -27,6 +28,7 @@ class ApplicationController {
     routes() {
         this.express.use(require('../routes'));
         this.express.use('/results', express.static('results'));
+        this.express.use(errors());
     }
 }
 

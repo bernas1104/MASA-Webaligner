@@ -1,8 +1,8 @@
-const Alignment = require('../models/Alignment');
-
 const path = require('path');
 const fs = require('fs');
 const mz = require('mz/fs');
+
+const Alignment = require('../models/Alignment');
 
 module.exports = {
     async isAlignmentReady(req, res){
