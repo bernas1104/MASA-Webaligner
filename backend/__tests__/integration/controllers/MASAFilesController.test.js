@@ -1,18 +1,92 @@
-const supertest = require('supertest');
+const request = require('supertest');
+const path = require('path');
+const exec = require('child_process').execSync;
 
-const app = require('./../../../src/controllers/ApplicationController');
+const app = require('./../../../src/controllers/ApplicationController').express;
+require('./../../../src/queue');
 const Alignment = require('./../../../src/models/Alignment');
 
-describe('Is Alignment Ready?', () => {
-    beforeAll(() => {
-        //
+describe('MASA Files Controller', () => {
+    const uploads = path.resolve(__dirname, '..', '..', '..', 'uploads');
+    const results = path.resolve(__dirname, '..', '..', '..', 'results');
+
+    describe('Is Alignment Ready?', () => {
+        var alignment;
+
+        beforeAll(async () => {
+            alignment = await request(app)
+                .post('/alignments')
+                .field('extension', 1)
+                .field('s0type', 1)
+                .field('s1type', 1)
+                .field('s0input', 'AF133821.1')
+                .field('s1input', 'AY352275.1')
+                .field('s0edge', '*')
+                .field('s1edge', '*')
+        });
+    
+        it('should return \'true\' if the alignment results are ready', async () => {
+            const { body: { isReady }} = await request(app)
+                .get(`/isAlignmentReady?s0=${alignment.body.s0}&s1=${alignment.body.s1}`);
+    
+            expect(isReady).toBe(true);
+        });
+    
+        it('should return \'false\' if the alignments results are not ready', async () => {
+            const { s0, s1 } = alignment.body;
+    
+            await exec(`rm ${results}/${path.parse(s0).name}-${path.parse(s1).name}/alignment.00.bin`);
+    
+            const { body: { isReady }} = await request(app)
+                .get(`/isAlignmentReady?s0=${alignment.body.s0}&s1=${alignment.body.s1}`);
+    
+            expect(isReady).toBe(false);
+        });
     });
 
-    it('should return the state of the alignment', async () => {
-        //
+    describe('Fetch Binary Files', () => {
+        let alignment;
+
+        beforeAll(async () => {
+            alignment = await request(app)
+                .post('/alignments')
+                .field('extension', 1)
+                .field('s0type', 1)
+                .field('s1type', 1)
+                .field('s0input', 'AF133821.1')
+                .field('s1input', 'AY352275.1')
+                .field('s0edge', '*')
+                .field('s1edge', '*')
+        });
+
+        it('should return the contents of the \'.bin\' file created by the MASA Alignment Tool (Happy Path)', async () => {
+                const response = await request(app).get(`/bin/${alignment.body._id}`);
+                
+                expect(response.status).toBe(200);
+                expect(response.body).not.toBeFalsy();
+        });
+
+        it('should return a status code 400, if the requested \'.bin\' does not exist', async () => {
+            const response = await request(app).get('/bin/1');
+            
+            expect(response.status).toBe(400);
+        });
+
+        it('should return a status code 500, if the requested \'.bin\' cannot be fetched', async () => {
+            const { s0, s1 } = alignment.body;
+
+            await exec(`rm ${results}/${path.parse(s0).name}-${path.parse(s1).name}/alignment.00.bin`);
+
+            const response = await request(app).get(`/bin/${alignment.body._id}`);
+
+            expect(response.status).toBe(500);
+        });
     });
 
-    afterAll(() => {
-        //
-    });
+    afterAll(async () => {
+        await Alignment.deleteMany({});
+
+        await exec(`rm -rf ${uploads}/*`);
+        await exec(`rm -rf ${results}/*`);
+    })
 });
