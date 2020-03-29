@@ -33,12 +33,12 @@ async function getFileName(num, type, sInput = '', files = []){
             const filePath = path.resolve(__dirname, '..', '..', 'uploads', fileName);
             const fileData = fs.readFileSync(filePath, 'utf-8');
             
-            if(checkFastaFormat(fileData) === null)
+            if(checkFastaFormat(fileData) === false)
                 throw new Error('Sequence is not FASTA type.');
 
             break;
         case 3:
-            if(checkFastaFormat(sInput) === null)
+            if(checkFastaFormat(sInput) === false)
                 throw new Error('Sequence is not FASTA type.');
             fileName = saveInputToFile(rand, sInput);
             

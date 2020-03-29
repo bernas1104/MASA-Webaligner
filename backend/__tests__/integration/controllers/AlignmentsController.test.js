@@ -6,7 +6,7 @@ const exec = require('child_process').execSync;
 
 const Alignment = require('../../../src/models/Alignment');
 const app = require('../../../src/controllers/ApplicationController').express;
-// const textInputs = require('../../utils/textInputs');
+const textInputs = require('../../utils/textInputs');
 
 describe('Performe a new Alignment (Happy Path)', () => {
     var response;
@@ -29,8 +29,8 @@ describe('Performe a new Alignment (Happy Path)', () => {
                 .field('extension', extension)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
-                .field('s0input', s0type === 1 ? 'AF133821.1' : /*textInputs.s0input)*/fs.readFileSync(s0FilePath, 'utf-8'))
-                .field('s1input', s1type === 1 ? 'AY352275.1' : /*textInputs.s1input)*/fs.readFileSync(s1FilePath, 'utf-8'))
+                .field('s0input', s0type === 1 ? 'AF133821.1' : textInputs.s0input)///fs.readFileSync(s0FilePath, 'utf-8'))
+                .field('s1input', s1type === 1 ? 'AY352275.1' : textInputs.s1input)///fs.readFileSync(s1FilePath, 'utf-8'))
                 .field('s0edge', '*')
                 .field('s1edge', '*')
         } else if(s0type === 2 && s1type !== 2) {
@@ -39,7 +39,7 @@ describe('Performe a new Alignment (Happy Path)', () => {
                 .field('extension', extension)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
-                .field('s1input', s1type === 1 ? 'AY352275.1' : /*textInputs.s1input)*/fs.readFileSync(s1FilePath, 'utf-8'))
+                .field('s1input', s1type === 1 ? 'AY352275.1' : textInputs.s1input)///fs.readFileSync(s1FilePath, 'utf-8'))
                 .field('s0edge', '*')
                 .field('s1edge', '*')
                 .attach('s0input', s0FilePath)
@@ -49,7 +49,7 @@ describe('Performe a new Alignment (Happy Path)', () => {
                 .field('extension', extension)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
-                .field('s0input', s0type === 1 ? 'AF133821.1' : /*textInputs.s0input)*/fs.readFileSync(s0FilePath, 'utf-8'))
+                .field('s0input', s0type === 1 ? 'AF133821.1' : textInputs.s0input)///fs.readFileSync(s0FilePath, 'utf-8'))
                 .field('s0edge', '*')
                 .field('s1edge', '*')
                 .attach('s1input', s1FilePath)
@@ -72,6 +72,7 @@ describe('Performe a new Alignment (Happy Path)', () => {
 
     it('should create the s0 sequence file on the server', async () => {
         const { s0 } = response.body;
+        // console.log(s0);
 
         const s0file = path.resolve(__dirname, '..', '..', '..', 'uploads', s0);
 
@@ -82,6 +83,7 @@ describe('Performe a new Alignment (Happy Path)', () => {
 
     it('should create the s1 sequence file on the server', async () => {
         const { s1 } = response.body
+        // console.log(s1);
 
         const s1file = path.resolve(__dirname, '..', '..', '..', 'uploads', s1);
 
