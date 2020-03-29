@@ -4,6 +4,7 @@ const { exec } = require('child_process');
 const Alignment = require('../models/Alignment');
 const deleteUploadedFile = require('../helpers/deleteUploadedFile');
 const { getFileName } = require('./../helpers/prepareFilesForAlignment');
+const { masaQueue } = require('./../lib/Queue');
 
 module.exports = {
     async create(req, res) {
@@ -64,18 +65,7 @@ module.exports = {
         else
             masa = 'masa-openmp';
 
-        const child = exec(`
-            ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -1 &&
-            ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -2 &&
-            ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -3 &&
-            ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -4 &&
-            ${masa} --alignment-edges=${s0edge}${s1edge} ${filesPath}/${s0} ${filesPath}/${s1} -d ${results}/${s0folder}-${s1folder} -5
-        `);
-        child.on('exit', () => {
-            setTimeout(async () => {
-                await Alignment.updateOne({ _id: alignment._id }, { $set: { resultsAvailable: true } });
-            }, 1000);
-        });
+        masaQueue.add({ masa, extension, s0edge, s1edge, filesPath, s0, s1, results, s0folder, s1folder });
 
         return res.json(alignment);
     },

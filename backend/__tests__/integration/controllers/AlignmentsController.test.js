@@ -6,6 +6,7 @@ const exec = require('child_process').execSync;
 
 const Alignment = require('../../../src/models/Alignment');
 const app = require('../../../src/controllers/ApplicationController').express;
+const queue = require('../../../src/queue');
 const textInputs = require('../../utils/textInputs');
 
 describe('Performe a new Alignment (Happy Path)', () => {
@@ -72,7 +73,6 @@ describe('Performe a new Alignment (Happy Path)', () => {
 
     it('should create the s0 sequence file on the server', async () => {
         const { s0 } = response.body;
-        // console.log(s0);
 
         const s0file = path.resolve(__dirname, '..', '..', '..', 'uploads', s0);
 
@@ -83,7 +83,6 @@ describe('Performe a new Alignment (Happy Path)', () => {
 
     it('should create the s1 sequence file on the server', async () => {
         const { s1 } = response.body
-        // console.log(s1);
 
         const s1file = path.resolve(__dirname, '..', '..', '..', 'uploads', s1);
 
@@ -114,7 +113,7 @@ describe('Perfome a new Alignment (Sad Paths)', () => {
         expect(s1.error).toBe('Invalid NCBI Sequence ID.');
     });
 
-    it('should return a 400 status code if the NCBI API is select, but an invalid s0 ID is passed', async () => {
+    it('should return a 400 status code if the NCBI API is select, but an invalid ID is passed', async () => {
         const response = await request(app)
             .post('/alignments')
             .send({
