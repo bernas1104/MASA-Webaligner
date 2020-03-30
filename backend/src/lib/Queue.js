@@ -13,8 +13,8 @@ const masaQueue = new Queue(MASAAlignment.key, redisConfig);
 masaQueue.on('failed', (job, err) => {
     console.log(job, err);
 });
-// masaQueue.on('completed', (job) => {
-//     console.log(`Job ${job.name} is done!`);
-// })
+masaQueue.on('completed', (job) => {
+    console.log(`Job ${job.name} is done!`);
+});
 
 module.exports = {mailQueue, masaQueue};
