@@ -49,32 +49,46 @@ textarea {
 .results {
     display: flex;
     flex-direction: row;
-    height: 100%;
+    height: 100vh;
 }
 
-#alignmentPlot {
+.alignmentPlot {
     flex: 3;
     max-width: 100%;
+    height: 90% !important;
     display: inline-block;
     margin: 50px 20px;
-
-    .dygraph-legend {
-        position: absolute;
-        left: 200px !important;
-    }
 }
 
-.alignmentText {
+#textResults {
     flex: 2;
     width: 100%;
-    display: inline-block;
-    overflow-y: auto;
+    height: 90%;
     margin: 50px 20px;
     border: 1px solid #d5d5d5;
+    padding: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
-    div{
+    .alignmentText {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-y: auto;
+        width: 90%;
+        height: 85%;
+        margin: 0 auto;
+        margin-bottom: 50px;
+        padding: 20px;
+        border: 1px solid #d5d5d5;
+        border-radius: 8px;
+        box-shadow: 0 5px 5px rgba(0, 0, 0, 0.25);
+    }
+
+    div {
         display: inline-block;
         margin: 0 auto;
-        // margin-left: 20%;
+        margin-bottom: 20px;
     }
 }

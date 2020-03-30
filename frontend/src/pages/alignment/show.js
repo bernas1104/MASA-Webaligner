@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import Dypragh from 'dygraphs';
+import ReactEcharts from 'echarts-for-react';
 
 import api from '../../services/api';
 import AlignmentBinaryFile from '../../services/masa-viewer/AlignmentBinaryFile';
 import SequenceData from '../../services/masa-viewer/SequenceData';
 import TextChunk from '../../services/masa-viewer/TextChunk';
 import TextChunkSum from '../../services/masa-viewer/TextChunkSum';
+
+import ChartOptions from './functions/ChartOptions';
 
 import './styles.scss';
 
@@ -26,6 +28,9 @@ export default class ShowAlignment extends Component {
             chunks: null,
             description: null,
             alignmentInfo: null,
+            xAxis: null,
+            yAxis: null,
+            range: null,
             render: true,
             errors: 0x0000,
         };
@@ -68,87 +73,33 @@ export default class ShowAlignment extends Component {
         const s0gapped = this.state.alignment.getAlignmentWithGaps(0).getSB();
         const s1gapped = this.state.alignment.getAlignmentWithGaps(1).getSB();
         
-        let data = '';
-        const values = []
+        const xAxis = [];
+        const yAxis = [];
         for(var i = 0, 
-                j = this.state.alignment.getSequenceStartPosition(0),
-                l = this.state.alignment.getSequenceStartPosition(1); i < s0gapped.length; i++){
+                x = this.state.alignment.getSequenceStartPosition(0),
+                y = this.state.alignment.getSequenceStartPosition(1); i < s0gapped.length; i++){
             if(s0gapped[i] === s1gapped[i]){
-                data += `${j++},${l++}\n`;
-                values.push(l-1);
+                xAxis.push(x++);
+                yAxis.push(y++);
             } else {
                 if(s0gapped[i] !== '-' && s1gapped[i] !== '-'){
-                    data += `${j++},${l++}\n`;
-                    values.push(l-1);
+                    xAxis.push(x++);
+                    yAxis.push(y++);
                 } else if (s0gapped[i] === '-'){
-                    data += `${j},${l++}\n`;
-                    values.push(l-1);
+                    xAxis.push(x);
+                    yAxis.push(y++);
                 } else {
-                    data += `${j++},${l}\n`;
-                    values.push(l);
+                    xAxis.push(x++);
+                    yAxis.push(y);
                 }
             }
         }
 
-        const graph = new Dypragh(
-            'alignmentPlot',
-            'Seq0,Seq1\n' +
-            data, {
-                showRangeSelector: true,
-                drawGrid: false,
-                valueRange: [0, this.state.alignment.getSequenceEndPosition(1)],
-                rangeSelectorHeight: 20,
-            }
-        );
-
-        const adjustText = document.querySelector('body');
-        adjustText.onkeyup = (event) => {
-            if(event.keyCode === 13){
-                this.setState({ chunks: null });
-
-                setTimeout(() => {
-                    let alignment = this.state.alignment;
-
-                    let xRange = graph.xAxisRange();
-                    let lowX = xRange[0] >= 0 ? Math.ceil(xRange[0]) : 0;
-                    let highX = Math.floor(xRange[1]);
-                
-                    let lowY = values[alignment.getSequenceOffset(0, lowX)];
-                    let highY = values[alignment.getSequenceOffset(0, highX)] + 1;
-
-                    let offsetY0 = alignment.getSequenceOffset(1, lowY);
-                    let offsetY1 = alignment.getSequenceOffset(1, highY) + 1;
-                    let offsetX0 = alignment.getSequenceOffset(0, lowX);
-                    let offsetX1 = alignment.getSequenceOffset(0, highX);
-
-                    let tmp;
-                    if(offsetX0 > offsetX1){
-                        tmp = offsetX0;
-                        offsetX0 = offsetX1;
-                        offsetX1 = tmp;
-                    }
-                    if(offsetY0 > offsetY1){
-                        tmp = offsetY0;
-                        offsetY0 = offsetY1;
-                        offsetY1 = tmp;
-                    }
-                    
-                    let offset0 = Math.max(offsetY0, offsetX0);
-                    let offset1 = Math.max(offsetY1, offsetX1);
-                    
-                    if(offset0 < 0)
-                        offset0 = 0;
-                    if(offset1 < 0)
-                        offset1 = 0;
-
-                    if(offset0 > offset1)
-                        return;
-
-                    this.setState({ alignment: alignment.truncate(offset0, offset1) });
-                    this.buildTextResults();
-                }, 500);    
-            }
-        }
+        this.setState({
+            xAxis: xAxis,
+            yAxis: yAxis,
+            range: s0gapped.length
+        });
     }
 
     buildResults = async () => {
@@ -243,18 +194,69 @@ export default class ShowAlignment extends Component {
         return chunk;
     }
 
-    htmlDecode = (chunks) => {
-        if(chunks === null)
-            return '<h2>Loading...</h2';
-        else {
-            let e = document.createElement('div');
-            e.innerHTML = '';
+    adjustTextResults = (event) => {
+        event.preventDefault();
+
+        this.setState({ chunks: null });
+
+        setTimeout(() => {
+            let alignment = this.state.alignment;
+
+            let xRange = [document.querySelector('.min').value, document.querySelector('.max').value];
+            let lowX = xRange[0] >= 0 ? Math.ceil(xRange[0]) : 0;
+            let highX = Math.floor(xRange[1]);
+        
+            let lowY = this.state.xAxis[alignment.getSequenceOffset(0, lowX)];
+            let highY = this.state.yAxis[alignment.getSequenceOffset(0, highX)] + 1;
+
+            let offsetY0 = alignment.getSequenceOffset(1, lowY);
+            let offsetY1 = alignment.getSequenceOffset(1, highY) + 1;
+            let offsetX0 = alignment.getSequenceOffset(0, lowX);
+            let offsetX1 = alignment.getSequenceOffset(0, highX);
+
+            let tmp;
+            if(offsetX0 > offsetX1){
+                tmp = offsetX0;
+                offsetX0 = offsetX1;
+                offsetX1 = tmp;
+            }
+            if(offsetY0 > offsetY1){
+                tmp = offsetY0;
+                offsetY0 = offsetY1;
+                offsetY1 = tmp;
+            }
             
-            chunks.forEach(chunk => {
-                e.innerHTML += chunk + '<br>';
+            let offset0 = Math.max(offsetY0, offsetX0);
+            let offset1 = Math.max(offsetY1, offsetX1);
+            
+            if(offset0 < 0)
+                offset0 = 0;
+            if(offset1 < 0)
+                offset1 = 0;
+
+            if(offset0 > offset1)
+                return;
+
+            this.setState({ alignment: alignment.truncate(offset0, offset1) });
+            this.buildTextResults();
+        }, 500);
+    }
+
+    htmlDecode = () => {
+        if(this.state.chunks !== null){
+            document.querySelector('.alignmentText').style = 'display: block';
+
+            let div = document.createElement('div');
+            div.innerHTML = '';
+            
+            let stringChunks = '';
+            this.state.chunks.forEach(chunk => {
+                stringChunks += chunk + '<br>';
             });
 
-            return e.innerHTML;
+            return div.innerHTML = stringChunks;
+        } else {
+            return '<h2>Loading...</h2>'
         }
     }
 
@@ -262,8 +264,15 @@ export default class ShowAlignment extends Component {
         if(this.state.render){
             return (
                 <div className="results">
-                    <div id="alignmentPlot"></div>
-                    <div className="alignmentText" dangerouslySetInnerHTML={{ __html: this.htmlDecode(this.state.chunks) }}></div>
+                    <ReactEcharts className="alignmentPlot" option={ChartOptions(this.state.xAxis, this.state.yAxis, this.state.description, this.state.range)} opts={{ renderer: 'svg' }}/>
+                    <div id="textResults">
+                        <div className="alignmentText" dangerouslySetInnerHTML={{ __html: this.htmlDecode() }}></div>
+                        <div>
+                            <input className='min' type="text" name='min'/>
+                            <input className='max' type="text" name='max'/>
+                            <input type="submit" value="Ajust" onClick={(event) => this.adjustTextResults(event)}/>
+                        </div>
+                    </div>
                 </div>
             );
         } else {
