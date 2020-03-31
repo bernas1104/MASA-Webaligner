@@ -8,6 +8,7 @@ import TextChunk from '../../services/masa-viewer/TextChunk';
 import TextChunkSum from '../../services/masa-viewer/TextChunkSum';
 
 import ChartOptions from './functions/ChartOptions';
+import binSearch from './functions/binSerach';
 
 import './styles.scss';
 
@@ -17,14 +18,16 @@ export default class ShowAlignment extends Component {
     static fastaFiles = 0x0004;
     timeOut = 0;
 
+    alignment    = null;
+    textChunkSum = null;
+    sequences    = null;
+    resetValues  = null;
+
     constructor(props){
         super(props);
 
         this.state = {
             _id: null,
-            alignment: null,
-            sequences: null,
-            textChunkSum: null,
             chunks: null,
             description: null,
             alignmentInfo: null,
@@ -70,14 +73,14 @@ export default class ShowAlignment extends Component {
         await this.buildResults();
         await this.buildTextResults();
 
-        const s0gapped = this.state.alignment.getAlignmentWithGaps(0).getSB();
-        const s1gapped = this.state.alignment.getAlignmentWithGaps(1).getSB();
+        const s0gapped = this.alignment.getAlignmentWithGaps(0).getSB();
+        const s1gapped = this.alignment.getAlignmentWithGaps(1).getSB();
         
         const xAxis = [];
         const yAxis = [];
         for(var i = 0, 
-                x = this.state.alignment.getSequenceStartPosition(0),
-                y = this.state.alignment.getSequenceStartPosition(1); i < s0gapped.length; i++){
+                x = this.alignment.getSequenceStartPosition(0),
+                y = this.alignment.getSequenceStartPosition(1); i < s0gapped.length; i++){
             if(s0gapped[i] === s1gapped[i]){
                 xAxis.push(x++);
                 yAxis.push(y++);
@@ -107,12 +110,16 @@ export default class ShowAlignment extends Component {
             const { data: { data } } = await api.get(`/bin/${this.state._id}`);
             const buff = new Buffer(data);
 
-            this.setState({ alignment: AlignmentBinaryFile.read(buff) });
-            this.setState({ sequences: this.state.alignment.getAlignmentParams().getSequences() });
+            this.alignment = AlignmentBinaryFile.read(buff);
+            this.sequences = this.alignment.getAlignmentParams().getSequences();
 
             const description = [];
-            description.push(this.state.alignment.getAlignmentParams().getSequence(0).getInfo().getDescription());
-            description.push(this.state.alignment.getAlignmentParams().getSequence(1).getInfo().getDescription());
+            description.push(this.alignment.getAlignmentParams().getSequence(0).getInfo().getDescription());
+            description.push(this.alignment.getAlignmentParams().getSequence(1).getInfo().getDescription());
+            
+            if(this.resetValues === null)
+                this.resetValues = [this.alignment.getSequenceStartPosition(0), this.alignment.getSequenceEndPosition(0)];
+
             this.setState({ description });
         } catch (err) {
             console.log(err);
@@ -126,20 +133,20 @@ export default class ShowAlignment extends Component {
     buildTextResults = async () => {
         try {
             const { data: { s0file, s1file }} = await api.get(`/fasta/${this.state._id}`);
-            this.state.sequences[0].setData(new SequenceData({ file: s0file, modifiers: this.state.sequences[0].getModifiers() }));
-            this.state.sequences[1].setData(new SequenceData({ file: s1file, modifiers: this.state.sequences[1].getModifiers() }));
+            this.sequences[0].setData(new SequenceData({ file: s0file, modifiers: this.sequences[0].getModifiers() }));
+            this.sequences[1].setData(new SequenceData({ file: s1file, modifiers: this.sequences[1].getModifiers() }));
 
-            if(this.state.alignment !== undefined && this.state.alignment.getAlignmentParams().getSequence(0).getData() !== undefined &&
-                this.state.alignment.getAlignmentParams().getSequence(1).getData() !== undefined){
+            if(this.alignment !== undefined && this.alignment.getAlignmentParams().getSequence(0).getData() !== undefined &&
+                this.alignment.getAlignmentParams().getSequence(1).getData() !== undefined){
                     
-                this.state.alignment.getAlignmentWithGaps(0).reset(this.state.alignment.getSequenceStartOffset(0), this.state.alignment.getSequenceEndOffset(0));
-                this.state.alignment.getAlignmentWithGaps(1).reset(this.state.alignment.getSequenceStartOffset(1), this.state.alignment.getSequenceEndOffset(1));
-                this.setState({ textChunkSum: new TextChunkSum(
-                    this.state.alignment.getAlignmentParams().getMatch(),
-                    this.state.alignment.getAlignmentParams().getMismatch(),
-                    this.state.alignment.getAlignmentParams().getGapOpen(),
-                    this.state.alignment.getAlignmentParams().getGapExtension()
-                )});
+                this.alignment.getAlignmentWithGaps(0).reset(this.alignment.getSequenceStartOffset(0), this.alignment.getSequenceEndOffset(0));
+                this.alignment.getAlignmentWithGaps(1).reset(this.alignment.getSequenceStartOffset(1), this.alignment.getSequenceEndOffset(1));
+                this.textChunkSum = new TextChunkSum(
+                    this.alignment.getAlignmentParams().getMatch(),
+                    this.alignment.getAlignmentParams().getMismatch(),
+                    this.alignment.getAlignmentParams().getGapOpen(),
+                    this.alignment.getAlignmentParams().getGapExtension()
+                );
 
 
                 var chunks = [];
@@ -148,10 +155,11 @@ export default class ShowAlignment extends Component {
                     chunks.push(chunk.getHTMLString());
                 }
 
-                chunks.push(this.state.textChunkSum.getHTMLString());
+                chunks.push(this.textChunkSum.getHTMLString());
             }
 
             this.setState({ chunks });
+            console.log(this.alignment);
         } catch (err) {
             this.setState({
                 render: false,
@@ -161,15 +169,15 @@ export default class ShowAlignment extends Component {
     }
 
     getSeq0WithGaps = () => {
-        return this.state.alignment.getAlignmentWithGaps(0);
+        return this.alignment.getAlignmentWithGaps(0);
     }
     
     getSeq1WithGaps= () => {
-        return this.state.alignment.getAlignmentWithGaps(1);
+        return this.alignment.getAlignmentWithGaps(1);
     }
     
     hasMoreChunks = () => {
-        return(!this.state.alignment.getAlignmentWithGaps(0).isDone() && !this.state.alignment.getAlignmentWithGaps(1).isDone());
+        return(!this.alignment.getAlignmentWithGaps(0).isDone() && !this.alignment.getAlignmentWithGaps(1).isDone());
     }
     
     getNextChunk = (cols) => {
@@ -187,32 +195,33 @@ export default class ShowAlignment extends Component {
     
             chunk.setChunks(chunk0, chunk1);
     
-            let chunkScore = this.state.textChunkSum.sumChunk(chunk);
-            chunk.setSuffix(`[${chunkScore}]/[${this.state.textChunkSum.getScore()}]`);
+            let chunkScore = this.textChunkSum.sumChunk(chunk);
+            chunk.setSuffix(`[${chunkScore}]/[${this.textChunkSum.getScore()}]`);
         }
     
         return chunk;
     }
 
-    adjustTextResults = (event) => {
+    adjustTextResults = (event, reset) => {
         event.preventDefault();
 
         this.setState({ chunks: null });
 
         setTimeout(() => {
-            let alignment = this.state.alignment;
+            let xRange = reset === false ? 
+                [parseInt(document.querySelector('.min').value), parseInt(document.querySelector('.max').value)] :
+                [...this.resetValues];
 
-            let xRange = [document.querySelector('.min').value, document.querySelector('.max').value];
-            let lowX = xRange[0] >= 0 ? Math.ceil(xRange[0]) : 0;
-            let highX = Math.floor(xRange[1]);
-        
-            let lowY = this.state.xAxis[alignment.getSequenceOffset(0, lowX)];
-            let highY = this.state.yAxis[alignment.getSequenceOffset(0, highX)] + 1;
+            let [x0, x0Coord] = binSearch(this.state.xAxis, xRange[0]);
+            let [x1, x1Coord] = binSearch(this.state.xAxis, xRange[1], false);
 
-            let offsetY0 = alignment.getSequenceOffset(1, lowY);
-            let offsetY1 = alignment.getSequenceOffset(1, highY) + 1;
-            let offsetX0 = alignment.getSequenceOffset(0, lowX);
-            let offsetX1 = alignment.getSequenceOffset(0, highX);
+            let y0 = this.state.yAxis[x0Coord];
+            let y1 = this.state.yAxis[x1Coord];
+
+            let offsetY0 = this.alignment.getSequenceOffset(1, y0);
+            let offsetY1 = this.alignment.getSequenceOffset(1, y1);
+            let offsetX0 = this.alignment.getSequenceOffset(0, x0);
+            let offsetX1 = this.alignment.getSequenceOffset(0, x1);
 
             let tmp;
             if(offsetX0 > offsetX1){
@@ -234,10 +243,11 @@ export default class ShowAlignment extends Component {
             if(offset1 < 0)
                 offset1 = 0;
 
+            // Retirar após validações?
             if(offset0 > offset1)
                 return;
 
-            this.setState({ alignment: alignment.truncate(offset0, offset1) });
+            this.alignment = this.alignment.truncate(offset0, offset1);
             this.buildTextResults();
         }, 500);
     }
@@ -264,13 +274,14 @@ export default class ShowAlignment extends Component {
         if(this.state.render){
             return (
                 <div className="results">
-                    <ReactEcharts className="alignmentPlot" option={ChartOptions(this.state.xAxis, this.state.yAxis, this.state.description, this.state.range)} opts={{ renderer: 'svg' }}/>
+                    <ReactEcharts className="alignmentPlot" option={ChartOptions(this.state.xAxis, this.state.yAxis, this.state.description, this.state.range)} /*opts={{ renderer: 'svg' }}*//>
                     <div id="textResults">
                         <div className="alignmentText" dangerouslySetInnerHTML={{ __html: this.htmlDecode() }}></div>
                         <div>
-                            <input className='min' type="text" name='min'/>
-                            <input className='max' type="text" name='max'/>
-                            <input type="submit" value="Ajust" onClick={(event) => this.adjustTextResults(event)}/>
+                            <input className='min' type="text" name='min' /*value={} onChange={}*/ />
+                            <input className='max' type="text" name='max'/*value={} onChange={}*/ />
+                            <input type="submit" value="Ajust" onClick={(event) => this.adjustTextResults(event, false)}/>
+                            <input type="submit" value='Reset' onClick={(event) => this.adjustTextResults(event, true)} />
                         </div>
                     </div>
                 </div>
