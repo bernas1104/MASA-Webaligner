@@ -1,9 +1,12 @@
+const mongoose = require('mongoose');
+
 const Alignment = require('../../../src/models/Alignment');
-const app = require('../../../src/controllers/ApplicationController');
+require('./../../../src/server');
 
 describe('Alignment creating validations', () => {
     const edges = ['*', '1', '2', '3', '+'];
     const extension = Math.floor(Math.random() * 3) + 1;
+    const clearn = Math.floor(Math.random() * 2) + 1;;
     const s0type = Math.floor(Math.random() * 3) + 1;
     const s1type = Math.floor(Math.random() * 3) + 1;
     const s0edge = edges[Math.floor(Math.random() * 4)];
@@ -22,6 +25,10 @@ describe('Alignment creating validations', () => {
 
     afterEach(async () => {
         await Alignment.deleteMany({});
+    });
+
+    afterAll(async () => {
+        await mongoose.disconnect();
     });
 
     describe('Validates the \'extension\' field', () => {
@@ -85,6 +92,37 @@ describe('Alignment creating validations', () => {
 
             expect(afterCount - beforeCount).toBe(0);
         });
+    });
+
+    describe('Validates the \'clearn\' field', () => {
+        it('should create an alignment if the \'clearn\' is TRUE or FALSE', async () => {
+            await Alignment.create({
+                extension,
+                clearn: clearn === 1 ? true : false,
+                s0type,
+                s1type,
+                s0,
+                s1,
+                s0edge,
+                s1edge
+            });
+
+            const afterCount = await Alignment.countDocuments();
+            
+            expect(afterCount - beforeCount).toBe(1);
+        });
+
+        it('should not create an alignment if the \'clearn\' is NOT a boolean', async () => {
+            //
+        });
+    });
+
+    describe('', () => {
+        //
+    });
+
+    describe('', () => {
+        //
     });
 
     describe('Validates the \'s0type\' field', () => {

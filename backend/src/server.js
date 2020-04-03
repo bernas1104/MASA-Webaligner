@@ -18,4 +18,5 @@ mongoose.connect(
     { useNewUrlParser: true, useUnifiedTopology: true },
 );
 
-app.express.listen(process.env.PORT || 3001);   // Utilizando a porta 3001
+if(process.env.NODE_ENV !== 'test')
+    app.express.listen(process.env.PORT || 3001);   // Utilizando a porta 3001

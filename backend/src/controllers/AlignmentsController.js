@@ -7,8 +7,20 @@ const { masaQueue } = require('./../lib/Queue');
 
 module.exports = {
     async create(req, res) {
-        const { extension, s0type, s1type, s0edge, s1edge,
-                s0input, s1input, name, email } = req.body;
+        const { 
+            extension,
+            // clearn,
+            // complement,
+            // reverse,
+            s0type,
+            s1type,
+            s0edge,
+            s1edge,
+            s0input,
+            s1input,
+            name,
+            email
+        } = req.body;
         
         let s0, s1;
         let s0folder, s1folder;
