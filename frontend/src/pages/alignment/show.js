@@ -23,6 +23,9 @@ export default class ShowAlignment extends Component {
     sequences    = null;
     resetValues  = null;
 
+    min = 0;
+    max = 0;
+
     constructor(props){
         super(props);
 
@@ -158,7 +161,11 @@ export default class ShowAlignment extends Component {
                 chunks.push(this.textChunkSum.getHTMLString());
             }
 
-            this.setState({ chunks });
+            this.setState({ 
+                chunks,
+                min: this.alignment.getSequenceStartPosition(0),
+                max: this.alignment.getSequenceEndPosition(0)
+            });
             console.log(this.alignment);
         } catch (err) {
             this.setState({
@@ -209,8 +216,10 @@ export default class ShowAlignment extends Component {
 
         setTimeout(() => {
             let xRange = reset === false ? 
-                [parseInt(document.querySelector('.min').value), parseInt(document.querySelector('.max').value)] :
+                [this.min, this.max] :
                 [...this.resetValues];
+
+            if(xRange[0] > xRange[1]) { xRange[0] = xRange[1]; }
 
             let [x0, x0Coord] = binSearch(this.state.xAxis, xRange[0]);
             let [x1, x1Coord] = binSearch(this.state.xAxis, xRange[1], false);
@@ -219,9 +228,9 @@ export default class ShowAlignment extends Component {
             let y1 = this.state.yAxis[x1Coord];
 
             let offsetY0 = this.alignment.getSequenceOffset(1, y0);
-            let offsetY1 = this.alignment.getSequenceOffset(1, y1);
+            let offsetY1 = this.alignment.getSequenceOffset(1, y1) + 1;
             let offsetX0 = this.alignment.getSequenceOffset(0, x0);
-            let offsetX1 = this.alignment.getSequenceOffset(0, x1);
+            let offsetX1 = this.alignment.getSequenceOffset(0, x1) + 1;
 
             let tmp;
             if(offsetX0 > offsetX1){
@@ -242,10 +251,6 @@ export default class ShowAlignment extends Component {
                 offset0 = 0;
             if(offset1 < 0)
                 offset1 = 0;
-
-            // Retirar após validações?
-            if(offset0 > offset1)
-                return;
 
             this.alignment = this.alignment.truncate(offset0, offset1);
             this.buildTextResults();
@@ -278,8 +283,18 @@ export default class ShowAlignment extends Component {
                     <div id="textResults">
                         <div className="alignmentText" dangerouslySetInnerHTML={{ __html: this.htmlDecode() }}></div>
                         <div>
-                            <input className='min' type="text" name='min' /*value={} onChange={}*/ />
-                            <input className='max' type="text" name='max'/*value={} onChange={}*/ />
+                            <input className='min' type="text" name='min' onChange={event => {
+                                if(event.target.value < this.alignment.getSequenceStartPosition(0))
+                                    this.min = this.alignment.getSequenceStartPosition(0);
+                                else
+                                    this.min = parseInt(event.target.value);
+                            }}/>
+                            <input className='max' type="text" name='max' onChange={event => {
+                                if(event.target.value > this.alignment.getSequenceEndPosition(0))
+                                    this.max = this.alignment.getSequenceEndPosition(0);
+                                else
+                                    this.max = parseInt(event.target.value);
+                            }}/>
                             <input type="submit" value="Ajust" onClick={(event) => this.adjustTextResults(event, false)}/>
                             <input type="submit" value='Reset' onClick={(event) => this.adjustTextResults(event, true)} />
                         </div>
