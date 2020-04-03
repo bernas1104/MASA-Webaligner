@@ -1,5 +1,4 @@
 const path = require('path');
-const { exec } = require('child_process');
 
 const Alignment = require('../models/Alignment');
 const deleteUploadedFile = require('../helpers/deleteUploadedFile');
@@ -9,7 +8,7 @@ const { masaQueue } = require('./../lib/Queue');
 module.exports = {
     async create(req, res) {
         const { extension, s0type, s1type, s0edge, s1edge,
-                s0input, s1input } = req.body;
+                s0input, s1input, name, email } = req.body;
         
         let s0, s1;
         let s0folder, s1folder;
@@ -65,7 +64,21 @@ module.exports = {
         else
             masa = 'masa-openmp';
 
-        masaQueue.add({ masa, extension, s0edge, s1edge, filesPath, s0, s1, results, s0folder, s1folder });
+        masaQueue.bull.add({ 
+            masa,
+            extension,
+            s0edge,
+            s1edge,
+            filesPath,
+            s0,
+            s1,
+            results,
+            s0folder,
+            s1folder,
+            name,
+            email,
+            id: alignment._id
+        });
 
         return res.json(alignment);
     },

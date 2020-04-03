@@ -9,5 +9,7 @@ module.exports = celebrate({
         s1edge: Joi.string().required().length(1).regex(/^[1-3|+|*]{1}$/),
         s0input: Joi.string().allow('', null),
         s1input: Joi.string().allow('', null),
+        name: Joi.string().allow(''),
+        email: Joi.string().allow('').email()
     }),
 });

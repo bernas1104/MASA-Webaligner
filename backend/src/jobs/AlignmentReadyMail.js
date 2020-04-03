@@ -9,14 +9,8 @@ module.exports = {
             subject: 'Your sequence alignment is ready!',
             html: `Hello ${data.name},
             <br />
-            We are writing this e-mail, to let you know that your request to align:
-            <br />
-                <ul>
-                    <li>${data.s0}</li>
-                    <li>${data.s1}</li>
-                </ul>
-            <br />
-            is ready!
+            We are writing this e-mail, to let you know that your request for a
+            sequence alignment is ready!
             <br />
             <br />
             To access the results, just click <a href="${data.address}">here</a> or
