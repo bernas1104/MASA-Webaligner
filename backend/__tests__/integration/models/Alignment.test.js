@@ -6,14 +6,20 @@ const app = require('../../../src/controllers/ApplicationController');
 
 describe('Alignment creating validations', () => {
     const edges = ['*', '1', '2', '3', '+'];
+
     const extension = Math.floor(Math.random() * 3) + 1;
+    
     const clearn = Math.floor(Math.random() * 2) + 1;
+    const complement = Math.floor(Math.random() * 3) + 1;
+    const reverse = Math.floor(Math.random() * 3) + 1;
+    
     const s0type = Math.floor(Math.random() * 3) + 1;
     const s1type = Math.floor(Math.random() * 3) + 1;
     const s0edge = edges[Math.floor(Math.random() * 4)];
     const s1edge = edges[Math.floor(Math.random() * 4)];
     const s0 = 'AF133821.1.fasta';
     const s1 = 'AY352275.1.fasta';
+    
     let beforeCount;
 
     beforeAll(async () => {
@@ -156,13 +162,144 @@ describe('Alignment creating validations', () => {
         });
     });
 
-    // describe('', () => {
-    //     //
-    // });
+    describe('Validates the \'complement\' field', () => {
+        it('should create an alignment if the \'complement\' is not present', async () => {
+            await Alignment.create({
+                extension,
+                clearn: clearn === 1 ? true : false,
+                s0type,
+                s1type,
+                s0,
+                s1,
+                s0edge,
+                s1edge
+            });
 
-    // describe('', () => {
-    //     //
-    // });
+            const afterCount = await Alignment.countDocuments();
+
+            expect(afterCount - beforeCount).toBe(1);
+        });
+
+        it('should create an alignment if the \'complement\' field is present AND between 1 and 3', async () => {
+            await Alignment.create({
+                extension,
+                clearn: clearn === 1 ? true : false,
+                complement,
+                s0type,
+                s1type,
+                s0,
+                s1,
+                s0edge,
+                s1edge
+            });
+
+            const afterCount = await Alignment.countDocuments();
+
+            expect(afterCount - beforeCount).toBe(1);
+        });
+
+        it('should not create an alignment if the \'complement\' field is not between 1 and 3', async () => {
+            const complements = [5, 'a', -12, 'ajds'];
+
+            for(let i = 0; i < 4; i++){
+                try {
+                    await Alignment.create({
+                        extension,
+                        clearn: clearn === 1 ? true : false,
+                        complement: complements[i],
+                        s0type,
+                        s1type,
+                        s0,
+                        s1,
+                        s0edge,
+                        s1edge
+                    });
+                } catch (err) {
+                    expect(err.name).toBe('ValidationError');
+                    
+                    if(typeof(complements[i]) === 'number')
+                        expect(err.errors.complement.message).toBe('Must be a number between 1 and 3.');
+                    else
+                        expect(err.errors.complement.message).toBe(`Cast to Number failed for value "${complements[i]}" at path "complement"`);
+                }
+            }
+
+            const afterCount = await Alignment.countDocuments();
+
+            expect(afterCount - beforeCount).toBe(0);
+        });
+    });
+
+    describe('Validates the \'reverse\' field', () => {
+        it('should create an alignment if the \'reverse\' field is present AND between 1 and 3', async () => {
+            await Alignment.create({
+                extension,
+                clearn: clearn === 1 ? true : false,
+                complement,
+                reverse,
+                s0type,
+                s1type,
+                s0,
+                s1,
+                s0edge,
+                s1edge
+            });
+
+            const afterCount = await Alignment.countDocuments();
+
+            expect(afterCount - beforeCount).toBe(1);
+        });
+
+        it('should create an alignment if the \'reverse\' field is not present', async () => {
+            await Alignment.create({
+                extension,
+                clearn: clearn === 1 ? true : false,
+                complement,
+                s0type,
+                s1type,
+                s0,
+                s1,
+                s0edge,
+                s1edge
+            });
+
+            const afterCount = await Alignment.countDocuments();
+
+            expect(afterCount - beforeCount).toBe(1);
+        });
+
+        it('should not create an alignment if the \'reverse\' field is not between 1 and 3', async () => {
+            const reverses = [0, 4, 'a', 'asd'];
+
+            for(let i = 0; i < 4; i++){
+                try {
+                    await Alignment.create({
+                        extension,
+                        clearn: clearn === 1 ? true : false,
+                        complement,
+                        reverse: reverses[i],
+                        s0type,
+                        s1type,
+                        s0,
+                        s1,
+                        s0edge,
+                        s1edge
+                    });
+                } catch (err) {
+                    expect(err.name).toBe('ValidationError');
+                    
+                    if(typeof(reverses[i]) === 'number')
+                        expect(err.errors.reverse.message).toBe('Must be a number between 1 and 3.');
+                    else
+                        expect(err.errors.reverse.message).toBe(`Cast to Number failed for value "${reverses[i]}" at path "reverse"`);
+                }
+            }
+
+            const afterCount = await Alignment.countDocuments();
+
+            expect(afterCount - beforeCount).toBe(0);
+        });
+    });
 
     describe('Validates the \'s0type\' field', () => {
         it('should create an alignment if the `s0type` field is present AND between 1 and 3', async () => {

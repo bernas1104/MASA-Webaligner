@@ -18,6 +18,20 @@ const AlignmentSchema = new mongoose.Schema({
             )
         }
     },
+    complement: {
+        type: Number,
+        default: null,
+        required: false,
+        min: [1, 'Must be a number between 1 and 3.'],
+        max: [3, 'Must be a number between 1 and 3.']
+    },
+    reverse: {
+        type: Number,
+        default: null,
+        required: false,
+        min: [1, 'Must be a number between 1 and 3.'],
+        max: [3, 'Must be a number between 1 and 3.']
+    },
     s0type: {
         type: Number,
         default: null,
