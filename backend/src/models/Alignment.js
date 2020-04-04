@@ -8,6 +8,16 @@ const AlignmentSchema = new mongoose.Schema({
         min: [1, 'Must be a number between 1 and 3.'],
         max: [3, 'Must be a number between 1 and 3.']
     },
+    clearn: {
+        type: Boolean,
+        default: false,
+        required: true,
+        validate: {
+            validator: (clearn) => (
+                clearn === true || clearn === false
+            )
+        }
+    },
     s0type: {
         type: Number,
         default: null,
