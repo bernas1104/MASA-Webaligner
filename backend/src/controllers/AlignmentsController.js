@@ -8,7 +8,8 @@ const { masaQueue } = require('./../lib/Queue');
 module.exports = {
     async create(req, res) {
         const { extension, s0type, s1type, s0edge, s1edge,
-                s0input, s1input, name, email } = req.body;
+                s0input, s1input, name, email,
+                clearn, complement, reverse } = req.body;
         
         let s0, s1;
         let s0folder, s1folder;
@@ -67,6 +68,9 @@ module.exports = {
         masaQueue.bull.add({ 
             masa,
             extension,
+            clearn,
+            complement,
+            reverse,
             s0edge,
             s1edge,
             filesPath,

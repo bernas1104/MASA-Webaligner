@@ -1,15 +1,13 @@
 const request = require('supertest');
 const fsmz = require('mz/fs');
-const fs = require('fs');
 const path = require('path');
-const exec = require('child_process').execSync;
 
 const Alignment = require('../../../src/models/Alignment');
 const app = require('../../../src/controllers/ApplicationController').express;
-const queue = require('../../../src/queue');
+require('../../../src/queue');
 const textInputs = require('../../utils/textInputs');
 
-describe('Performe a new Alignment (Happy Path)', () => {
+describe('Perform a new Alignment (Happy Path, only required fields)', () => {
     var response;
 
     beforeEach(async () => {
@@ -18,8 +16,12 @@ describe('Performe a new Alignment (Happy Path)', () => {
         const files = path.resolve(__dirname, '..', '..', 'utils');
         const s0FilePath = `${files}/AF133821.1.fasta`;
         const s1FilePath = `${files}/AY352275.1.fasta`;
+
+        const edges = [1, 2, 3, '*', '+'];
+        const edge = Math.floor(Math.random() * 4);
         
-        const extension = Math.floor(Math.random() * 3) + 1;
+        // const extension = Math.floor(Math.random() * 3) + 1;
+        const extension = 2;
         const s0type = Math.floor(Math.random() * 3) + 1;
         const s1type = Math.floor(Math.random() * 3) + 1;
 
@@ -32,12 +34,113 @@ describe('Performe a new Alignment (Happy Path)', () => {
                 .field('s1type', s1type)
                 .field('s0input', s0type === 1 ? 'AF133821.1' : textInputs.s0input)
                 .field('s1input', s1type === 1 ? 'AY352275.1' : textInputs.s1input)
+                .field('s0edge', String(edges[edge]))
+                .field('s1edge', String(edges[edge]))
+        } else if(s0type === 2 && s1type !== 2) {
+            response = await request(app)
+                .post('/alignments')
+                .field('extension', extension)
+                .field('s0type', s0type)
+                .field('s1type', s1type)
+                .field('s1input', s1type === 1 ? 'AY352275.1' : textInputs.s1input)
+                .field('s0edge', String(edges[edge]))
+                .field('s1edge', String(edges[edge]))
+                .attach('s0input', s0FilePath)
+        } else if(s0type !== 2 && s1type === 2) {
+            response = await request(app)
+                .post('/alignments')
+                .field('extension', extension)
+                .field('s0type', s0type)
+                .field('s1type', s1type)
+                .field('s0input', s0type === 1 ? 'AF133821.1' : textInputs.s0input)
+                .field('s0edge', String(edges[edge]))
+                .field('s1edge', String(edges[edge]))
+                .attach('s1input', s1FilePath)
+        } else {
+            response = await request(app)
+                .post('/alignments')
+                .field('extension', extension)
+                .field('s0type', s0type)
+                .field('s1type', s1type)
+                .field('s0edge', String(edges[edge]))
+                .field('s1edge', String(edges[edge]))
+                .attach('s0input', s0FilePath)
+                .attach('s1input', s1FilePath)
+        }
+    })
+
+    it('should create a new alignment', async () => {
+        expect(response.status).toBe(200);
+    });
+
+    it('should create the s0 sequence file on the server', async () => {
+        const { s0 } = response.body;
+
+        const s0file = path.resolve(__dirname, '..', '..', '..', 'uploads', s0);
+
+        const s0exists = await fsmz.exists(s0file);
+        
+        expect(s0exists).toBe(true);
+    });
+
+    it('should create the s1 sequence file on the server', async () => {
+        const { s1 } = response.body
+
+        const s1file = path.resolve(__dirname, '..', '..', '..', 'uploads', s1);
+
+        const s1exists = await fsmz.exists(s1file);
+
+        expect(s1exists).toBe(true);
+    });
+});
+
+describe('Perform a new Alignment (Happy Path, all fields', () => {
+    var response;
+
+    beforeEach(async () => {
+        await Alignment.deleteMany({});
+
+        const files = path.resolve(__dirname, '..', '..', 'utils');
+        const s0FilePath = `${files}/AF133821.1.fasta`;
+        const s1FilePath = `${files}/AY352275.1.fasta`;
+        
+        // const extension = Math.floor(Math.random() * 3) + 1;
+        const extension = 2;
+        const clearn = Math.floor(Math.random() * 2) + 1;
+        const complement = Math.floor(Math.random() * 3) + 1;
+        const reverse = Math.floor(Math.random() * 3) + 1;
+        const name = 'Bernardo Costa Nascimento';
+        const email = 'bernardoc1104@gmail.com';
+        const opt = Math.floor(Math.random() * 2) + 1;
+
+        const s0type = Math.floor(Math.random() * 3) + 1;
+        const s1type = Math.floor(Math.random() * 3) + 1;
+
+        // var response;
+        if(s0type !== 2 && s1type !== 2){
+            response = await request(app)
+                .post('/alignments')
+                .field('extension', extension)
+                .field('clearn', opt === 1 ? (clearn === 1 ? true : false) : '')
+                .field('complement', opt === 1 ? complement : '')
+                .field('reverse', opt === 1 ? reverse : '')
+                .field('name', opt === 1 ? name : '')
+                .field('email', opt === 1 ? email : '')
+                .field('s0type', s0type)
+                .field('s1type', s1type)
+                .field('s0input', s0type === 1 ? 'AF133821.1' : textInputs.s0input)
+                .field('s1input', s1type === 1 ? 'AY352275.1' : textInputs.s1input)
                 .field('s0edge', '*')
                 .field('s1edge', '*')
         } else if(s0type === 2 && s1type !== 2) {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
+                .field('clearn', opt === 1 ? (clearn === 1 ? true : false) : '')
+                .field('complement', opt === 1 ? complement : '')
+                .field('reverse', opt === 1 ? reverse : '')
+                .field('name', opt === 1 ? name : '')
+                .field('email', opt === 1 ? email : '')
                 .field('s0type', s0type)
                 .field('s1type', s1type)
                 .field('s1input', s1type === 1 ? 'AY352275.1' : textInputs.s1input)
@@ -48,6 +151,11 @@ describe('Performe a new Alignment (Happy Path)', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
+                .field('clearn', opt === 1 ? (clearn === 1 ? true : false) : '')
+                .field('complement', opt === 1 ? complement : '')
+                .field('reverse', opt === 1 ? reverse : '')
+                .field('name', opt === 1 ? name : '')
+                .field('email', opt === 1 ? email : '')
                 .field('s0type', s0type)
                 .field('s1type', s1type)
                 .field('s0input', s0type === 1 ? 'AF133821.1' : textInputs.s0input)
@@ -58,6 +166,11 @@ describe('Performe a new Alignment (Happy Path)', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
+                .field('clearn', opt === 1 ? (clearn === 1 ? true : false) : '')
+                .field('complement', opt === 1 ? complement : '')
+                .field('reverse', opt === 1 ? reverse : '')
+                .field('name', opt === 1 ? name : '')
+                .field('email', opt === 1 ? email : '')
                 .field('s0type', s0type)
                 .field('s1type', s1type)
                 .field('s0edge', '*')
@@ -65,11 +178,11 @@ describe('Performe a new Alignment (Happy Path)', () => {
                 .attach('s0input', s0FilePath)
                 .attach('s1input', s1FilePath)
         }
-    })
+    });
 
     it('should create a new alignment', async () => {
         expect(response.status).toBe(200);
-    })
+    });
 
     it('should create the s0 sequence file on the server', async () => {
         const { s0 } = response.body;
@@ -79,7 +192,7 @@ describe('Performe a new Alignment (Happy Path)', () => {
         const s0exists = await fsmz.exists(s0file);
         
         expect(s0exists).toBe(true);
-    })
+    });
 
     it('should create the s1 sequence file on the server', async () => {
         const { s1 } = response.body
@@ -89,10 +202,10 @@ describe('Performe a new Alignment (Happy Path)', () => {
         const s1exists = await fsmz.exists(s1file);
 
         expect(s1exists).toBe(true);
-    })
-})
+    });
+});
 
-describe('Perfome a new Alignment (Sad Paths)', () => {
+describe('Perform a new Alignment (Sad Paths)', () => {
     it('should return a 400 status code if the NCBI API is selected, but no ID is passed', async () => {
         const response = await request(app)
             .post('/alignments')
@@ -343,6 +456,10 @@ describe('Perfome a new Alignment (Sad Paths)', () => {
                     expect(response.body.message).toBe(`"s${i}type" must be less than or equal to 3`);
             });
         }
+    });
+
+    it('should return a 400 status code if the \'clearn\' is not a boolean value', async () => {
+        //
     });
 
     afterAll(async () => {

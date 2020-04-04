@@ -39,7 +39,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the \'extension\' field is present AND between 1 and 3', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -56,7 +55,6 @@ describe('Alignment creating validations', () => {
         it('should not create an alignment if the \'extension\' is not present', async () => {
             try{
                 await Alignment.create({
-                    clearn: clearn === 1 ? true : false,
                     s0type,
                     s1type,
                     s0,
@@ -81,7 +79,6 @@ describe('Alignment creating validations', () => {
                 try{
                     await Alignment.create({
                         extension: extensions[i],
-                        clearn: clearn === 1 ? true : false,
                         s0type,
                         s1type,
                         s0,
@@ -166,7 +163,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the \'complement\' is not present', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -183,7 +179,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the \'complement\' field is present AND between 1 and 3', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 complement,
                 s0type,
                 s1type,
@@ -205,7 +200,6 @@ describe('Alignment creating validations', () => {
                 try {
                     await Alignment.create({
                         extension,
-                        clearn: clearn === 1 ? true : false,
                         complement: complements[i],
                         s0type,
                         s1type,
@@ -234,7 +228,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the \'reverse\' field is present AND between 1 and 3', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 complement,
                 reverse,
                 s0type,
@@ -253,7 +246,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the \'reverse\' field is not present', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 complement,
                 s0type,
                 s1type,
@@ -275,7 +267,6 @@ describe('Alignment creating validations', () => {
                 try {
                     await Alignment.create({
                         extension,
-                        clearn: clearn === 1 ? true : false,
                         complement,
                         reverse: reverses[i],
                         s0type,
@@ -305,7 +296,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the `s0type` field is present AND between 1 and 3', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -323,7 +313,6 @@ describe('Alignment creating validations', () => {
             try {
                 await Alignment.create({
                     extension,
-                    clearn: clearn === 1 ? true : false,
                     s1type,
                     s0,
                     s1,
@@ -347,7 +336,6 @@ describe('Alignment creating validations', () => {
                 try {
                     await Alignment.create({
                         extension,
-                        clearn: clearn === 1 ? true : false,
                         s0type: s0types[i],
                         s1type,
                         s0,
@@ -371,7 +359,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the `s1type` field is present AND between 1 and 3', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -389,7 +376,6 @@ describe('Alignment creating validations', () => {
             try {
                 await Alignment.create({
                     extension,
-                    clearn: clearn === 1 ? true : false,
                     s0type,
                     s0,
                     s1,
@@ -413,7 +399,6 @@ describe('Alignment creating validations', () => {
                 try {
                     await Alignment.create({
                         extension,
-                        clearn: clearn === 1 ? true : false,
                         s0type,
                         s1type: s1types[i],
                         s0,
@@ -437,7 +422,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the `s0` field is present', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -455,7 +439,6 @@ describe('Alignment creating validations', () => {
             try {
                 await Alignment.create({
                     extension,
-                    clearn: clearn === 1 ? true : false,
                     s0type,
                     s1type,
                     s1,
@@ -477,7 +460,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the `s1` is present', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -495,7 +477,6 @@ describe('Alignment creating validations', () => {
             try {
                 await Alignment.create({
                     extension,
-                    clearn: clearn === 1 ? true : false,
                     s0type,
                     s1type,
                     s0,
@@ -517,7 +498,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the `s0edge` is present', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -535,7 +515,6 @@ describe('Alignment creating validations', () => {
             try {
                 await Alignment.create({
                     extension,
-                    clearn: clearn === 1 ? true : false,
                     s0type,
                     s1type,
                     s0,
@@ -559,7 +538,6 @@ describe('Alignment creating validations', () => {
                 try {
                     await Alignment.create({
                         extension,
-                        clearn: clearn === 1 ? true : false,
                         s0type,
                         s1type,
                         s0,
@@ -583,7 +561,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the `s1edge` is present', async () => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -601,7 +578,6 @@ describe('Alignment creating validations', () => {
             try {
                 await Alignment.create({
                     extension,
-                    clearn: clearn === 1 ? true : false,
                     s0type,
                     s1type,
                     s0,
@@ -625,7 +601,6 @@ describe('Alignment creating validations', () => {
                 try {
                     await Alignment.create({
                         extension,
-                        clearn: clearn === 1 ? true : false,
                         s0type,
                         s1type,
                         s0,
