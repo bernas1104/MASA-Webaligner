@@ -53,8 +53,8 @@ module.exports = {
             });
         }
     
-        const alignment = await Alignment.create({ extension, s0type, s1type,
-            s0edge, s1edge, s0, s1 });
+        const alignment = await Alignment.create({ extension, clearn, complement,
+            reverse, s0type, s1type, s0edge, s1edge, s0, s1 });
 
         const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
         const results = path.resolve(__dirname, '..', '..', 'results');

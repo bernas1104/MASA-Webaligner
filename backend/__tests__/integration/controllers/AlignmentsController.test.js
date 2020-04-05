@@ -1,4 +1,5 @@
 const request = require('supertest');
+const fs = require('fs');
 const fsmz = require('mz/fs');
 const path = require('path');
 
@@ -20,8 +21,8 @@ describe('Perform a new Alignment (Happy Path, only required fields)', () => {
         const edges = [1, 2, 3, '*', '+'];
         const edge = Math.floor(Math.random() * 4);
         
-        // const extension = Math.floor(Math.random() * 3) + 1;
-        const extension = 2;
+        const extension = Math.floor(Math.random() * 3) + 1;
+        // const extension = 2;
         const s0type = Math.floor(Math.random() * 3) + 1;
         const s1type = Math.floor(Math.random() * 3) + 1;
 
@@ -97,35 +98,34 @@ describe('Perform a new Alignment (Happy Path, only required fields)', () => {
 describe('Perform a new Alignment (Happy Path, all fields', () => {
     var response;
 
+    const files = path.resolve(__dirname, '..', '..', 'utils');
+    const s0FilePath = `${files}/AF133821.1.fasta`;
+    const s1FilePath = `${files}/AY352275.1.fasta`;
+    
+    const extension = Math.floor(Math.random() * 3) + 1;
+    // const extension = 2;
+    const clearn = Math.floor(Math.random() * 2) + 1;
+    const complement = Math.floor(Math.random() * 3) + 1;
+    const reverse = Math.floor(Math.random() * 3) + 1;
+    const name = 'Bernardo Costa Nascimento';
+    const email = 'bernardoc1104@gmail.com';
+
+    const s0type = Math.floor(Math.random() * 3) + 1;
+    const s1type = Math.floor(Math.random() * 3) + 1;
+
     beforeEach(async () => {
         await Alignment.deleteMany({});
-
-        const files = path.resolve(__dirname, '..', '..', 'utils');
-        const s0FilePath = `${files}/AF133821.1.fasta`;
-        const s1FilePath = `${files}/AY352275.1.fasta`;
-        
-        // const extension = Math.floor(Math.random() * 3) + 1;
-        const extension = 2;
-        const clearn = Math.floor(Math.random() * 2) + 1;
-        const complement = Math.floor(Math.random() * 3) + 1;
-        const reverse = Math.floor(Math.random() * 3) + 1;
-        const name = 'Bernardo Costa Nascimento';
-        const email = 'bernardoc1104@gmail.com';
-        const opt = Math.floor(Math.random() * 2) + 1;
-
-        const s0type = Math.floor(Math.random() * 3) + 1;
-        const s1type = Math.floor(Math.random() * 3) + 1;
 
         // var response;
         if(s0type !== 2 && s1type !== 2){
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
-                .field('clearn', opt === 1 ? (clearn === 1 ? true : false) : '')
-                .field('complement', opt === 1 ? complement : '')
-                .field('reverse', opt === 1 ? reverse : '')
-                .field('name', opt === 1 ? name : '')
-                .field('email', opt === 1 ? email : '')
+                .field('clearn', clearn === 1 ? true : false)
+                .field('complement', complement)
+                .field('reverse', reverse)
+                .field('name', name)
+                .field('email', email)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
                 .field('s0input', s0type === 1 ? 'AF133821.1' : textInputs.s0input)
@@ -136,11 +136,11 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
-                .field('clearn', opt === 1 ? (clearn === 1 ? true : false) : '')
-                .field('complement', opt === 1 ? complement : '')
-                .field('reverse', opt === 1 ? reverse : '')
-                .field('name', opt === 1 ? name : '')
-                .field('email', opt === 1 ? email : '')
+                .field('clearn', clearn === 1 ? true : false)
+                .field('complement', complement)
+                .field('reverse', reverse)
+                .field('name', name)
+                .field('email', email)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
                 .field('s1input', s1type === 1 ? 'AY352275.1' : textInputs.s1input)
@@ -151,11 +151,11 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
-                .field('clearn', opt === 1 ? (clearn === 1 ? true : false) : '')
-                .field('complement', opt === 1 ? complement : '')
-                .field('reverse', opt === 1 ? reverse : '')
-                .field('name', opt === 1 ? name : '')
-                .field('email', opt === 1 ? email : '')
+                .field('clearn', clearn === 1 ? true : false)
+                .field('complement', complement)
+                .field('reverse', reverse)
+                .field('name', name)
+                .field('email', email)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
                 .field('s0input', s0type === 1 ? 'AF133821.1' : textInputs.s0input)
@@ -166,11 +166,11 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
-                .field('clearn', opt === 1 ? (clearn === 1 ? true : false) : '')
-                .field('complement', opt === 1 ? complement : '')
-                .field('reverse', opt === 1 ? reverse : '')
-                .field('name', opt === 1 ? name : '')
-                .field('email', opt === 1 ? email : '')
+                .field('clearn', clearn === 1 ? true : false)
+                .field('complement', complement)
+                .field('reverse', reverse)
+                .field('name', name)
+                .field('email', email)
                 .field('s0type', s0type)
                 .field('s1type', s1type)
                 .field('s0edge', '*')
@@ -342,27 +342,113 @@ describe('Perform a new Alignment (Sad Paths)', () => {
     });
 
     it('should return a 400 status code if the \'extension\' is less than zero or bigger than three', async () => {
-        const values = [-312, -56, 0, 4, 742, 1023];
+        const extensions = [0, 4, 1.1, 0.2, 'a', [], {}];
 
-        values.forEach(async value => {
+        extensions.forEach(async extension => {
             const response = await request(app)
-            .post('/alignments')
-            .send({
-                extension: value,
-                s0type: '1',
-                s1type: '1',
-                s0input: 'AF133821.1',
-                s1input: 'AY352275.1',
-                s0edge: '*',
-                s1edge: '*',
-            });
+                .post('/alignments')
+                .send({
+                    extension,
+                    s0type: '1',
+                    s1type: '1',
+                    s0input: 'AF133821.1',
+                    s1input: 'AY352275.1',
+                    s0edge: '*',
+                    s1edge: '*',
+                });
 
             expect(response.status).toBe(400);
             
-            if(value < 1)
+            if(extension === 0)
                 expect(response.body.message).toBe('"extension" must be larger than or equal to 1');
-            else
+            else if(extension === 4)
                 expect(response.body.message).toBe('"extension" must be less than or equal to 3');
+            else if(extension === 1.1 || extension === 0.2)
+                expect(response.body.message).toBe('"extension" must be an integer');
+            else
+                expect(response.body.message).toBe('"extension" must be a number');
+        });
+    });
+
+    it('should return a 400 status code if the \'clearn\' is not a boolean value', async () => {
+        const clearns = [3, -1.2, 'a', [], {}];
+
+        clearns.forEach(async clearn => {
+            const response = await request(app)
+                .post('/alignments')
+                .send({
+                    extension: Math.floor(Math.random() * 3) + 1,
+                    clearn,
+                    s0type: '1',
+                    s1type: '1',
+                    s0input: 'AF133821.1',
+                    s1input: 'AY352275.1',
+                    s0edge: '+',
+                    s1edge: '+',
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('"clearn" must be a boolean');
+        });
+    });
+
+    it('should return a 400 status code if the \'complement\' is not an integer between 1 and 3', async () => {
+        const complements = [0, 4, 1.1, 0.2, 'a', [], {}];
+
+        complements.forEach(async complement => {
+            const response = await request(app)
+                .post('/alignments')
+                .send({
+                    extension: Math.floor(Math.random() * 3) + 1,
+                    complement,
+                    s0type: '1',
+                    s1type: '1',
+                    s0input: 'AF133821.1',
+                    s1input: 'AY352275.1',
+                    s0edge: '+',
+                    s1edge: '+',
+                });
+
+            expect(response.status).toBe(400);
+
+            if(complement === 0)
+                expect(response.body.message).toBe('"complement" must be larger than or equal to 1');
+            else if(complement === 4)
+                expect(response.body.message).toBe('"complement" must be less than or equal to 3');
+            else if(complement === 1.1 || complement === 0.2)
+                expect(response.body.message).toBe('"complement" must be an integer');
+            else
+                expect(response.body.message).toBe('"complement" must be a number');
+        });
+    });
+
+    it('should return a 400 status code if the \'reverse\' is not an integer between 1 and 3', async () => {
+        const reverses = [0, 4, 1.1, 0.2, 'a', [], {}];
+
+        reverses.forEach(async reverse => {
+            const response = await request(app)
+                .post('/alignments')
+                .send({
+                    extension: Math.floor(Math.random() * 3) + 1,
+                    reverse,
+                    s0type: '1',
+                    s1type: '1',
+                    s0input: 'AF133821.1',
+                    s1input: 'AY352275.1',
+                    s0edge: '+',
+                    s1edge: '+',
+                });
+
+            expect(response.status).toBe(400);
+
+            if(reverse === 0)
+                expect(response.body.message).toBe('"reverse" must be larger than or equal to 1');
+            else if(reverse === 4)
+                expect(response.body.message).toBe('"reverse" must be less than or equal to 3');
+            else if(reverse === 1.1 || reverse === 0.2)
+                expect(response.body.message).toBe('"reverse" must be an integer');
+            else
+                expect(response.body.message).toBe('"reverse" must be a number');
         });
     });
 
@@ -432,7 +518,7 @@ describe('Perform a new Alignment (Sad Paths)', () => {
     });
 
     it('should return a 400 status code if the \'s_type\' is less than zero or bigger than three', async () => {
-        const values = [-281, -62, 0, 4, 918, 1284];
+        const values = [0, 4, 2.5, '', [], {}];
 
         for(let i = 0; i < 2; i++){
             values.forEach(async value => {
@@ -450,16 +536,16 @@ describe('Perform a new Alignment (Sad Paths)', () => {
 
                 expect(response.status).toBe(400);
                 
-                if(value < 1)
+                if(value === 0)
                     expect(response.body.message).toBe(`"s${i}type" must be larger than or equal to 1`);
-                else
+                else if(value === 4)
                     expect(response.body.message).toBe(`"s${i}type" must be less than or equal to 3`);
+                else if(value === 2.5)
+                    expect(response.body.message).toBe(`"s${i}type" must be an integer`);
+                else
+                    expect(response.body.message).toBe(`"s${i}type" must be a number`);
             });
         }
-    });
-
-    it('should return a 400 status code if the \'clearn\' is not a boolean value', async () => {
-        //
     });
 
     afterAll(async () => {

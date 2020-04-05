@@ -6,15 +6,24 @@ const AlignmentSchema = new mongoose.Schema({
         default: null,
         required: true,
         min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.']
+        max: [3, 'Must be a number between 1 and 3.'],
+        validate: {
+            validator: (extension) => (
+                extension !== null ?
+                Number.isInteger(extension) :
+                true
+            )
+        }
     },
     clearn: {
         type: Boolean,
         default: false,
-        required: true,
+        required: false,
         validate: {
             validator: (clearn) => (
-                clearn === true || clearn === false
+                clearn !== null ?
+                clearn === true || clearn === false :
+                true
             )
         }
     },
@@ -23,28 +32,56 @@ const AlignmentSchema = new mongoose.Schema({
         default: null,
         required: false,
         min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.']
+        max: [3, 'Must be a number between 1 and 3.'],
+        validate: {
+            validator: (complement) => (
+                complement !== null ?
+                Number.isInteger(complement) :
+                true
+            )
+        }
     },
     reverse: {
         type: Number,
         default: null,
         required: false,
         min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.']
+        max: [3, 'Must be a number between 1 and 3.'],
+        validate: {
+            validator: (reverse) => (
+                reverse !== null ?
+                Number.isInteger(reverse) :
+                true
+            )
+        }
     },
     s0type: {
         type: Number,
         default: null,
         required: true,
         min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.']
+        max: [3, 'Must be a number between 1 and 3.'],
+        validate: {
+            validator: (s0type) => (
+                s0type !== null ?
+                Number.isInteger(s0type) :
+                true
+            )
+        }
     },
     s1type: {
         type: Number,
         default: null,
         required: true,
         min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.']
+        max: [3, 'Must be a number between 1 and 3.'],
+        validate: {
+            validator: (s1type) => (
+                s1type !== null ?
+                Number.isInteger(s1type) :
+                true
+            )
+        }
     },
     s0: {
         type: String,
