@@ -22,7 +22,6 @@ describe('Perform a new Alignment (Happy Path, only required fields)', () => {
         const edge = Math.floor(Math.random() * 4);
         
         const extension = Math.floor(Math.random() * 3) + 1;
-        // const extension = 2;
         const s0type = Math.floor(Math.random() * 3) + 1;
         const s1type = Math.floor(Math.random() * 3) + 1;
 
@@ -103,10 +102,12 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
     const s1FilePath = `${files}/AY352275.1.fasta`;
     
     const extension = Math.floor(Math.random() * 3) + 1;
-    // const extension = 2;
+    
     const clearn = Math.floor(Math.random() * 2) + 1;
     const complement = Math.floor(Math.random() * 3) + 1;
     const reverse = Math.floor(Math.random() * 3) + 1;
+    const blockPruning = Math.floor(Math.random() * 2) + 1;
+
     const name = 'Bernardo Costa Nascimento';
     const email = 'bernardoc1104@gmail.com';
 
@@ -124,6 +125,7 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
                 .field('clearn', clearn === 1 ? true : false)
                 .field('complement', complement)
                 .field('reverse', reverse)
+                .field('blockPruning', blockPruning === 1 ? true : false)
                 .field('name', name)
                 .field('email', email)
                 .field('s0type', s0type)
@@ -139,6 +141,7 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
                 .field('clearn', clearn === 1 ? true : false)
                 .field('complement', complement)
                 .field('reverse', reverse)
+                .field('blockPruning', blockPruning === 1 ? true : false)
                 .field('name', name)
                 .field('email', email)
                 .field('s0type', s0type)
@@ -154,6 +157,7 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
                 .field('clearn', clearn === 1 ? true : false)
                 .field('complement', complement)
                 .field('reverse', reverse)
+                .field('blockPruning', blockPruning === 1 ? true : false)
                 .field('name', name)
                 .field('email', email)
                 .field('s0type', s0type)
@@ -169,6 +173,7 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
                 .field('clearn', clearn === 1 ? true : false)
                 .field('complement', complement)
                 .field('reverse', reverse)
+                .field('blockPruning', blockPruning === 1 ? true : false)
                 .field('name', name)
                 .field('email', email)
                 .field('s0type', s0type)
@@ -449,6 +454,28 @@ describe('Perform a new Alignment (Sad Paths)', () => {
                 expect(response.body.message).toBe('"reverse" must be an integer');
             else
                 expect(response.body.message).toBe('"reverse" must be a number');
+        });
+    });
+
+    it('should return a 400 status code if the \'blockPruning\' is not a boolean value', async () => {
+        const blockPrunings = [3, -1.2, 'a', [], {}];
+
+        blockPrunings.forEach(async blockPruning => {
+            const response = await request(app)
+                .post('/alignments')
+                .send({
+                    extension: Math.floor(Math.random() * 3) + 1,
+                    blockPruning,
+                    s0type: '1',
+                    s1type: '1',
+                    s0input: 'AF133821.1',
+                    s1input: 'AY352275.1',
+                    s0edge: '+',
+                    s1edge: '+',
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('"blockPruning" must be a boolean');
         });
     });
 

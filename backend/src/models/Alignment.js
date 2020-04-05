@@ -55,6 +55,18 @@ const AlignmentSchema = new mongoose.Schema({
             )
         }
     },
+    blockPruning: {
+        type: Boolean,
+        default: true,
+        required: false,
+        validate: {
+            validator: (blockPruning) => (
+                blockPruning !== null ?
+                blockPruning === true || blockPruning === false :
+                true
+            )
+        }
+    },
     s0type: {
         type: Number,
         default: null,

@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 
 const Alignment = require('../models/Alignment');
@@ -9,7 +10,7 @@ module.exports = {
     async create(req, res) {
         const { extension, s0type, s1type, s0edge, s1edge,
                 s0input, s1input, name, email,
-                clearn, complement, reverse } = req.body;
+                clearn, complement, reverse, blockPruning } = req.body;
         
         let s0, s1;
         let s0folder, s1folder;
@@ -54,7 +55,7 @@ module.exports = {
         }
     
         const alignment = await Alignment.create({ extension, clearn, complement,
-            reverse, s0type, s1type, s0edge, s1edge, s0, s1 });
+            reverse, blockPruning, s0type, s1type, s0edge, s1edge, s0, s1 });
 
         const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
         const results = path.resolve(__dirname, '..', '..', 'results');
@@ -62,8 +63,21 @@ module.exports = {
         let masa;
         if(extension === '1')
             masa = 'cudalign';
-        else
+        else if(extension === '2')
             masa = 'masa-openmp';
+        else {
+            var { size } = fs.statSync(`${filesPath}/${s0}`);
+            const s0size = size;
+
+            var { size } = fs.statSync(`${filesPath}/${s1}`);
+            const s1size = size;
+
+            if(s0size <= 1000000 && s1size <= 1000000) {
+                masa = 'masa-openmp';
+            } else {
+                masa = 'cudalign';
+            }
+        }
 
         masaQueue.bull.add({ 
             masa,
@@ -71,6 +85,7 @@ module.exports = {
             clearn,
             complement,
             reverse,
+            blockPruning,
             s0edge,
             s1edge,
             filesPath,

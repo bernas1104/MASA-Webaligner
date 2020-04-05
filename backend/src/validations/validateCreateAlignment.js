@@ -7,7 +7,7 @@ module.exports = celebrate({
         clearn: Joi.boolean().allow('', null).default(null),
         complement: Joi.number().integer().min(1).max(3).allow('', null),
         reverse: Joi.number().integer().min(1).max(3).allow('', null),
-        // bp: ,
+        blockPruning: Joi.boolean().allow('', null).default(null),
 
         s0type: Joi.number().integer().required().min(1).max(3),
         s1type: Joi.number().integer().required().min(1).max(3),

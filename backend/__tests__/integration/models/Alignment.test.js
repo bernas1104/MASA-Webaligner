@@ -12,6 +12,7 @@ describe('Alignment creating validations', () => {
     const clearn = Math.floor(Math.random() * 2) + 1;
     const complement = Math.floor(Math.random() * 3) + 1;
     const reverse = Math.floor(Math.random() * 3) + 1;
+    const blockPruning = Math.floor(Math.random() * 2) + 1;
     
     const s0type = Math.floor(Math.random() * 3) + 1;
     const s1type = Math.floor(Math.random() * 3) + 1;
@@ -232,7 +233,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the \'reverse\' field is present AND between 1 and 3', async () => {
             await Alignment.create({
                 extension,
-                complement,
                 reverse,
                 s0type,
                 s1type,
@@ -250,7 +250,6 @@ describe('Alignment creating validations', () => {
         it('should create an alignment if the \'reverse\' field is not present', async () => {
             await Alignment.create({
                 extension,
-                complement,
                 s0type,
                 s1type,
                 s0,
@@ -271,7 +270,6 @@ describe('Alignment creating validations', () => {
                 try {
                     await Alignment.create({
                         extension,
-                        complement,
                         reverse: reverses[i],
                         s0type,
                         s1type,
@@ -296,11 +294,11 @@ describe('Alignment creating validations', () => {
         });
     });
 
-    describe('Validates the \'clearn\' field', () => {
-        it('should create an alignment if the \'clearn\' is TRUE or FALSE', async () => {
+    describe('Validates the \'blockPruning\' field', () => {
+        it('should create an alignment if the \'blockPruning\' is present AND is TRUE or FALSE', async() => {
             await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
+                blockPruning: blockPruning === 1 ? true : false,
                 s0type,
                 s1type,
                 s0,
@@ -310,21 +308,50 @@ describe('Alignment creating validations', () => {
             });
 
             const afterCount = await Alignment.countDocuments();
-            
+
             expect(afterCount - beforeCount).toBe(1);
         });
 
-        it('should not create an alignment if the \'clearn\' is NOT a boolean', async () => {
-            //
+        it('should create an alignment if the \'blockPruning\' is not present', async () => {
+            await Alignment.create({
+                extension,
+                s0type,
+                s1type,
+                s0,
+                s1,
+                s0edge,
+                s1edge
+            });
+
+            const afterCount = await Alignment.countDocuments();
+
+            expect(afterCount - beforeCount).toBe(1);
         });
-    });
 
-    describe('', () => {
-        //
-    });
+        it('should not create an alignment if the \'blockPruning\' is not a boolean value', async () => {
+            const blockPrunings = [2, 'a', [], {}];
 
-    describe('', () => {
-        //
+            for(let i = 0; i < 4; i++){
+                try{
+                    await Alignment.create({
+                        extension,
+                        blockPruning: blockPrunings[i],
+                        s0type,
+                        s1type,
+                        s0,
+                        s1,
+                        s0edge,
+                        s1edge
+                    });
+                } catch (err) {
+                    expect(err.name).toBe('ValidationError');
+                }
+            }
+
+            const afterCount = await Alignment.countDocuments();
+
+            expect(afterCount - beforeCount).toBe(0);
+        });
     });
 
     describe('Validates the \'s0type\' field', () => {
