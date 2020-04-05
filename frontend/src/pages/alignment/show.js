@@ -85,17 +85,17 @@ export default class ShowAlignment extends Component {
                 x = this.alignment.getSequenceStartPosition(0),
                 y = this.alignment.getSequenceStartPosition(1); i < s0gapped.length; i++){
             if(s0gapped[i] === s1gapped[i]){
-                xAxis.push(x++);
-                yAxis.push(y++);
+                this.alignment._dir[0] === 1 ? xAxis.push(x++) : xAxis.push(x--);
+                this.alignment._dir[1] === 1 ? yAxis.push(y++) : yAxis.push(y--);
             } else {
                 if(s0gapped[i] !== '-' && s1gapped[i] !== '-'){
-                    xAxis.push(x++);
-                    yAxis.push(y++);
+                    this.alignment._dir[0] === 1 ? xAxis.push(x++) : xAxis.push(x--);
+                    this.alignment._dir[1] === 1 ? yAxis.push(y++) : yAxis.push(y--);
                 } else if (s0gapped[i] === '-'){
                     xAxis.push(x);
-                    yAxis.push(y++);
+                    this.alignment._dir[1] === 1 ? yAxis.push(y++) : yAxis.push(y--);
                 } else {
-                    xAxis.push(x++);
+                    this.alignment._dir[0] === 1 ? xAxis.push(x++) : xAxis.push(x--);
                     yAxis.push(y);
                 }
             }
@@ -125,7 +125,6 @@ export default class ShowAlignment extends Component {
 
             this.setState({ description });
         } catch (err) {
-            console.log(err);
             this.setState({
                 render: false,
                 errors: this.state.errors | ShowAlignment.binFiles
