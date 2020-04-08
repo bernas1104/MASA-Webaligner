@@ -101,6 +101,8 @@ export default class ShowAlignment extends Component {
             }
         }
 
+        console.log(xAxis, yAxis);
+
         this.setState({
             xAxis: xAxis,
             yAxis: yAxis,
@@ -165,7 +167,6 @@ export default class ShowAlignment extends Component {
                 min: this.alignment.getSequenceStartPosition(0),
                 max: this.alignment.getSequenceEndPosition(0)
             });
-            console.log(this.alignment);
         } catch (err) {
             this.setState({
                 render: false,

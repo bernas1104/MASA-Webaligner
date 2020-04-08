@@ -4,10 +4,10 @@ module.exports = celebrate({
     [Segments.BODY]: Joi.object().keys({
         extension: Joi.number().integer().required().min(1).max(3),
         
-        clearn: Joi.boolean().allow('', null).default(null),
-        complement: Joi.number().integer().min(1).max(3).allow('', null),
-        reverse: Joi.number().integer().min(1).max(3).allow('', null),
-        blockPruning: Joi.boolean().allow('', null).default(null),
+        clearn: Joi.boolean().allow('').default(false),
+        complement: Joi.number().integer().min(1).max(3).allow('').default(null),
+        reverse: Joi.number().integer().min(1).max(3).allow('').default(null),
+        blockPruning: Joi.boolean().allow('').default(true),
 
         s0type: Joi.number().integer().required().min(1).max(3),
         s1type: Joi.number().integer().required().min(1).max(3),

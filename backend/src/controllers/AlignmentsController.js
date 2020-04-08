@@ -61,9 +61,9 @@ module.exports = {
         const results = path.resolve(__dirname, '..', '..', 'results');
         
         let masa;
-        if(extension === '1')
+        if(extension === 1)
             masa = 'cudalign';
-        else if(extension === '2')
+        else if(extension === 2)
             masa = 'masa-openmp';
         else {
             var { size } = fs.statSync(`${filesPath}/${s0}`);

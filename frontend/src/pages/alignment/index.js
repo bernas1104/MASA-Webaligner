@@ -10,12 +10,18 @@ export default class NewAlignment extends Component {
 
         this.state = {
             extension: '',
+            clearn: false,
+            reverse: '',
+            complement: '',
+            blockPruning: true,
             s0type: '',
             s1type: '',
             s0input: '',
             s1input: '',
             s0edge: '',
             s1edge: '',
+            name: '',
+            email: '',
         }
     }
 
@@ -46,8 +52,10 @@ export default class NewAlignment extends Component {
         
         const form = new FormData();
 
-        for(const key in this.state)
+        for(const key in this.state)//{
+            // console.log(key, this.state[key]);
             form.append(key, this.state[key]);
+        // }
 
         try {
             const { data } = await api.post(url, form);
@@ -66,6 +74,7 @@ export default class NewAlignment extends Component {
                 <div className="row">
                     <div className="form-header">
                         <h2>Awesome Title</h2>
+                        <br />
                         <p>
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada consectetur eleifend. 
                             Nulla consectetur vulputate magna, eget interdum nulla mollis a. Cras condimentum, 
@@ -95,6 +104,92 @@ export default class NewAlignment extends Component {
                         <div className="col-2"></div>
                     </div>
 
+                    <div className="row">
+                        <div className="col">
+                            <h3>Optional Configurations</h3>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <label htmlFor="alignment" name="clearn" className="col-2">Clear-N</label>
+                        <div className="col-10">
+                            <div className="form-check">
+                                <div>
+                                    <input type="radio" name="clearn" onChange={this.handleChangeFields} value={false} /> False
+                                </div>
+                                <div>
+                                    <input type="radio" name="clearn" onChange={this.handleChangeFields} value={true} /> True
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <label htmlFor="alignment" name="blockPruning" className="col-2">Block Pruning Optmization</label>
+                        <div className="col-10">
+                            <div className="form-check">
+                                <div>
+                                    <input type="radio" name="blockPruning" onChange={this.handleChangeFields} value={false} /> Disable
+                                </div>
+                                <div>
+                                    <input type="radio" name="blockPruning" onChange={this.handleChangeFields} value={true} /> Enable
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <label htmlFor="alignment" name="complement" className="col-2">Sequence Complement</label>
+                        <div className="col-10">
+                            <div className="form-check">
+                                <div>
+                                    <input type="radio" name="complement" onChange={this.handleChangeFields} value="1" /> Only Sequence #1
+                                </div>
+                                <div>
+                                    <input type="radio" name="complement" onChange={this.handleChangeFields} value="2" /> Only Sequence #2
+                                </div>
+                                <div>
+                                    <input type="radio" name="complement" onChange={this.handleChangeFields} value="3" /> Both Sequences
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <label htmlFor="alignment" name="reverse" className="col-2">Reverse Sequence</label>
+                        <div className="col-10">
+                            <div className="form-check">
+                                <div>
+                                    <input type="radio" name="reverse" onChange={this.handleChangeFields} value="1" /> Only Sequence #1
+                                </div>
+                                <div>
+                                    <input type="radio" name="reverse" onChange={this.handleChangeFields} value="2" /> Only Sequence #2
+                                </div>
+                                <div>
+                                    <input type="radio" name="reverse" onChange={this.handleChangeFields} value="3" /> Both Sequences
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        {/* Name */}
+                        <div className="col">
+                            <label htmlFor="alignment" name="name">Name</label>
+                            <div>
+                                <input type="text" name="name" value={this.state.name} onChange={this.handleChangeFields} placeholder="John Doe" className="form-control"/>
+                            </div>
+                        </div>
+
+                        {/* Email */}
+                        <div className="col">
+                            <label htmlFor="alignment" name="email">S1</label>
+                            <div>
+                                <input type="email" name="email" value={this.state.email} onChange={this.handleChangeFields} placeholder="johndoe@gmail.com" className="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+
                     <br />
                     <hr />
                     <br />
@@ -121,15 +216,15 @@ export default class NewAlignment extends Component {
                         <div className="col-6">
                             <label htmlFor="alignment" name="s1type">s1 Input Type</label>
                             <div className="form-check">
-                                <>
+                                <div>
                                     <input type="radio" name="s1type" onChange={this.handleChangeFields} value="1"/> NCBI API
-                                </>
-                                <>
+                                </div>
+                                <div>
                                     <input type="radio" name="s1type" onChange={this.handleChangeFields} value="2" /> File Upload
-                                </>
-                                <>
+                                </div>
+                                <div>
                                     <input type="radio" name="s1type" onChange={this.handleChangeFields} value="3" /> Text Input
-                                </>
+                                </div>
                             </div>
                         </div>
                     </div>

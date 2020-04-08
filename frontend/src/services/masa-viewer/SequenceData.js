@@ -28,7 +28,7 @@ export default class SequenceData {
             for(let i = reader.indexOf('\n'); i < reader.length; i++){
                 if(reader[i] === '\r' || reader[i] === '\n' || reader[i] === ' ') continue;
                 if(modifiers.isCleanN() && 
-                    (String.fromCharCode(reader[i]) === 'N' || String.fromCharCode(reader[i] === 'n'))) continue;
+                    (reader[i] === 'N' || reader[i] === 'n')) continue;
 
                 this._sb += complement_map[reader.charCodeAt(i)];
             }
