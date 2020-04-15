@@ -14,15 +14,19 @@ describe('MASA Files Controller', () => {
         var alignment;
 
         beforeAll(async () => {
+            const filesPath = path.resolve(__dirname, '..', '..', 'utils');
+
             alignment = await request(app)
                 .post('/alignments')
                 .field('extension', 1)
-                .field('s0type', 1)
-                .field('s1type', 1)
-                .field('s0input', 'AF133821.1')
-                .field('s1input', 'AY352275.1')
+                .field('s0type', 2)
+                .field('s1type', 2)
+                .attach('s0input', filesPath + '/AF133821.1.fasta')
+                .attach('s1input', filesPath + '/AY352275.1.fasta')
                 .field('s0edge', '*')
                 .field('s1edge', '*')
+
+            await new Promise(r => setTimeout(r, 2000));
         });
     
         it('should return \'true\' if the alignment results are ready', async () => {

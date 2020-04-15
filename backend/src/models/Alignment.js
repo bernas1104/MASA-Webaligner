@@ -15,6 +15,18 @@ const AlignmentSchema = new mongoose.Schema({
             )
         }
     },
+    only1: {
+        type: Boolean,
+        default: false,
+        required: false,
+        validate: {
+            validator: (only1) => (
+                only1 !== null ?
+                only1 === true || only1 === false :
+                true
+            )
+        }
+    },
     clearn: {
         type: Boolean,
         default: false,

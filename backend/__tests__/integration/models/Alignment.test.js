@@ -8,6 +8,8 @@ describe('Alignment creating validations', () => {
     const edges = ['*', '1', '2', '3', '+'];
 
     const extension = Math.floor(Math.random() * 3) + 1;
+
+    const only1 = Math.floor(Math.random() * 2) + 1;
     
     const clearn = Math.floor(Math.random() * 2) + 1;
     const complement = Math.floor(Math.random() * 3) + 1;
@@ -100,6 +102,67 @@ describe('Alignment creating validations', () => {
             const afterCount = await Alignment.countDocuments();
 
             expect(afterCount - beforeCount).toBe(0);
+        });
+    });
+
+    describe('Validates the \'only1\' field', () => {
+        it('should create an alignment if the \'only1\' is TRUE or FALSE', async () => {
+            await Alignment.create({
+                extension,
+                only1: only1 === 1 ? true : false,
+                s0type,
+                s1type,
+                s0,
+                s1,
+                s0edge,
+                s1edge
+            });
+
+            const afterCounter = await Alignment.countDocuments();
+
+            expect(afterCounter - beforeCount).toBe(1);
+        });
+
+        it('should create an alignment if the \'only1\' is not present', async () => {
+            await Alignment.create({
+                extension,
+                s0type,
+                s1type,
+                s0,
+                s1,
+                s0edge,
+                s1edge
+            });
+
+            const afterCounter = await Alignment.countDocuments();
+
+            expect(afterCounter - beforeCount).toBe(1);
+        });
+
+        it('should not create an alignment if the \'only1\' is not a boolean value', async () => {
+            const only1s = [3, 'a', -21, 'asd'];
+
+            for(let i = 0; i < 4; i++){
+                try{
+                    await Alignment.create({
+                        extension,
+                        only1: only1s[i],
+                        s0type,
+                        s1type,
+                        s0,
+                        s1,
+                        s0edge,
+                        s1edge
+                    });
+                } catch (err) {
+                    expect(err.name).toBe('ValidationError');
+                    expect(err.errors.only1.message).toBe(`Cast to Boolean failed for value "${only1s[i]}" at path "only1"`);
+                }
+
+                const afterCount = await Alignment.countDocuments();
+
+                expect(afterCount - beforeCount).toBe(0);
+            }
         });
     });
 

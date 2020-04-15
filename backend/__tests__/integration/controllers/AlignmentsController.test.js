@@ -102,6 +102,8 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
     const s1FilePath = `${files}/AY352275.1.fasta`;
     
     const extension = Math.floor(Math.random() * 3) + 1;
+
+    const only1 = Math.floor(Math.random() * 2) + 1;
     
     const clearn = Math.floor(Math.random() * 2) + 1;
     const complement = Math.floor(Math.random() * 3) + 1;
@@ -122,6 +124,7 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
+                .field('only1', only1 === 1 ? true : false)
                 .field('clearn', clearn === 1 ? true : false)
                 .field('complement', complement)
                 .field('reverse', reverse)
@@ -138,6 +141,7 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
+                .field('only1', only1 === 1 ? true : false)
                 .field('clearn', clearn === 1 ? true : false)
                 .field('complement', complement)
                 .field('reverse', reverse)
@@ -154,6 +158,7 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
+                .field('only1', only1 === 1 ? true : false)
                 .field('clearn', clearn === 1 ? true : false)
                 .field('complement', complement)
                 .field('reverse', reverse)
@@ -170,6 +175,7 @@ describe('Perform a new Alignment (Happy Path, all fields', () => {
             response = await request(app)
                 .post('/alignments')
                 .field('extension', extension)
+                .field('only1', only1 === 1 ? true : false)
                 .field('clearn', clearn === 1 ? true : false)
                 .field('complement', complement)
                 .field('reverse', reverse)
@@ -372,6 +378,28 @@ describe('Perform a new Alignment (Sad Paths)', () => {
                 expect(response.body.message).toBe('"extension" must be an integer');
             else
                 expect(response.body.message).toBe('"extension" must be a number');
+        });
+    });
+
+    it('should return a 400 status code if \'only1\' is not a boolean value', async () => {
+        const only1s = [3, -1.2, 'a', [], {}];
+
+        only1s.forEach(async only1 => {
+            const response = await request(app)
+                .post('/alignments')
+                .send({
+                    extension: Math.floor(Math.random() * 3) + 1,
+                    only1,
+                    s0type: '1',
+                    s1type: '1',
+                    s0input: 'AF133821.1',
+                    s1input: 'AY352275.1',
+                    s0edge: '+',
+                    s1edge: '+',
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('"only1" must be a boolean');
         });
     });
 

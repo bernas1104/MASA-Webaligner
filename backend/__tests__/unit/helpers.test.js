@@ -3,7 +3,7 @@ const fsmz = require('mz/fs');
 const fs = require('fs');
 
 const deleteUploadedFile = require('./../../src/helpers/deleteUploadedFile');
-const { saveInputToFile } = require('./../../src/helpers/prepareFilesForAlignment');
+const { saveInputToFile, selectMASAExtension } = require('./../../src/helpers/prepareFilesForAlignment');
 
 describe('Delete Uploaded File', () => {
     const newFilePath = path.resolve(__dirname, '..', '..', 'uploads', 'testFile.fasta');
@@ -33,5 +33,58 @@ describe('Saves an user sequence input to file on the \'uploads\' folder', () =>
         expect(path.extname(filePath)).toBe('.fasta');
 
         deleteUploadedFile(filePath);
+    });
+});
+
+describe('Selects the MASA Core extension (CUDAlign or OpenMP) to perform the alignment', () => {
+    let filesPath;
+    let s0big, s1big;
+    let s0small, s1small;
+    let filePairs;
+
+    beforeAll(() => {
+        filesPath = path.resolve(__dirname, '..', 'utils');
+
+        s0big = 'AE002160.2.fasta';
+        s1big = 'CP000051.1.fasta';
+
+        s0small = 'AF133821.1.fasta';
+        s1small = 'AY352275.1.fasta';
+
+        filePairs = [[s0small, s1small], [s0big, s1big]];
+    });
+
+    it('should select the CUDAlign extension, if \'extension\' equals \'1\'', () => {
+        const extension = 1;
+
+        filePairs.forEach(filePair => {
+            let masa = selectMASAExtension(extension, filesPath, filePair[0], filePair[1]);
+            expect(masa).toBe('cudalign');
+        });
+    });
+
+    it('should select the OpenMP extension, if \'extension\' equals \'2\'', () => {
+        const extension = 2;
+
+        filePairs.forEach(filePair => {
+            let masa = selectMASAExtension(extension, filesPath, filePair[0], filePair[1]);
+            expect(masa).toBe('masa-openmp');
+        });
+    });
+
+    it('should select either CUDAlign (files bigger than 1MB) or OpenMP (files smaller than 1MB) based on the file size, if \'extension\' equals \'3\'', () => {
+        let counter = 0;
+        const extension = 3;
+
+        filePairs.forEach(filePair => {
+            let masa = selectMASAExtension(extension, filesPath, filePair[0], filePair[1]);
+
+            if(counter === 0)
+                expect(masa).toBe('masa-openmp');
+            else
+                expect(masa).toBe('cudalign');
+
+            counter++;
+        });
     });
 });

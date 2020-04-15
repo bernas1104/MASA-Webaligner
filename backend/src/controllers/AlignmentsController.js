@@ -3,13 +3,13 @@ const path = require('path');
 
 const Alignment = require('../models/Alignment');
 const deleteUploadedFile = require('../helpers/deleteUploadedFile');
-const { getFileName } = require('./../helpers/prepareFilesForAlignment');
+const { getFileName, selectMASAExtension } = require('./../helpers/prepareFilesForAlignment');
 const { masaQueue } = require('./../lib/Queue');
 
 module.exports = {
     async create(req, res) {
         const { extension, s0type, s1type, s0edge, s1edge,
-                s0input, s1input, name, email,
+                s0input, s1input, name, email, only1,
                 clearn, complement, reverse, blockPruning } = req.body;
         
         let s0, s1;
@@ -60,27 +60,11 @@ module.exports = {
         const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
         const results = path.resolve(__dirname, '..', '..', 'results');
         
-        let masa;
-        if(extension === 1)
-            masa = 'cudalign';
-        else if(extension === 2)
-            masa = 'masa-openmp';
-        else {
-            var { size } = fs.statSync(`${filesPath}/${s0}`);
-            const s0size = size;
-
-            var { size } = fs.statSync(`${filesPath}/${s1}`);
-            const s1size = size;
-
-            if(s0size <= 1000000 && s1size <= 1000000) {
-                masa = 'masa-openmp';
-            } else {
-                masa = 'cudalign';
-            }
-        }
+        let masa = selectMASAExtension(extension, filesPath, s0, s1);
 
         masaQueue.bull.add({ 
             masa,
+            only1,
             extension,
             clearn,
             complement,
