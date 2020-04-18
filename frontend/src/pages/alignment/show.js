@@ -16,6 +16,7 @@ export default class ShowAlignment extends Component {
     static alignment  = 0x0001;
     static binFiles   = 0x0002;
     static fastaFiles = 0x0004;
+    static bestInfo = 0x0008;
     timeOut = 0;
 
     alignment    = null;
@@ -37,14 +38,16 @@ export default class ShowAlignment extends Component {
             xAxis: null,
             yAxis: null,
             range: null,
+            bestScore: 0,
+            bestPosition: [0, 0],
             render: true,
             errors: 0x0000,
         };
     }
 
     isAlignmentReady = async () => {
-        const { s0, s1 } = this.state.alignmentInfo;
-        const { data: { isReady } } = await api.get(`/isAlignmentReady?s0=${ s0 }&s1=${ s1 }`);
+        const { s0, s1, only1 } = this.state.alignmentInfo;
+        const { data: { isReady } } = await api.get(`/isAlignmentReady?s0=${ s0 }&s1=${ s1 }&only1=${ only1 }`);
 
         if(isReady === true){
             await this.renderResults();
@@ -65,6 +68,7 @@ export default class ShowAlignment extends Component {
 
             await this.isAlignmentReady();
         } catch (err) {
+            console.log(err);
             this.setState({
                 render: false,
                 errors: this.state.errors | ShowAlignment.alignment
@@ -73,41 +77,55 @@ export default class ShowAlignment extends Component {
     }
 
     renderResults = async () => {
-        await this.buildResults();
-        await this.buildTextResults();
+        if(this.state.alignmentInfo.only1){
+            await this.buildResults();
+            await this.buildTextResults();
 
-        const s0gapped = this.alignment.getAlignmentWithGaps(0).getSB();
-        const s1gapped = this.alignment.getAlignmentWithGaps(1).getSB();
-        
-        const xAxis = [];
-        const yAxis = [];
-        for(var i = 0, 
-                x = this.alignment.getSequenceStartPosition(0),
-                y = this.alignment.getSequenceStartPosition(1); i < s0gapped.length; i++){
-            if(s0gapped[i] === s1gapped[i]){
-                this.alignment._dir[0] === 1 ? xAxis.push(x++) : xAxis.push(x--);
-                this.alignment._dir[1] === 1 ? yAxis.push(y++) : yAxis.push(y--);
-            } else {
-                if(s0gapped[i] !== '-' && s1gapped[i] !== '-'){
+            const s0gapped = this.alignment.getAlignmentWithGaps(0).getSB();
+            const s1gapped = this.alignment.getAlignmentWithGaps(1).getSB();
+            
+            const xAxis = [];
+            const yAxis = [];
+            for(var i = 0, 
+                    x = this.alignment.getSequenceStartPosition(0),
+                    y = this.alignment.getSequenceStartPosition(1); i < s0gapped.length; i++){
+                if(s0gapped[i] === s1gapped[i]){
                     this.alignment._dir[0] === 1 ? xAxis.push(x++) : xAxis.push(x--);
-                    this.alignment._dir[1] === 1 ? yAxis.push(y++) : yAxis.push(y--);
-                } else if (s0gapped[i] === '-'){
-                    xAxis.push(x);
                     this.alignment._dir[1] === 1 ? yAxis.push(y++) : yAxis.push(y--);
                 } else {
-                    this.alignment._dir[0] === 1 ? xAxis.push(x++) : xAxis.push(x--);
-                    yAxis.push(y);
+                    if(s0gapped[i] !== '-' && s1gapped[i] !== '-'){
+                        this.alignment._dir[0] === 1 ? xAxis.push(x++) : xAxis.push(x--);
+                        this.alignment._dir[1] === 1 ? yAxis.push(y++) : yAxis.push(y--);
+                    } else if (s0gapped[i] === '-'){
+                        xAxis.push(x);
+                        this.alignment._dir[1] === 1 ? yAxis.push(y++) : yAxis.push(y--);
+                    } else {
+                        this.alignment._dir[0] === 1 ? xAxis.push(x++) : xAxis.push(x--);
+                        yAxis.push(y);
+                    }
                 }
             }
+
+            this.setState({
+                xAxis: xAxis,
+                yAxis: yAxis,
+                range: s0gapped.length
+            });
+        } else {
+            try {
+                const response = await api.get(`/stage-i-results/${ this.state.alignmentInfo._id }`);
+                
+                this.setState({
+                    bestScore: response.data.bestScore,
+                    bestPosition: response.data.bestPosition
+                })
+            } catch (err) {
+                this.setState({
+                    render: false,
+                    errors: this.state.errors | ShowAlignment.bestInfo
+                });
+            }
         }
-
-        console.log(xAxis, yAxis);
-
-        this.setState({
-            xAxis: xAxis,
-            yAxis: yAxis,
-            range: s0gapped.length
-        });
     }
 
     buildResults = async () => {
@@ -277,30 +295,39 @@ export default class ShowAlignment extends Component {
 
     render(){
         if(this.state.render){
-            return (
-                <div className="results">
-                    <ReactEcharts className="alignmentPlot" option={ChartOptions(this.state.xAxis, this.state.yAxis, this.state.description, this.state.range)} /*opts={{ renderer: 'svg' }}*//>
-                    <div id="textResults">
-                        <div className="alignmentText" dangerouslySetInnerHTML={{ __html: this.htmlDecode() }}></div>
-                        <div>
-                            <input className='min' type="text" name='min' onChange={event => {
-                                if(event.target.value < this.alignment.getSequenceStartPosition(0))
-                                    this.min = this.alignment.getSequenceStartPosition(0);
-                                else
-                                    this.min = parseInt(event.target.value);
-                            }}/>
-                            <input className='max' type="text" name='max' onChange={event => {
-                                if(event.target.value > this.alignment.getSequenceEndPosition(0))
-                                    this.max = this.alignment.getSequenceEndPosition(0);
-                                else
-                                    this.max = parseInt(event.target.value);
-                            }}/>
-                            <input type="submit" value="Ajust" onClick={(event) => this.adjustTextResults(event, false)}/>
-                            <input type="submit" value='Reset' onClick={(event) => this.adjustTextResults(event, true)} />
+            if(this.state.only1){
+                return (
+                    <div className="results">
+                        <ReactEcharts className="alignmentPlot" option={ChartOptions(this.state.xAxis, this.state.yAxis, this.state.description, this.state.range)} /*opts={{ renderer: 'svg' }}*//>
+                        <div id="textResults">
+                            <div className="alignmentText" dangerouslySetInnerHTML={{ __html: this.htmlDecode() }}></div>
+                            <div>
+                                <input className='min' type="text" name='min' onChange={event => {
+                                    if(event.target.value < this.alignment.getSequenceStartPosition(0))
+                                        this.min = this.alignment.getSequenceStartPosition(0);
+                                    else
+                                        this.min = parseInt(event.target.value);
+                                }}/>
+                                <input className='max' type="text" name='max' onChange={event => {
+                                    if(event.target.value > this.alignment.getSequenceEndPosition(0))
+                                        this.max = this.alignment.getSequenceEndPosition(0);
+                                    else
+                                        this.max = parseInt(event.target.value);
+                                }}/>
+                                <input type="submit" value="Ajust" onClick={(event) => this.adjustTextResults(event, false)}/>
+                                <input type="submit" value='Reset' onClick={(event) => this.adjustTextResults(event, true)} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            );
+                );
+            } else {
+                return (
+                    <>
+                        <h1>Best Score: { this.state.bestScore }</h1>
+                        <h1>Best Position: ({ this.state.bestPosition[0] }, { this.state.bestPosition[1] })</h1>
+                    </>
+                );
+            }
         } else {
             const { errors } = this.state;
             return (

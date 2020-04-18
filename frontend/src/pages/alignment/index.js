@@ -10,6 +10,7 @@ export default class NewAlignment extends Component {
 
         this.state = {
             extension: '',
+            only1: false,
             clearn: false,
             reverse: '',
             complement: '',
@@ -105,6 +106,23 @@ export default class NewAlignment extends Component {
                     </div>
 
                     <div className="row">
+                        <label htmlFor="alignment" name="Only Stage I" className="col-2">Stages?</label>
+                        <div className="col-8 form-check">
+                            <div>
+                                <input type="radio" name="only1" id="only1" value={true} 
+                                    onChange={() => { this.setState({ only1: true }) }}
+                                /> Only Stage I
+                            </div>
+                            <div>
+                                <input type="radio" name="all" id="all" value={false}
+                                    onChange={() => { this.setState({ only1: false }) }}
+                                    checked
+                                /> All Stages
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="row">
                         <div className="col">
                             <h3>Optional Configurations</h3>
                         </div>
@@ -183,7 +201,7 @@ export default class NewAlignment extends Component {
 
                         {/* Email */}
                         <div className="col">
-                            <label htmlFor="alignment" name="email">S1</label>
+                            <label htmlFor="alignment" name="email">E-Mail</label>
                             <div>
                                 <input type="email" name="email" value={this.state.email} onChange={this.handleChangeFields} placeholder="johndoe@gmail.com" className="form-control"/>
                             </div>

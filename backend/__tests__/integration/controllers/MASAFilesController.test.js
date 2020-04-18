@@ -15,14 +15,26 @@ describe('MASA Files Controller', () => {
     const results = path.resolve(__dirname, '..', '..', '..', 'results');
 
     describe('Is Alignment Ready?', () => {
-        var alignment;
+        var alignment1, alignment2;
 
         beforeAll(async () => {
             const filesPath = path.resolve(__dirname, '..', '..', 'utils');
 
-            alignment = await request(app)
+            alignment1 = await request(app)
                 .post('/alignments')
                 .field('extension', 2)
+                .field('only1', false)
+                .field('s0type', 2)
+                .field('s1type', 2)
+                .attach('s0input', filesPath + '/AF133821.1.fasta')
+                .attach('s1input', filesPath + '/AY352275.1.fasta')
+                .field('s0edge', '*')
+                .field('s1edge', '*')
+
+            alignment2 = await request(app)
+                .post('/alignments')
+                .field('extension', 2)
+                .field('only1', true)
                 .field('s0type', 2)
                 .field('s1type', 2)
                 .attach('s0input', filesPath + '/AF133821.1.fasta')
@@ -33,21 +45,39 @@ describe('MASA Files Controller', () => {
             await sleep();
         });
     
-        it('should return \'true\' if the alignment results are ready', async () => {
+        it('should return \'true\' if the alignment\'s results are ready (all stages)', async () => {
             const { body: { isReady }} = await request(app)
-                .get(`/isAlignmentReady?s0=${alignment.body.s0}&s1=${alignment.body.s1}`);
-    
+                .get(`/isAlignmentReady?s0=${alignment1.body.s0}&s1=${alignment1.body.s1}&only1=${false}`);
+
+            expect(isReady).toBe(true);
+        });
+
+        it('should return \'true\' if the alignment\'s results are ready (only stage I', async () => {
+            const { body: { isReady }} = await request(app)
+                .get(`/isAlignmentReady?s0=${alignment2.body.s0}&s1=${alignment2.body.s1}&only1=${true}`);
+
             expect(isReady).toBe(true);
         });
     
-        it('should return \'false\' if the alignments results are not ready', async () => {
-            const { s0, s1 } = alignment.body;
+        it('should return \'false\' if the alignment\'s results are not ready', async () => {
+            const { s0, s1 } = alignment1.body;
     
             await exec(`rm ${results}/${path.parse(s0).name}-${path.parse(s1).name}/alignment.00.bin`);
-    
+            
             const { body: { isReady }} = await request(app)
-                .get(`/isAlignmentReady?s0=${alignment.body.s0}&s1=${alignment.body.s1}`);
+                .get(`/isAlignmentReady?s0=${alignment1.body.s0}&s1=${alignment1.body.s1}&only=${false}`);            
     
+            expect(isReady).toBe(false);
+        });
+
+        it('should return \'false\' if the alignment\'s results are not ready', async () => {
+            const { s0, s1 } = alignment2.body;
+
+            await exec(`rm ${results}/${path.parse(s0).name}-${path.parse(s1).name}/statistics_01.00`);
+
+            const { body: { isReady }} = await request(app)
+                .get(`/isAlignmentReady?s0=${alignment2.body.s0}&s1=${alignment2.body.s1}&only=${false}`);
+
             expect(isReady).toBe(false);
         });
     });
