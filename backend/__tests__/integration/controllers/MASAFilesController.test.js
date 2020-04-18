@@ -6,6 +6,10 @@ const app = require('./../../../src/controllers/ApplicationController').express;
 require('./../../../src/queue');
 const Alignment = require('./../../../src/models/Alignment');
 
+async function sleep(){
+    return await new Promise(r => setTimeout(r, 2000));
+}
+
 describe('MASA Files Controller', () => {
     const uploads = path.resolve(__dirname, '..', '..', '..', 'uploads');
     const results = path.resolve(__dirname, '..', '..', '..', 'results');
@@ -18,7 +22,7 @@ describe('MASA Files Controller', () => {
 
             alignment = await request(app)
                 .post('/alignments')
-                .field('extension', 1)
+                .field('extension', 2)
                 .field('s0type', 2)
                 .field('s1type', 2)
                 .attach('s0input', filesPath + '/AF133821.1.fasta')
@@ -26,7 +30,7 @@ describe('MASA Files Controller', () => {
                 .field('s0edge', '*')
                 .field('s1edge', '*')
 
-            await new Promise(r => setTimeout(r, 2000));
+            await sleep();
         });
     
         it('should return \'true\' if the alignment results are ready', async () => {
@@ -54,20 +58,20 @@ describe('MASA Files Controller', () => {
         beforeAll(async () => {
             alignment = await request(app)
                 .post('/alignments')
-                .field('extension', 1)
+                .field('extension', 2)
                 .field('s0type', 1)
                 .field('s1type', 1)
                 .field('s0input', 'AF133821.1')
                 .field('s1input', 'AY352275.1')
                 .field('s0edge', '*')
-                .field('s1edge', '*')
+                .field('s1edge', '*');
         });
 
         it('should return the contents of the \'.bin\' file created by the MASA Alignment Tool (Happy Path)', async () => {
-                const response = await request(app).get(`/bin/${alignment.body._id}`);
-                
-                expect(response.status).toBe(200);
-                expect(response.body).not.toBeFalsy();
+            const response = await request(app).get(`/bin/${alignment.body._id}`);
+            
+            expect(response.status).toBe(200);
+            expect(response.body).not.toBeFalsy();
         });
 
         it('should return a status code 400, if the requested \'.bin\' is for an non-existent Alignment', async () => {
@@ -93,16 +97,16 @@ describe('MASA Files Controller', () => {
         beforeAll(async () => {
             alignment = await request(app)
                 .post('/alignments')
-                .field('extension', 1)
+                .field('extension', 2)
                 .field('s0type', 1)
                 .field('s1type', 1)
                 .field('s0input', 'AF133821.1')
                 .field('s1input', 'AY352275.1')
                 .field('s0edge', '*')
-                .field('s1edge', '*')
+                .field('s1edge', '*');
         });
 
-        it('should return the contents of the \'.fasta\' files created by the Alignment request (Happy Path)', async () => {
+        test('should return the contents of the \'.fasta\' files created by the Alignment request (Happy Path)', async () => {
             const response = await request(app).get(`/fasta/${alignment.body._id}`);
                 
             const { s0file, s1file } = response.body;
@@ -111,13 +115,13 @@ describe('MASA Files Controller', () => {
             expect(s1file).not.toBeFalsy();
         });
 
-        it('should return a 400 status code, if the requested \'.fasta\' files are for an non-existent Alignment', async () => {
+        test('should return a 400 status code, if the requested \'.fasta\' files are for an non-existent Alignment', async () => {
             const response = await request(app).get(`/fasta/${1}`);
 
             expect(response.status).toBe(400);
         });
 
-        it('should return a 500 status code, if the requested \'.fasta\' files cannot be fetched', async () => {
+        test('should return a 500 status code, if the requested \'.fasta\' files cannot be fetched', async () => {
             const { s0, s1 } = alignment.body;
 
             await exec(`rm ${uploads}/${s0}`);
@@ -126,6 +130,41 @@ describe('MASA Files Controller', () => {
             const response = await request(app).get(`/fasta/${alignment.body._id}`);
 
             expect(response.status).toBe(500);
+        });
+    });
+
+    describe('Fetch Stage #1 Results', () => {
+        let alignment;
+
+        beforeAll(async () => {
+            const filesPath = path.resolve(__dirname, '..', '..', 'utils');
+
+            alignment = await request(app)
+                .post('/alignments')
+                .field('extension', 2)
+                .field('only1', true)
+                .field('s0type', 2)
+                .field('s1type', 2)
+                .attach('s0input', path.join(filesPath, 'AF133821.1.fasta'))
+                .attach('s1input', path.join(filesPath, 'AY352275.1.fasta'))
+                .field('s0edge', '*')
+                .field('s1edge', '*');
+
+            // await sleep();
+        });
+
+        it('should return the contents of the Stage I Alignment', async () => {
+            const response = await request(app).get(`/stage-i-results/${alignment.body._id}`);
+
+            expect(response.status).toBe(200);
+
+            expect.objectContaining({
+                bestScore: expect.any(Number),
+                bestPosition: expect.any(Array)
+            });
+
+            expect(typeof(response.body.bestPosition[0])).toBe('number');
+            expect(typeof(response.body.bestPosition[1])).toBe('number');
         });
     });
 

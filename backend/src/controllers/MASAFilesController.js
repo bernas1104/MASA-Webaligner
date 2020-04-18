@@ -3,6 +3,7 @@ const fs = require('fs');
 const mz = require('mz/fs');
 
 const Alignment = require('../models/Alignment');
+const getBestInformation = require('../helpers/getBestInformation');
 
 module.exports = {
     async isAlignmentReady(req, res){
@@ -12,6 +13,25 @@ module.exports = {
         let isReady = await mz.exists(filePath);
 
         res.json({isReady});
+    },
+
+    async fetchStage1(req, res){
+        const { id } = req.params;
+        
+        try {
+            const alignment = await Alignment.findById(id);
+
+            const { s0, s1 } = alignment;
+            const filePath = path.resolve(__dirname, '..', '..', 'results', path.parse(s0).name + '-' + path.parse(s1).name, 'statistics_01.00');
+
+            const data = fs.readFileSync(filePath, 'utf-8').split('\n');
+            
+            const response = getBestInformation(data);
+
+            return res.json(response);
+        } catch (err) {
+            return res.status(400).json(err);
+        }
     },
 
     async fetchBinary(req, res){

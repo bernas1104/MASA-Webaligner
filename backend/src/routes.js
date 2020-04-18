@@ -21,6 +21,7 @@ routes.get('/alignments/:id', AlignmentsController.show);
 
 // MASA Retrieve files Routes
 routes.get('/isAlignmentReady', MASAFilesController.isAlignmentReady);
+routes.get('/stage-i-results/:id', MASAFilesController.fetchStage1);
 routes.get('/bin/:id', MASAFilesController.fetchBinary);
 routes.get('/fasta/:id', MASAFilesController.fetchFasta);
 

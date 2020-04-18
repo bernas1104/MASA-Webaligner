@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const deleteUploadedFile = require('./../../src/helpers/deleteUploadedFile');
 const { saveInputToFile, selectMASAExtension } = require('./../../src/helpers/prepareFilesForAlignment');
+const getBestInformation = require('./../../src/helpers/getBestInformation');
 
 describe('Delete Uploaded File', () => {
     const newFilePath = path.resolve(__dirname, '..', '..', 'uploads', 'testFile.fasta');
@@ -86,5 +87,22 @@ describe('Selects the MASA Core extension (CUDAlign or OpenMP) to perform the al
 
             counter++;
         });
+    });
+});
+
+describe('Gets the Best Score and Best Position information', () => {
+    it('should retrieve the Best Score of an alignment', () => {
+        const filePath = path.resolve(__dirname, '..', 'utils', 'statistics_01.00');
+        const fileData = fs.readFileSync(filePath, 'utf-8').split('\n');
+
+        const bestInformation = getBestInformation(fileData);
+
+        expect.objectContaining({
+            bestScore: expect.any(Number),
+            bestPosition: expect.any(Array)
+        });
+
+        expect(typeof(bestInformation.bestPosition[0])).toBe('number');
+        expect(typeof(bestInformation.bestPosition[1])).toBe('number');
     });
 });
