@@ -5,9 +5,9 @@ module.exports = {
     async handle({ data }) {
         await Mail.sendMail({
             from: 'MASA Team <masateam@unb.br>',
-            to: `${data.name} <${data.email}>`,
+            to: `${data.fullName} <${data.email}>`,
             subject: 'Your sequence alignment is ready!',
-            html: `Hello ${data.name},
+            html: `Hello ${data.fullName},
             <br />
             We are writing this e-mail, to let you know that your request for a
             sequence alignment is ready!

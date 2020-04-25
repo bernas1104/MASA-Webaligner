@@ -9,7 +9,11 @@ const Alignment = require('../models/Alignment');
 const Sequence = require('../models/Sequence');
 
 const validadeCreateAlignment = require('./../validations/validateCreateAlignment');
+
 const GetFileNameService = require('./../services/GetFileNameService');
+const SelectMASAExtensionService = require('./../services/SelectMASAExtensionService');
+
+const { masaQueue } = require('./../lib/Queue');
 
 const alignmentsRouter = Router();
 const upload = multer(uploadConfig);
@@ -40,10 +44,11 @@ alignmentsRouter.post('/', upload.fields([
     });
     s1folder = s1 !== undefined ? s1.match(/.*[^\.fasta]/g)[0] : null;
 
+    const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
+    const resultsPath = path.resolve(__dirname, '..', '..', 'results');
+
     const alignment = await Alignment.create({ extension, only1, clearn,
         complement, reverse, blockPruning, fullName, email });
-
-    const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
 
     const sequence0 = await Sequence.create({ path: path.join(filesPath, s0),
         size: fs.statSync(path.join(filesPath, s0)).size, origin: s0origin,
@@ -52,6 +57,15 @@ alignmentsRouter.post('/', upload.fields([
     const sequence1 = await Sequence.create({ path: path.join(filesPath, s1),
         size: fs.statSync(path.join(filesPath, s1)).size, origin: s1origin,
         edge: s1edge, alignmentId: alignment.id });
+
+    const selectMASAExtensionService = new SelectMASAExtensionService();
+    const masa = selectMASAExtensionService.execute({
+        extension, filesPath, s0, s1
+    });
+
+    masaQueue.bull.add({ masa, only1, clearn, complement, reverse,
+        blockPruning, s0, s1, s0edge, s1edge, fullName, email, s0folder,
+        s1folder, filesPath, resultsPath, id: alignment.id });
 
     return response.json({alignment, sequence0, sequence1});
   }

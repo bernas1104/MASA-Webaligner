@@ -37,13 +37,13 @@ if(process.env.NODE_ENV !== 'test'){
     masaQueue.bull.on('completed', async job => {
         console.log('Job completed', masaQueue.name, job.data);
 
-        const { name, email, id } = job.data;
+        const { fullName, email, id } = job.data;
 
-        if( (name !== undefined && name !== '') && (email !== undefined && email !== '')){
+        if((fullName !== undefined && fullName !== '') && (email !== undefined && email !== '')){
             await job.progress(50);
-            
+
             mailQueue.bull.add({
-                name,
+                fullName,
                 email,
                 address: `http://masa-webaligner.unb.br/alignments/${id}`
             });

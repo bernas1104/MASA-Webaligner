@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 class SelectMASAExtensionService {
     execute({ extension, filesPath, s0, s1 }){
         let masa;
@@ -23,3 +25,5 @@ class SelectMASAExtensionService {
         return masa;
     }
 }
+
+module.exports = SelectMASAExtensionService;
