@@ -44,7 +44,7 @@ describe('MASA Files Controller', () => {
 
             await sleep();
         });
-    
+
         it('should return \'true\' if the alignment\'s results are ready (all stages)', async () => {
             const { body: { isReady }} = await request(app)
                 .get(`/isAlignmentReady?s0=${alignment1.body.s0}&s1=${alignment1.body.s1}&only1=${false}`);
@@ -58,15 +58,15 @@ describe('MASA Files Controller', () => {
 
             expect(isReady).toBe(true);
         });
-    
+
         it('should return \'false\' if the alignment\'s results are not ready', async () => {
             const { s0, s1 } = alignment1.body;
-    
+
             await exec(`rm ${results}/${path.parse(s0).name}-${path.parse(s1).name}/alignment.00.bin`);
-            
+
             const { body: { isReady }} = await request(app)
-                .get(`/isAlignmentReady?s0=${alignment1.body.s0}&s1=${alignment1.body.s1}&only=${false}`);            
-    
+                .get(`/isAlignmentReady?s0=${alignment1.body.s0}&s1=${alignment1.body.s1}&only=${false}`);
+
             expect(isReady).toBe(false);
         });
 
@@ -99,14 +99,14 @@ describe('MASA Files Controller', () => {
 
         it('should return the contents of the \'.bin\' file created by the MASA Alignment Tool (Happy Path)', async () => {
             const response = await request(app).get(`/bin/${alignment.body._id}`);
-            
+
             expect(response.status).toBe(200);
             expect(response.body).not.toBeFalsy();
         });
 
         it('should return a status code 400, if the requested \'.bin\' is for an non-existent Alignment', async () => {
             const response = await request(app).get('/bin/1');
-            
+
             expect(response.status).toBe(400);
         });
 
@@ -138,7 +138,7 @@ describe('MASA Files Controller', () => {
 
         test('should return the contents of the \'.fasta\' files created by the Alignment request (Happy Path)', async () => {
             const response = await request(app).get(`/fasta/${alignment.body._id}`);
-                
+
             const { s0file, s1file } = response.body;
             expect(response.status).toBe(200);
             expect(s0file).not.toBeFalsy();

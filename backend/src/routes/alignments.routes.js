@@ -1,0 +1,68 @@
+const { Router } = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const uploadConfig = require('./../config/upload');
+
+const Alignment = require('../models/Alignment');
+const Sequence = require('../models/Sequence');
+
+const validadeCreateAlignment = require('./../validations/validateCreateAlignment');
+const GetFileNameService = require('./../services/GetFileNameService');
+
+const alignmentsRouter = Router();
+const upload = multer(uploadConfig);
+
+alignmentsRouter.post('/', upload.fields([
+  { name: 's0input', maxCount: 1 },
+  { name: 's1input', maxCount: 1 }]),
+  validadeCreateAlignment, async (request, response) => {
+    const { extension, only1, clearn, complement, reverse, blockPruning,
+        s0origin, s1origin, s0edge, s1edge, s0input, s1input, fullName,
+        email } = request.body;
+
+    const getFileNameService = new GetFileNameService();
+
+    const s0 = await getFileNameService.execute({
+        num: 0,
+        type: s0origin,
+        input: s0input,
+        files: request.files,
+    });
+    s0folder = s0 !== undefined ? s0.match(/.*[^\.fasta]/g)[0] : null;
+
+    const s1 = await getFileNameService.execute({
+        num: 1,
+        type: s1origin,
+        input: s1input,
+        files: request.files,
+    });
+    s1folder = s1 !== undefined ? s1.match(/.*[^\.fasta]/g)[0] : null;
+
+    const alignment = await Alignment.create({ extension, only1, clearn,
+        complement, reverse, blockPruning, fullName, email });
+
+    const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
+
+    const sequence0 = await Sequence.create({ path: path.join(filesPath, s0),
+        size: fs.statSync(path.join(filesPath, s0)).size, origin: s0origin,
+        edge: s0edge, alignmentId: alignment.id });
+
+    const sequence1 = await Sequence.create({ path: path.join(filesPath, s1),
+        size: fs.statSync(path.join(filesPath, s1)).size, origin: s1origin,
+        edge: s1edge, alignmentId: alignment.id });
+
+    return response.json({alignment, sequence0, sequence1});
+  }
+);
+
+alignmentsRouter.get('/:id', (request, response) => {
+  //
+});
+
+alignmentsRouter.get('/check', (request, response) => {
+  //
+});
+
+module.exports = alignmentsRouter;
