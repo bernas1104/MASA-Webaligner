@@ -12,6 +12,8 @@ const validadeCreateAlignment = require('./../validations/validateCreateAlignmen
 
 const GetFileNameService = require('./../services/GetFileNameService');
 const SelectMASAExtensionService = require('./../services/SelectMASAExtensionService');
+const CreateAlignmentService = require('../services/CreateAlignmentService');
+const CreateSequenceService = require('../services/CreateSequenceService');
 
 const { masaQueue } = require('./../lib/Queue');
 
@@ -47,14 +49,18 @@ alignmentsRouter.post('/', upload.fields([
     const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
     const resultsPath = path.resolve(__dirname, '..', '..', 'results');
 
-    const alignment = await Alignment.create({ extension, only1, clearn,
-        complement, reverse, blockPruning, fullName, email });
+    const createAlignmentService = new CreateAlignmentService();
 
-    const sequence0 = await Sequence.create({ path: path.join(filesPath, s0),
+    const alignment = await createAlignmentService.execute({ extension, only1,
+        clearn, complement, reverse, blockPruning, fullName, email });
+
+    const createSequenceService = new CreateSequenceService();
+
+    const sequence0 = await createSequenceService.execute({ file: s0,
         size: fs.statSync(path.join(filesPath, s0)).size, origin: s0origin,
         edge: s0edge, alignmentId: alignment.id });
 
-    const sequence1 = await Sequence.create({ path: path.join(filesPath, s1),
+    const sequence1 = await createSequenceService.execute({ file: s1,
         size: fs.statSync(path.join(filesPath, s1)).size, origin: s1origin,
         edge: s1edge, alignmentId: alignment.id });
 
@@ -71,12 +77,14 @@ alignmentsRouter.post('/', upload.fields([
   }
 );
 
-alignmentsRouter.get('/:id', (request, response) => {
-  //
-});
+alignmentsRouter.get('/:id', async (request, response) => {
+  const { id } = request.params;
 
-alignmentsRouter.get('/check', (request, response) => {
-  //
+  const alignment = await Alignment.findByPk(id);
+
+  const sequences = await Sequence.findAll({ where: { alignmentId: id }});
+
+  return response.json({ alignment, sequences });
 });
 
 module.exports = alignmentsRouter;

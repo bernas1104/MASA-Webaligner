@@ -1,17 +1,29 @@
 const { Router } = require('express');
 
-const filesRouter = Router();
+const FetchStageIResultsService = require('../services/FetchStageIResultsService');
 
-filesRouter.get('', (request, response) => {
-  //
+const filesRouter = Router({ strict: true });
+
+filesRouter.get('/stage-i/:id', async (request, response) => {
+    const { id } = request.params;
+
+    const fetchStageIResultsService = new FetchStageIResultsService();
+
+    const bestScoreInformation = await fetchStageIResultsService.execute({ id });
+
+    return response.json({ bestScoreInformation });
 });
 
-filesRouter.get('', (request, response) => {
-  //
+filesRouter.get('/bin/:id', async (request, response) => {
+    const { id } = request.params;
+
+    return response.send('2');
 });
 
-filesRouter.get('', (request, response) => {
-  //
+filesRouter.get('/fasta/:id', async (request, response) => {
+    const { id } = request.params;
+
+    return response.send('3');
 });
 
 module.exports = filesRouter;

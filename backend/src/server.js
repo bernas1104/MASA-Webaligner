@@ -30,7 +30,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use(routes);
-app.use('/results', express.static('results'));
+// app.use('/results', express.static('results')); // Why?
 app.use(errors());
 
 BullBoard.setQueues([Queue.masaQueue.bull, Queue.mailQueue.bull]);

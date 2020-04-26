@@ -1,4 +1,4 @@
-class GetBestInformationService {
+class GetBestScoreInformationService {
     execute({ fileData }) {
         fileData.splice(0, 11);
         fileData.splice(2, fileData.length);
@@ -10,4 +10,4 @@ class GetBestInformationService {
     }
 }
 
-module.exports = GetBestInformationService;
+module.exports = GetBestScoreInformationService;
