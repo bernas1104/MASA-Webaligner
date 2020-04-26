@@ -1,5 +1,8 @@
 const path = require('path');
 const fs = require('fs');
+require('dotenv').config({
+    path: process.env.NODE_ENV === 'test' ? ".env.test" : '.env'
+});
 
 const CheckFastaFormatService = require('./CheckFastaFormatService');
 const DownloadNCBIFileService = require('./DownloadNCBIFileService');
@@ -39,7 +42,9 @@ class GetFileNameService {
 
             fileName = file[0].filename;
 
-            const filePath = path.resolve(__dirname, '..', '..', 'uploads', fileName);
+            const filePath = process.env.NODE_ENV !== 'test' ?
+                path.resolve(__dirname, '..', '..', 'uploads', fileName) :
+                path.resolve(__dirname, '..', '..', 'uploads', '__tests__', fileName);
             const fileData = fs.readFileSync(filePath, 'utf-8');
 
             if(checkFastaFormatService.execute({ sequence: fileData }) === false)

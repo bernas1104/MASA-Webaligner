@@ -2,6 +2,9 @@ const { Router } = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+require('dotenv').config({
+    path: process.env.NODE_ENV === 'test' ? ".env.test" : '.env'
+});
 
 const uploadConfig = require('./../config/upload');
 
@@ -48,8 +51,12 @@ alignmentsRouter.post('/', upload.fields([
     request.savedFiles = { s1 };
     s1folder = s1 !== undefined ? s1.match(/.*[^\.fasta]/g)[0] : null;
 
-    const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
-    const resultsPath = path.resolve(__dirname, '..', '..', 'results');
+    const filesPath = process.env.NODE_ENV !== 'test' ?
+        path.resolve(__dirname, '..', '..', 'uploads') :
+        path.resolve(__dirname, '..', '..', '__tests__', 'uploads');
+    const resultsPath = process.env.NODE_ENV !== 'test' ?
+        path.resolve(__dirname, '..', '..', 'results') :
+        path.resolve(__dirname, '..', '..', '__tests__', 'results');;
 
     const createAlignmentService = new CreateAlignmentService();
 

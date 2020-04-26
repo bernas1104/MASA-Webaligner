@@ -1,6 +1,9 @@
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
+require('dotenv').config({
+    path: process.env.NODE_ENV === 'test' ? ".env.test" : '.env'
+});
 
 const DeleteUploadedFileService = require('./DeleteUploadedFileService');
 
@@ -8,7 +11,9 @@ const AppError = require('../errors/AppError');
 
 class DownloadNCBIFileService {
   async execute({ id, sequence }) {
-    const filePath = path.resolve(__dirname, '..', '..', `uploads/${id}-${Date.now()}.fasta`);
+    const filePath = process.env.NODE_ENV !== 'test' ?
+        path.resolve(__dirname, '..', '..', 'uploads', `${id}-${Date.now()}.fasta`) :
+        path.resolve(__dirname, '..', '..', '__tests__', 'uploads', `${id}-${Date.now()}.fasta`);
     const writer = fs.createWriteStream(filePath);
     try{
         const response = await axios({

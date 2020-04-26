@@ -1,11 +1,17 @@
 const path = require('path');
 const mz = require('mz/fs');
+require('dotenv').config({
+    path: process.env.NODE_ENV === 'test' ? ".env.test" : '.env'
+});
 
 class CheckAlignmentReadyService {
     async execute({ s0, s1, only1 }){
         let isReady;
-        let filePath = path.resolve(__dirname, '..', '..', 'results',
-            path.parse(s0).name + '-' + path.parse(s1).name);
+        let filePath = process.env.NODE_ENV !== 'test' ?
+            path.resolve(__dirname, '..', '..', 'results',
+                path.parse(s0).name + '-' + path.parse(s1).name) :
+            path.resolve(__dirname, '..', '..', '__tests__', 'results',
+                path.parse(s0).name + '-' + path.parse(s1).name);
 
         if(!only1){
             filePath = path.join(filePath, 'alignment.00.bin');
