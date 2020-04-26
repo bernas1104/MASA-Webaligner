@@ -3,8 +3,6 @@ const fs = require('fs');
 
 const Sequence = require('../models/Sequence');
 
-const GetBestScoreInformationService = require('./GetBestScoreInformationService');
-
 class FetchStageIResultsService {
     async execute({ id }) {
         const [{ dataValues: s0} , { dataValues: s1}] = await Sequence.findAll({
@@ -19,13 +17,13 @@ class FetchStageIResultsService {
 
         const fileData = fs.readFileSync(filePath, 'utf-8').split('\n');
 
-        const getBestScoreInformation = new GetBestScoreInformationService();
+        fileData.splice(0, 11);
+        fileData.splice(2, fileData.length);
 
-        const bestScoreInformation = getBestScoreInformation.execute({
-            fileData
-        });
+        const bestScore = Number(fileData[0].match(/[0-9]+/g).join(''));
+        const bestPosition = fileData[1].match(/[0-9]+/g).map(position => Number(position));
 
-        return bestScoreInformation;
+        return { bestScore, bestPosition };
     }
 }
 
