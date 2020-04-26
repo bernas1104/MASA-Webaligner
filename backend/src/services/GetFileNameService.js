@@ -5,6 +5,8 @@ const CheckFastaFormatService = require('./CheckFastaFormatService');
 const DownloadNCBIFileService = require('./DownloadNCBIFileService');
 const SaveInputToFileService  = require('./SaveInputToFileService');
 
+const AppError = require('../errors/AppError');
+
 class GetFileNameService {
   async execute({ num, type, input = '', files = [] }) {
     let fileName;
@@ -17,7 +19,7 @@ class GetFileNameService {
     switch(type){
         case 1:
             if(input === '')
-                throw Error('Invalid NCBI Sequence ID.');
+                throw new AppError('Invalid NCBI Sequence ID.');
 
             try {
                 fileName = await downloadNCBIFileService.execute({
@@ -33,7 +35,7 @@ class GetFileNameService {
             const file = files[`s${num}input`];
 
             if(file === undefined)
-                throw new Error('FASTA file was not uploaded.');
+                throw new AppError('FASTA file was not uploaded.');
 
             fileName = file[0].filename;
 
@@ -41,12 +43,12 @@ class GetFileNameService {
             const fileData = fs.readFileSync(filePath, 'utf-8');
 
             if(checkFastaFormatService.execute({ sequence: fileData }) === false)
-                throw new Error('Sequence is not FASTA type.');
+                throw new AppError('Sequence is not FASTA type.');
 
             break;
         case 3:
             if(checkFastaFormatService.execute({ sequence: input }) === false)
-                throw new Error('Sequence is not FASTA type.');
+                throw new AppError('Sequence is not FASTA type.');
 
             const saveInputToFileService = new SaveInputToFileService();
 
@@ -54,7 +56,7 @@ class GetFileNameService {
 
             break;
         default:
-            throw new Error('Type must be a number between 1 and 3.');
+            throw new AppError('Type must be a number between 1 and 3.');
     }
 
     return fileName;

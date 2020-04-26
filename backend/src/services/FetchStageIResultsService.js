@@ -21,7 +21,9 @@ class FetchStageIResultsService {
         fileData.splice(2, fileData.length);
 
         const bestScore = Number(fileData[0].match(/[0-9]+/g).join(''));
-        const bestPosition = fileData[1].match(/[0-9]+/g).map(position => Number(position));
+        const bestPosition = fileData[1].match(/[0-9]+/g).map(
+            position => Number(position)
+        );
 
         return { bestScore, bestPosition };
     }

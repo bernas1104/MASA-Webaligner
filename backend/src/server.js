@@ -4,8 +4,13 @@ const BullBoard = require('bull-board');
 const express = require('express');
 const { errors } = require('celebrate');
 const cors = require('cors');
+require('express-async-errors');
 
 const sequelize = require('./database/connection');
+
+const DeleteUploadedFileService = require('./services/DeleteUploadedFileService');
+
+const AppError = require('./errors/AppError');
 
 require('dotenv').config({
   path: process.env.NODE_ENV === 'test' ? ".env.test" : '.env'
@@ -32,6 +37,43 @@ app.use(express.json());
 app.use(routes);
 // app.use('/results', express.static('results')); // Why?
 app.use(errors());
+app.use((err, request, response, _) => {
+    const deleteUploadedFileService = new DeleteUploadedFileService();
+
+    if(request.files) {
+        let fileName;
+
+        if(request.files.s0input){
+            fileName = request.files.s0input[0].filename;
+            deleteUploadedFileService.execute({ fileName });
+        }
+
+        if(request.files.s1input){
+            fileName = request.files.s1input[0].filename;
+            deleteUploadedFileService.execute({ fileName });
+        }
+    }
+
+    if(request.savedFiles) {
+        const { s0, s1 } = request.savedFiles;
+
+        if(s0) deleteUploadedFileService.execute({ fileName: s0 });
+
+        if(s1) deleteUploadedFileService.execute({ fileName: s1 });
+    }
+
+    if (err instanceof AppError) {
+        return response.status(err.statusCode).json({
+            status: 'error',
+            message: err.message,
+        });
+    }
+
+    return response.status(500).json({
+        status: 'error',
+        message: 'Internal Server Error',
+    });
+});
 
 BullBoard.setQueues([Queue.masaQueue.bull, Queue.mailQueue.bull]);
 app.use('/admin/queues', BullBoard.UI);

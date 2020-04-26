@@ -36,6 +36,7 @@ alignmentsRouter.post('/', upload.fields([
         input: s0input,
         files: request.files,
     });
+    request.savedFiles = { s0 };
     s0folder = s0 !== undefined ? s0.match(/.*[^\.fasta]/g)[0] : null;
 
     const s1 = await getFileNameService.execute({
@@ -44,6 +45,7 @@ alignmentsRouter.post('/', upload.fields([
         input: s1input,
         files: request.files,
     });
+    request.savedFiles = { s1 };
     s1folder = s1 !== undefined ? s1.match(/.*[^\.fasta]/g)[0] : null;
 
     const filesPath = path.resolve(__dirname, '..', '..', 'uploads');

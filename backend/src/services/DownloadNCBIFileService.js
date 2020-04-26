@@ -4,6 +4,8 @@ const axios = require('axios');
 
 const DeleteUploadedFileService = require('./DeleteUploadedFileService');
 
+const AppError = require('../errors/AppError');
+
 class DownloadNCBIFileService {
   async execute({ id, sequence }) {
     const filePath = path.resolve(__dirname, '..', '..', `uploads/${id}-${Date.now()}.fasta`);
@@ -30,7 +32,7 @@ class DownloadNCBIFileService {
     } catch (err) {
         const deleteUploadedFileService = new DeleteUploadedFileService();
         deleteUploadedFileService.execute({ fileName: filePath });
-        throw new Error('Invalid NCBI Sequence ID.');
+        throw new AppError('Invalid NCBI Sequence ID.');
     }
   }
 }
