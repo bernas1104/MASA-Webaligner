@@ -9,35 +9,28 @@ module.exports = {
         },
         extension: {
             type: Sequelize.INTEGER,
-            defaultValue: 3,
             allowNull: false,
         },
         only1: {
             type: Sequelize.BOOLEAN,
             defaultValue: false,
-            allowNull: false,
         },
         clearn: {
             type: Sequelize.BOOLEAN,
             defaultValue: false,
-            allowNull: false,
         },
         complement: {
             type: Sequelize.INTEGER,
             defaultValue: 0,
-            allowNull: false,
         },
         reverse: {
             type: Sequelize.INTEGER,
             defaultValue: 0,
-            allowNull: false,
         },
         blockPruning: {
             type: Sequelize.BOOLEAN,
             defaultValue: true,
-            allowNull: false,
         },
-
         fullName: {
             type: Sequelize.STRING,
             allowNull: true,
@@ -49,12 +42,10 @@ module.exports = {
         createdAt: {
             type: Sequelize.DATEONLY,
             defaultValue: Date.now(),
-            allowNull: false,
         },
         updatedAt: {
             type: Sequelize.DATEONLY,
             defaultValue: Date.now(),
-            allowNull: false,
         }
     })
   },

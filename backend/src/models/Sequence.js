@@ -54,12 +54,10 @@ Sequence.init({
     createdAt: {
         type: Sequelize.DATEONLY,
         defaultValue: Date.now(),
-        allowNull: false,
     },
     updatedAt: {
         type: Sequelize.DATEONLY,
         defaultValue: Date.now(),
-        allowNull: false,
     }
 }, {
     sequelize,

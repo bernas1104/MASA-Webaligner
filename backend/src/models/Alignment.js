@@ -21,7 +21,6 @@ Alignment.init({
     },
     extension: {
         type: Sequelize.INTEGER,
-        defaultValue: 3,
         allowNull: false,
         validate: {
             isInt: true,
@@ -32,7 +31,6 @@ Alignment.init({
     only1: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
-        allowNull: false,
         validate: {
             isBoolean,
         }
@@ -40,7 +38,6 @@ Alignment.init({
     clearn: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
-        allowNull: false,
         validate: {
             isBoolean,
         }
@@ -48,7 +45,6 @@ Alignment.init({
     complement: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
-        allowNull: false,
         validate: {
             isInt: true,
             min: 0,
@@ -58,7 +54,6 @@ Alignment.init({
     reverse: {
         type: Sequelize.INTEGER,
         defaultValue: 0,
-        allowNull: false,
         validate: {
             isInt: true,
             min: 0,
@@ -68,7 +63,6 @@ Alignment.init({
     blockPruning: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
-        allowNull: false,
         validate: {
             isBoolean,
         }
@@ -92,12 +86,10 @@ Alignment.init({
     createdAt: {
         type: Sequelize.DATEONLY,
         defaultValue: Date.now(),
-        allowNull: false,
     },
     updatedAt: {
         type: Sequelize.DATEONLY,
         defaultValue: Date.now(),
-        allowNull: false,
     }
 }, {
   sequelize,

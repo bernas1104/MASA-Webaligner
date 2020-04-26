@@ -20,7 +20,9 @@ require('dotenv').config({
 const routes = require('./routes/index');
 const Queue = require('./lib/Queue');
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = process.env.NODE_ENV !== 'test' ?
+    path.resolve(__dirname, '..') :
+    path.resolve(__dirname, '..', '__tests__');
 exec(`mkdir ${rootDir}/uploads ${rootDir}/results`);
 
 const app = express();
