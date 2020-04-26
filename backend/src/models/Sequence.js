@@ -15,12 +15,15 @@ Sequence.init({
     file: {
         type: Sequelize.STRING,
         allowNull: false,
+        validate: {
+            is: /^.*\.fasta$/
+        }
     },
     size: {
         type: Sequelize.INTEGER,
         allowNull: false,
         validate: {
-        isInt: true,
+            isInt: true,
         }
     },
     origin: {

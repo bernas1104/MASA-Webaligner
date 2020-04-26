@@ -30,7 +30,7 @@ expect.extend({
             }
         }
     }
-})
+});
 
 describe('Alignment creating validations', () => {
     const extension = Math.floor(Math.random() * 3) + 1;
