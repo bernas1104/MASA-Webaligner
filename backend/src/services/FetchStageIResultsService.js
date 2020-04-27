@@ -19,7 +19,7 @@ class FetchStageIResultsService {
                 'statistics_01.00'
             ) :
             path.resolve(
-                __dirname, '..', '..', 'results', '__tests__',
+                __dirname, '..', '..', '__tests__', 'results',
                 path.parse(s0.file).name + '-' + path.parse(s1.file).name,
                 'statistics_01.00'
             );
