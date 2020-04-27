@@ -23,6 +23,7 @@ Sequence.init({
         type: Sequelize.INTEGER,
         allowNull: false,
         validate: {
+            min: 1,
             isInt: true,
         }
     },
@@ -30,18 +31,18 @@ Sequence.init({
         type: Sequelize.INTEGER,
         allowNull: false,
         validate: {
-        isInt: true,
-        min: 1,
-        max: 3,
+            isInt: true,
+            min: 1,
+            max: 3,
         }
     },
     edge: {
         type: Sequelize.STRING,
         allowNull: false,
         validate: {
-        len: [1, 1],
-        is: /[1-3|+|*]/g,
-        notEmpty: true,
+            len: [1, 1],
+            is: /[1-3|+|*]/g,
+            notEmpty: true,
         }
     },
     alignmentId: {
