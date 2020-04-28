@@ -13,14 +13,14 @@ describe('Checks if the requested alignment is ready', () => {
 
     beforeAll(async () => {
         await execSync(
-            'cudalign --alignment-edges=++ ' +
+            'masa-openmp --alignment-edges=++ ' +
             path.join(filesPath, 'AF133821.1.fasta') + ' ' +
             path.join(filesPath, 'AY352275.1.fasta') + ' ' +
             '-d ' + path.join(resultsPath, '1-1') + ' > /dev/null 2>&1'
         );
 
         await execSync(
-            'cudalign --alignment-edges=++ ' +
+            'masa-openmp --alignment-edges=++ ' +
             path.join(filesPath, 'AF133821.1.fasta') + ' ' +
             path.join(filesPath, 'AY352275.1.fasta') + ' ' +
             '-1 -d ' + path.join(resultsPath, '2-2') + ' > /dev/null 2>&1'

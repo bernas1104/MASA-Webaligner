@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { uuid } = require('uuidv4');
 require('dotenv').config({
     path: process.env.NODE_ENV === 'test' ? ".env.test" : '.env'
 });
@@ -17,7 +18,7 @@ class GetFileNameService {
     const checkFastaFormatService = new CheckFastaFormatService();
     const downloadNCBIFileService = new DownloadNCBIFileService();
 
-    const rand = Math.floor(Math.random() * (999999 - 1 + 1)) + 1;
+    const id = uuid();
 
     switch(type){
         case 1:
@@ -26,7 +27,7 @@ class GetFileNameService {
 
             try {
                 fileName = await downloadNCBIFileService.execute({
-                  id: rand,
+                  id,
                   sequence: input,
                 });
             } catch (err) {
@@ -44,7 +45,7 @@ class GetFileNameService {
 
             const filePath = process.env.NODE_ENV !== 'test' ?
                 path.resolve(__dirname, '..', '..', 'uploads', fileName) :
-                path.resolve(__dirname, '..', '..', 'uploads', '__tests__', fileName);
+                path.resolve(__dirname, '..', '..', '__tests__', 'uploads', fileName);
             const fileData = fs.readFileSync(filePath, 'utf-8');
 
             if(checkFastaFormatService.execute({ sequence: fileData }) === false)
@@ -57,7 +58,7 @@ class GetFileNameService {
 
             const saveInputToFileService = new SaveInputToFileService();
 
-            fileName = saveInputToFileService.execute({ id: rand, text: input});
+            fileName = saveInputToFileService.execute({ id, text: input});
 
             break;
         default:

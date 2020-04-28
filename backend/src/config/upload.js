@@ -1,5 +1,6 @@
 const multer = require('multer');
 const path = require('path');
+const { uuid } = require('uuidv4');
 require('dotenv').config({
     path: process.env.NODE_ENV === 'test' ? ".env.test" : '.env'
 });
@@ -10,9 +11,9 @@ module.exports = {
             path.resolve(__dirname, '..', '..', 'uploads') :
             path.resolve(__dirname, '..', '..', '__tests__', 'uploads'),
         filename: (req, file, cb) => {
-            const rand = Math.floor(Math.random() * (999999 - 1 + 1)) + 1;
+            const id = uuid();
             const ext = path.extname(file.originalname);
-            cb(null, `${rand}-${Date.now()}${ext}`);
+            cb(null, `${id}${ext}`);
         },
     }),
     fileFilter: (req, file, cb) => {
