@@ -1,0 +1,16 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "110492-Bb",
+    "database": "masa_webaligner_dev",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "postgres",
+    "password": "110492-Bb",
+    "database": "masa_webaligner_test",
+    "host": "localhost",
+    "dialect": "postgres"
+  }
+}

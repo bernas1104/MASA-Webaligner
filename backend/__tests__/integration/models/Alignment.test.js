@@ -1,105 +1,126 @@
-const mongoose = require('mongoose');
-
+require('../../../src/server');
 const Alignment = require('../../../src/models/Alignment');
-const app = require('../../../src/controllers/ApplicationController');
-// const server = require('./../../../src/server');
+const sequelize = require('../../../src/database/connection');
+const { isUuid } = require('uuidv4');
+
+expect.extend({
+    toBeInRange(received, min, max) {
+        if(received >= min && received <= max){
+            return {
+                pass: true,
+                message: () => `expected ${received} not to be between ${min} and ${max}`
+            }
+        } else {
+            return {
+                pass: false,
+                message: () => `expected ${received} to be between ${min} and ${max}`
+            }
+        }
+    },
+    toBeBoolean(received) {
+        if(received === true || received === false){
+            return {
+                pass: true,
+                message: () => `expected ${received} not to be TRUE or FALSE`
+            }
+        } else {
+            return {
+                pass: false,
+                message: () => `expected ${received} be TRUE or FALSE`
+            }
+        }
+    }
+});
 
 describe('Alignment creating validations', () => {
-    const edges = ['*', '1', '2', '3', '+'];
-
     const extension = Math.floor(Math.random() * 3) + 1;
 
-    const only1 = Math.floor(Math.random() * 2) + 1;
-    
-    const clearn = Math.floor(Math.random() * 2) + 1;
-    const complement = Math.floor(Math.random() * 3) + 1;
-    const reverse = Math.floor(Math.random() * 3) + 1;
-    const blockPruning = Math.floor(Math.random() * 2) + 1;
-    
-    const s0type = Math.floor(Math.random() * 3) + 1;
-    const s1type = Math.floor(Math.random() * 3) + 1;
-    const s0edge = edges[Math.floor(Math.random() * 4)];
-    const s1edge = edges[Math.floor(Math.random() * 4)];
-    const s0 = 'AF133821.1.fasta';
-    const s1 = 'AY352275.1.fasta';
-    
+    const only1 = Math.floor(Math.random() * 2);
+    const clearn = Math.floor(Math.random() * 2);
+    const blockPruning = Math.floor(Math.random() * 2);
+
+    const complement = Math.floor(Math.random() * 4);
+    const reverse = Math.floor(Math.random() * 4);
+
+    const fullName = 'Bernardo Costa';
+    const email = 'bernardoc1104@gmail.com';
+
     let beforeCount;
 
     beforeAll(async () => {
-        await Alignment.deleteMany({}); // Truncates the Alignment collection
+        await Alignment.destroy({ truncate: true, cascade: true });
     });
 
     beforeEach(async () => {
-        beforeCount = await Alignment.countDocuments();
+        beforeCount = await Alignment.count();
     });
 
     afterAll(async () => {
-        await Alignment.deleteMany({});
-        await mongoose.disconnect();
-    });
-
-    afterAll(async () => {
-        await mongoose.disconnect();
+        await Alignment.destroy({ truncate: true, cascade: true });
+        await sequelize.close();
     });
 
     describe('Validates the \'extension\' field', () => {
         it('should create an alignment if the \'extension\' field is present AND between 1 and 3', async () => {
-            await Alignment.create({
+            const alignment = await Alignment.create({
                 extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge,
+                only1,
+                clearn,
+                blockPruning,
+                complement,
+                reverse,
             });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(1);
+
+            expect(isUuid(alignment.id)).toBe(true);
+            expect(alignment.extension).toBeInRange(0, 3);
+            expect(alignment.only1).toBeBoolean();
+            expect(alignment.clearn).toBeBoolean();
+            expect(alignment.blockPruning).toBeBoolean();
+            expect(alignment.complement).toBeInRange(0, 3);
+            expect(alignment.reverse).toBeInRange(0, 3);
         });
 
         it('should not create an alignment if the \'extension\' is not present', async () => {
             try{
                 await Alignment.create({
-                    s0type,
-                    s1type,
-                    s0,
-                    s1,
-                    s0edge,
-                    s1edge
+                    only1,
+                    clearn,
+                    blockPruning,
+                    complement,
+                    reverse,
                 });
             } catch(err) {
-                expect(err.name).toBe('ValidationError');
-                expect(err.errors.extension.message).toBe('Path `extension` is required.');
+                expect(err.name).toBe('SequelizeValidationError');
             }
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(0);
         });
 
-        it('should not create an alignment if the \'extension\' is not between 1 and 3', async () => {
-            const extensions = [-5, 0, 4, 5, 120];
+        it('should not create an alignment if the \'extension\' is not between 0 and 3', async () => {
+            const extensions = [-5, -1, 4, 5, 120];
 
             for(let i = 0; i < 5; i++) {
                 try{
                     await Alignment.create({
                         extension: extensions[i],
-                        s0type,
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge 
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse,
                     });
                 } catch(err) {
-                    expect(err.name).toBe('ValidationError');
-                    expect(err.errors.extension.message).toBe('Must be a number between 1 and 3.');
+                    expect(err.name).toBe('SequelizeValidationError');
                 }
             }
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(0);
         });
@@ -107,36 +128,41 @@ describe('Alignment creating validations', () => {
 
     describe('Validates the \'only1\' field', () => {
         it('should create an alignment if the \'only1\' is TRUE or FALSE', async () => {
-            await Alignment.create({
+            const alignment = await Alignment.create({
                 extension,
-                only1: only1 === 1 ? true : false,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
+                only1,
+                clearn,
+                blockPruning,
+                complement,
+                reverse,
             });
 
-            const afterCounter = await Alignment.countDocuments();
+            const afterCounter = await Alignment.count();
 
             expect(afterCounter - beforeCount).toBe(1);
+
+            expect(isUuid(alignment.id)).toBe(true);
+            expect(alignment.extension).toBeInRange(0, 3);
+            expect(alignment.only1).toBeBoolean();
+            expect(alignment.clearn).toBeBoolean();
+            expect(alignment.blockPruning).toBeBoolean();
+            expect(alignment.complement).toBeInRange(0, 3);
+            expect(alignment.reverse).toBeInRange(0, 3);
         });
 
         it('should create an alignment if the \'only1\' is not present', async () => {
-            await Alignment.create({
+            const alignment = await Alignment.create({
                 extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
+                clearn,
+                blockPruning,
+                complement,
+                reverse,
             });
 
-            const afterCounter = await Alignment.countDocuments();
+            const afterCounter = await Alignment.count();
 
             expect(afterCounter - beforeCount).toBe(1);
+            expect(alignment.only1).toBe(false);
         });
 
         it('should not create an alignment if the \'only1\' is not a boolean value', async () => {
@@ -147,19 +173,16 @@ describe('Alignment creating validations', () => {
                     await Alignment.create({
                         extension,
                         only1: only1s[i],
-                        s0type,
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse,
                     });
                 } catch (err) {
-                    expect(err.name).toBe('ValidationError');
-                    expect(err.errors.only1.message).toBe(`Cast to Boolean failed for value "${only1s[i]}" at path "only1"`);
+                    expect(err.name).toBe('SequelizeValidationError');
                 }
 
-                const afterCount = await Alignment.countDocuments();
+                const afterCount = await Alignment.count();
 
                 expect(afterCount - beforeCount).toBe(0);
             }
@@ -168,34 +191,38 @@ describe('Alignment creating validations', () => {
 
     describe('Validates the \'clearn\' field', () => {
         it('should create an alignment if the \'clearn\' is TRUE or FALSE', async () => {
-            await Alignment.create({
+            const alignment = await Alignment.create({
                 extension,
-                clearn: clearn === 1 ? true : false,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge,
+                only1,
+                clearn,
+                blockPruning,
+                complement,
+                reverse,
             });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(1);
+
+            expect(isUuid(alignment.id)).toBe(true);
+            expect(alignment.extension).toBeInRange(0, 3);
+            expect(alignment.only1).toBeBoolean();
+            expect(alignment.clearn).toBeBoolean();
+            expect(alignment.blockPruning).toBeBoolean();
+            expect(alignment.complement).toBeInRange(0, 3);
+            expect(alignment.reverse).toBeInRange(0, 3);
         });
 
         it('should create an alignment if the \'clearn\' is not present', async () => {
             await Alignment.create({
                 extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
+                only1,
+                blockPruning,
+                complement,
+                reverse,
             });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(1);
         });
@@ -207,188 +234,60 @@ describe('Alignment creating validations', () => {
                 try{
                     await Alignment.create({
                         extension,
+                        only1,
                         clearn: clearns[i],
-                        s0type,
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge
+                        blockPruning,
+                        complement,
+                        reverse,
                     });
                 } catch (err) {
-                    expect(err.name).toBe('ValidationError');
-                    expect(err.errors.clearn.message).toBe(`Cast to Boolean failed for value "${clearns[i]}" at path "clearn"`);
+                    expect(err.name).toBe('SequelizeValidationError');
                 }
 
-                const afterCount = await Alignment.countDocuments();
+                const afterCount = await Alignment.count();
 
                 expect(afterCount - beforeCount).toBe(0);
             }
         });
     });
 
-    describe('Validates the \'complement\' field', () => {
-        it('should create an alignment if the \'complement\' is not present', async () => {
-            await Alignment.create({
-                extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
-            });
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(1);
-        });
-
-        it('should create an alignment if the \'complement\' field is present AND between 1 and 3', async () => {
-            await Alignment.create({
-                extension,
-                complement,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
-            });
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(1);
-        });
-
-        it('should not create an alignment if the \'complement\' field is not between 1 and 3', async () => {
-            const complements = [5, 'a', -12, 'ajds'];
-
-            for(let i = 0; i < 4; i++){
-                try {
-                    await Alignment.create({
-                        extension,
-                        complement: complements[i],
-                        s0type,
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge
-                    });
-                } catch (err) {
-                    expect(err.name).toBe('ValidationError');
-                    
-                    if(typeof(complements[i]) === 'number')
-                        expect(err.errors.complement.message).toBe('Must be a number between 1 and 3.');
-                    else
-                        expect(err.errors.complement.message).toBe(`Cast to Number failed for value "${complements[i]}" at path "complement"`);
-                }
-            }
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(0);
-        });
-    });
-
-    describe('Validates the \'reverse\' field', () => {
-        it('should create an alignment if the \'reverse\' field is present AND between 1 and 3', async () => {
-            await Alignment.create({
-                extension,
-                reverse,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
-            });
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(1);
-        });
-
-        it('should create an alignment if the \'reverse\' field is not present', async () => {
-            await Alignment.create({
-                extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
-            });
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(1);
-        });
-
-        it('should not create an alignment if the \'reverse\' field is not between 1 and 3', async () => {
-            const reverses = [0, 4, 'a', 'asd'];
-
-            for(let i = 0; i < 4; i++){
-                try {
-                    await Alignment.create({
-                        extension,
-                        reverse: reverses[i],
-                        s0type,
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge
-                    });
-                } catch (err) {
-                    expect(err.name).toBe('ValidationError');
-                    
-                    if(typeof(reverses[i]) === 'number')
-                        expect(err.errors.reverse.message).toBe('Must be a number between 1 and 3.');
-                    else
-                        expect(err.errors.reverse.message).toBe(`Cast to Number failed for value "${reverses[i]}" at path "reverse"`);
-                }
-            }
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(0);
-        });
-    });
-
     describe('Validates the \'blockPruning\' field', () => {
         it('should create an alignment if the \'blockPruning\' is present AND is TRUE or FALSE', async() => {
-            await Alignment.create({
+            const alignment = await Alignment.create({
                 extension,
-                blockPruning: blockPruning === 1 ? true : false,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
+                only1,
+                clearn,
+                blockPruning,
+                complement,
+                reverse,
             });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(1);
+
+            expect(isUuid(alignment.id)).toBe(true);
+            expect(alignment.extension).toBeInRange(0, 3);
+            expect(alignment.only1).toBeBoolean();
+            expect(alignment.clearn).toBeBoolean();
+            expect(alignment.blockPruning).toBeBoolean();
+            expect(alignment.complement).toBeInRange(0, 3);
+            expect(alignment.reverse).toBeInRange(0, 3);
         });
 
         it('should create an alignment if the \'blockPruning\' is not present', async () => {
-            await Alignment.create({
+            const alignment = await Alignment.create({
                 extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
+                only1,
+                clearn,
+                complement,
+                reverse
             });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(1);
+            expect(alignment.blockPruning).toBe(true);
         });
 
         it('should not create an alignment if the \'blockPruning\' is not a boolean value', async () => {
@@ -398,350 +297,290 @@ describe('Alignment creating validations', () => {
                 try{
                     await Alignment.create({
                         extension,
+                        only1,
+                        clearn,
                         blockPruning: blockPrunings[i],
-                        s0type,
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge
+                        complement,
+                        reverse,
                     });
                 } catch (err) {
-                    expect(err.name).toBe('ValidationError');
+                    expect(err.name).toBe('SequelizeValidationError');
                 }
             }
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(0);
         });
     });
 
-    describe('Validates the \'s0type\' field', () => {
-        it('should create an alignment if the `s0type` field is present AND between 1 and 3', async () => {
-            await Alignment.create({
+    describe('Validates the \'complement\' field', () => {
+        it('should create an alignment if the \'complement\' field is present AND between 0 and 3', async () => {
+            const alignment = await Alignment.create({
                 extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
+                only1,
+                clearn,
+                blockPruning,
+                complement,
+                reverse,
             });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(1);
+            expect(isUuid(alignment.id)).toBe(true);
+            expect(alignment.extension).toBeInRange(0, 3);
+            expect(alignment.only1).toBeBoolean();
+            expect(alignment.clearn).toBeBoolean();
+            expect(alignment.blockPruning).toBeBoolean();
+            expect(alignment.complement).toBeInRange(0, 3);
+            expect(alignment.reverse).toBeInRange(0, 3);
         });
 
-        it('should not create an alignment if the `s0type` field is not present', async () => {
-            try {
-                await Alignment.create({
-                    extension,
-                    s1type,
-                    s0,
-                    s1,
-                    s0edge,
-                    s1edge
-                });
-            } catch(err) {
-                expect(err.name).toBe('ValidationError');
-                expect(err.errors.s0type.message).toBe('Path `s0type` is required.');
-            }
+        it('should create an alignment if the \'complement\' is not present', async () => {
+            const alignment = await Alignment.create({
+                extension,
+                only1,
+                clearn,
+                blockPruning,
+                reverse,
+            });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
-            expect(afterCount - beforeCount).toBe(0);
+            expect(afterCount - beforeCount).toBe(1);
+            expect(alignment.complement).toBe(0);
         });
 
-        it('should not create and alignment if the `s0type` field is not between 1 and 3', async () => {
-            const s0types = [-21, 0, 4, 12, 94];
+        it('should not create an alignment if the \'complement\' field is not between 0 and 3', async () => {
+            const complements = [5, 'a', -12, 'ajds'];
 
-            for(let i = 0; i < 5; i++) {
+            for(let i = 0; i < 4; i++){
                 try {
                     await Alignment.create({
                         extension,
-                        s0type: s0types[i],
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement: complements[i],
+                        reverse,
                     });
                 } catch (err) {
-                    expect(err.name).toBe('ValidationError');
-                    expect(err.errors.s0type.message).toBe('Must be a number between 1 and 3.');
+                    expect(err.name).toBe('SequelizeValidationError');
                 }
             }
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(0);
         });
     });
 
-    describe('Validates the \'s1type\' field', () => {
-        it('should create an alignment if the `s1type` field is present AND between 1 and 3', async () => {
-            await Alignment.create({
+    describe('Validates the \'reverse\' field', () => {
+        it('should create an alignment if the \'reverse\' field is present AND between 0 and 3', async () => {
+            const alignment = await Alignment.create({
                 extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
+                only1,
+                clearn,
+                blockPruning,
+                complement,
+                reverse,
             });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(1);
+            expect(isUuid(alignment.id)).toBe(true);
+            expect(alignment.extension).toBeInRange(0, 3);
+            expect(alignment.only1).toBeBoolean();
+            expect(alignment.clearn).toBeBoolean();
+            expect(alignment.blockPruning).toBeBoolean();
+            expect(alignment.complement).toBeInRange(0, 3);
+            expect(alignment.reverse).toBeInRange(0, 3);
         });
 
-        it('should not create an alignment if the `s1type` is not present', async () => {
-            try {
-                await Alignment.create({
-                    extension,
-                    s0type,
-                    s0,
-                    s1,
-                    s0edge,
-                    s1edge
-                });
-            } catch (err) {
-                expect(err.name).toBe('ValidationError');
-                expect(err.errors.s1type.message).toBe('Path `s1type` is required.');
-            }
+        it('should create an alignment if the \'reverse\' field is not present', async () => {
+            const alignment = await Alignment.create({
+                extension,
+                only1,
+                clearn,
+                blockPruning,
+                complement,
+            });
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
-            expect(afterCount - beforeCount).toBe(0);
+            expect(afterCount - beforeCount).toBe(1);
+            expect(alignment.reverse).toBe(0);
         });
 
-        it('should not create an alignment if the `s1type` is not between 1 and 3', async () => {
-            const s1types = [-31, 0, 4, 48, 129];
+        it('should not create an alignment if the \'reverse\' field is not between 0 and 3', async () => {
+            const reverses = [-1, 4, 'a', 'asd'];
 
-            for(let i = 0; i < 5; i++) {
+            for(let i = 0; i < 4; i++){
                 try {
                     await Alignment.create({
                         extension,
-                        s0type,
-                        s1type: s1types[i],
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse: reverses[i],
                     });
                 } catch (err) {
-                    expect(err.name).toBe('ValidationError');
-                    expect(err.errors.s1type.message).toBe('Must be a number between 1 and 3.');
+                    expect(err.name).toBe('SequelizeValidationError');
                 }
             }
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(0);
         });
     });
 
-    describe('Validates the `s0` field', () => {
-        it('should create an alignment if the `s0` field is present', async () => {
-            await Alignment.create({
-                extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
-            });
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(1);
-        });
-
-        it('should not create an alignment if the `s0` field is not present', async () => {
-            try {
-                await Alignment.create({
-                    extension,
-                    s0type,
-                    s1type,
-                    s1,
-                    s0edge,
-                    s1edge
-                });
-            } catch (err) {
-                expect(err.name).toBe('ValidationError');
-                expect(err.errors.s0.message).toBe('Path `s0` is required.');
-            }
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(0);
-        });
-    });
-
-    describe('Validates the `s1` field', () => {
-        it('should create an alignment if the `s1` is present', async () => {
-            await Alignment.create({
-                extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge
-            });
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(1);
-        });
-
-        it('should not create an alingment if the `s1` is not present', async () => {
-            try {
-                await Alignment.create({
-                    extension,
-                    s0type,
-                    s1type,
-                    s0,
-                    s0edge,
-                    s1edge
-                });
-            } catch (err) {
-                expect(err.name).toBe('ValidationError');
-                expect(err.errors.s1.message).toBe('Path `s1` is required.');
-            }
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(0);
-        });
-    });
-
-    describe('Validates the \'s0edge\' field', () => {
-        it('should create an alignment if the `s0edge` is present', async () => {
-            await Alignment.create({
-                extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge 
-            });
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(1);
-        });
-
-        it('should not create an alignment if the `s0edge` is not present', async () => {
-            try {
-                await Alignment.create({
-                    extension,
-                    s0type,
-                    s1type,
-                    s0,
-                    s1,
-                    s1edge
-                });
-            } catch (err) {
-                expect(err.name).toBe('ValidationError');
-                expect(err.errors.s0edge.message).toBe('Path `s0edge` is required.');
-            }
-
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(0);
-        });
-
-        it('should not create an alignment if the `s0edge` is not [*|1|2|3|+]', async () => {
-            const edges = ['a', '-', '4', '0', '\\'];
-
-            for(let i = 0; i < 5; i++) {
-                try {
-                    await Alignment.create({
+    describe('Validates the \'fullName\' field', () => {
+        it('should create an alignment with or without the \'fullName\' field, if it is formatted correctly', async () => {
+            for(let i = 0; i < 2; i++){
+                let alignment
+                if(i === 0) {
+                    alignment = await Alignment.create({
                         extension,
-                        s0type,
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge: edges[i],
-                        s1edge
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse,
+                        fullName,
+                        email,
+                    });
+                } else {
+                    alignment = await Alignment.create({
+                        extension,
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse,
+                        email,
+                    });
+                }
+
+                expect(isUuid(alignment.id)).toBe(true);
+                expect(alignment.extension).toBeInRange(0, 3);
+                expect(alignment.only1).toBeBoolean();
+                expect(alignment.clearn).toBeBoolean();
+                expect(alignment.blockPruning).toBeBoolean();
+                expect(alignment.complement).toBeInRange(0, 3);
+                expect(alignment.reverse).toBeInRange(0, 3);
+                expect(alignment.fullName).toBe(
+                    i === 0 ?
+                    fullName :
+                    null
+                );
+                expect(alignment.email).toBe(email);
+            }
+
+            const afterCount = await Alignment.count();
+
+            expect(afterCount - beforeCount).toBe(2);
+        });
+
+        it('should not create an alignment if \'fullName\' is not formatted correctly', async () => {
+            const fullNames = ['asdhj1 daskj', 'dajkla-asjkd', 'adjlk*adjsl dasjdj asjdl', ''];
+
+            for(let i = 0; i < 4; i++){
+                try{
+                    alignment = await Alignment.create({
+                        extension,
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse,
+                        fullName: fullNames[i],
+                        email,
                     });
                 } catch (err) {
-                    expect(err.name).toBe('ValidationError');
-                    expect(err.errors.s0edge.message).toBe('Alignment edge must be one of: *, 1, 2, 3 or +.');
+                    expect(err.name).toBe('SequelizeValidationError')
                 }
             }
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(0);
         });
     });
 
-    describe('Validates the \'s1edge\' field', () => {
-        it('should create an alignment if the `s1edge` is present', async () => {
-            await Alignment.create({
-                extension,
-                s0type,
-                s1type,
-                s0,
-                s1,
-                s0edge,
-                s1edge 
-            });
+    describe('Validates the \'fullName\' field', () => {
+        it('should create an alignment with or without \'email\' field and is a valid email', async () => {
+            for(let i = 0; i < 2; i++){
+                let alignment
+                if(i === 0) {
+                    alignment = await Alignment.create({
+                        extension,
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse,
+                        fullName,
+                        email,
+                    });
+                } else {
+                    alignment = await Alignment.create({
+                        extension,
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse,
+                        fullName,
+                    });
+                }
 
-            const afterCount = await Alignment.countDocuments();
-
-            expect(afterCount - beforeCount).toBe(1);
-        });
-
-        it('should not create an alignment if the `s1edge` is not present', async () => {
-            try {
-                await Alignment.create({
-                    extension,
-                    s0type,
-                    s1type,
-                    s0,
-                    s1,
-                    s0edge
-                });
-            } catch (err) {
-                expect(err.name).toBe('ValidationError');
-                expect(err.errors.s1edge.message).toBe('Path `s1edge` is required.');
+                expect(isUuid(alignment.id)).toBe(true);
+                expect(alignment.extension).toBeInRange(0, 3);
+                expect(alignment.only1).toBeBoolean();
+                expect(alignment.clearn).toBeBoolean();
+                expect(alignment.blockPruning).toBeBoolean();
+                expect(alignment.complement).toBeInRange(0, 3);
+                expect(alignment.reverse).toBeInRange(0, 3);
+                expect(alignment.fullName).toBe(fullName);
+                expect(alignment.email).toBe(
+                    i === 0 ?
+                    email :
+                    null
+                );
             }
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
-            expect(afterCount - beforeCount).toBe(0);
+            expect(afterCount - beforeCount).toBe(2);
         });
 
-        it('should not create an alignment if the `s1edge` is not [*|1|2|3|+]', async () => {
-            const edges = ['a', '-', '4', '0', '\\'];
+        it('should not create an alignment if the \'email\' field is not a valid email', async () => {
+            const emails = ['', 'sakdjla@asdjacom', 'jdasklgmail.com'];
 
-            for(let i = 0; i < 5; i++) {
+            for(let i = 0; i < 3; i++){
                 try {
-                    await Alignment.create({
+                    const alignment = await Alignment.create({
                         extension,
-                        s0type,
-                        s1type,
-                        s0,
-                        s1,
-                        s0edge,
-                        s1edge: edges[i]
+                        only1,
+                        clearn,
+                        blockPruning,
+                        complement,
+                        reverse,
+                        fullName,
+                        email: emails[i],
                     });
                 } catch (err) {
-                    expect(err.name).toBe('ValidationError');
-                    expect(err.errors.s1edge.message).toBe('Alignment edge must be one of: *, 1, 2, 3 or +.');
+                    expect(err.name).toBe('SequelizeValidationError');
                 }
             }
 
-            const afterCount = await Alignment.countDocuments();
+            const afterCount = await Alignment.count();
 
             expect(afterCount - beforeCount).toBe(0);
-        }); 
+        });
     });
 });

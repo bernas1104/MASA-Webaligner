@@ -1,148 +1,105 @@
-const mongoose = require('mongoose');
+const Sequelize = require('sequelize');
+const { uuid } = require('uuidv4');
 
-const AlignmentSchema = new mongoose.Schema({
+const sequelize = require('../database/connection');
+const Sequence = require('./Sequence');
+
+const Model = Sequelize.Model;
+
+function isBoolean(value) {
+  if (value !== true && value !== false) {
+    throw new Error('Value must be TRUE or FALSE.');
+  }
+}
+
+class Alignment extends Model {}
+
+Alignment.init({
+    id: {
+        type: Sequelize.UUID,
+        primaryKey: true,
+    },
     extension: {
-        type: Number,
-        default: null,
-        required: true,
-        min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.'],
+        type: Sequelize.INTEGER,
+        allowNull: false,
         validate: {
-            validator: (extension) => (
-                extension !== null ?
-                Number.isInteger(extension) :
-                true
-            )
+            isInt: true,
+            min: 1,
+            max: 3,
         }
     },
     only1: {
-        type: Boolean,
-        default: false,
-        required: false,
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
         validate: {
-            validator: (only1) => (
-                only1 !== null ?
-                only1 === true || only1 === false :
-                true
-            )
+            isBoolean,
         }
     },
     clearn: {
-        type: Boolean,
-        default: false,
-        required: false,
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
         validate: {
-            validator: (clearn) => (
-                clearn !== null ?
-                clearn === true || clearn === false :
-                true
-            )
+            isBoolean,
         }
     },
     complement: {
-        type: Number,
-        default: null,
-        required: false,
-        min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.'],
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
         validate: {
-            validator: (complement) => (
-                complement !== null ?
-                Number.isInteger(complement) :
-                true
-            )
+            isInt: true,
+            min: 0,
+            max: 3,
         }
     },
     reverse: {
-        type: Number,
-        default: null,
-        required: false,
-        min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.'],
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
         validate: {
-            validator: (reverse) => (
-                reverse !== null ?
-                Number.isInteger(reverse) :
-                true
-            )
+            isInt: true,
+            min: 0,
+            max: 3
         }
     },
     blockPruning: {
-        type: Boolean,
-        default: true,
-        required: false,
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
         validate: {
-            validator: (blockPruning) => (
-                blockPruning !== null ?
-                blockPruning === true || blockPruning === false :
-                true
-            )
+            isBoolean,
         }
     },
-    s0type: {
-        type: Number,
-        default: null,
-        required: true,
-        min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.'],
+    fullName: {
+        type: Sequelize.STRING,
+        allowNull: true,
         validate: {
-            validator: (s0type) => (
-                s0type !== null ?
-                Number.isInteger(s0type) :
-                true
-            )
+            is: /^([A-Z][a-z]+)( [A-Z][a-z]+)*$/gi,
+            notEmpty: true,
         }
     },
-    s1type: {
-        type: Number,
-        default: null,
-        required: true,
-        min: [1, 'Must be a number between 1 and 3.'],
-        max: [3, 'Must be a number between 1 and 3.'],
+    email: {
+        type: Sequelize.STRING,
+        allowNull: true,
         validate: {
-            validator: (s1type) => (
-                s1type !== null ?
-                Number.isInteger(s1type) :
-                true
-            )
-        }
-    },
-    s0: {
-        type: String,
-        default: null,
-        required: true
-    },
-    s1: {
-        type: String,
-        default: null,
-        required: true
-    },
-    s0edge: {
-        type: String,
-        default: null,
-        required: true,
-        validate: {
-            validator: (edge) => (
-                /(\+|\*|[1-3]{1})/.test(edge)
-            ),
-            message: () => 'Alignment edge must be one of: *, 1, 2, 3 or +.'
-        }
-    },
-    s1edge: {
-        type: String,
-        default: null,
-        required: true,
-        validate: {
-            validator: (edge) => (
-                /(\+|\*|[1-3]{1})/.test(edge)
-            ),
-            message: () => 'Alignment edge must be one of: *, 1, 2, 3 or +.'
+            isEmail: true,
+            notEmpty: true,
         }
     },
     createdAt: {
-        type: Date,
-        default: Date.now(),
+        type: Sequelize.DATEONLY,
+        defaultValue: Date.now(),
     },
+    updatedAt: {
+        type: Sequelize.DATEONLY,
+        defaultValue: Date.now(),
+    }
+}, {
+  sequelize,
+  modelName: 'alignments'
 });
 
-module.exports = mongoose.model('Alignment', AlignmentSchema);
+Alignment.hasMany(Sequence);
+
+Alignment.beforeCreate((alignment, _) => {
+    return alignment.id = uuid();
+});
+
+module.exports = Alignment;
