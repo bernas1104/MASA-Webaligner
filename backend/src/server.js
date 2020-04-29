@@ -28,7 +28,8 @@ exec(`mkdir ${rootDir}/uploads ${rootDir}/results`);
 const app = express();
 
 sequelize.authenticate().then(() => {
-  console.log('Database connection stablished!');
+  if(process.env.NODE_ENV !== 'test')
+    console.log('Database connection stablished!');
 }).catch(err => {
   console.log('Unable to connect to database: ', err);
 });
@@ -85,3 +86,5 @@ if (process.env.NODE_ENV !== 'test') {
     console.log('Server listening on port 3333... 🚀');
   });
 }
+
+module.exports = app;

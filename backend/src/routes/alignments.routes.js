@@ -17,6 +17,7 @@ const GetFileNameService = require('./../services/GetFileNameService');
 const SelectMASAExtensionService = require('./../services/SelectMASAExtensionService');
 const CreateAlignmentService = require('../services/CreateAlignmentService');
 const CreateSequenceService = require('../services/CreateSequenceService');
+const ShowAlignmentService = require('../services/ShowAlignmentService');
 
 const { masaQueue } = require('./../lib/Queue');
 
@@ -89,11 +90,11 @@ alignmentsRouter.post('/', upload.fields([
 alignmentsRouter.get('/:id', async (request, response) => {
   const { id } = request.params;
 
-  const alignment = await Alignment.findByPk(id);
+  const showAlignmentService = new ShowAlignmentService();
 
-  const sequences = await Sequence.findAll({ where: { alignmentId: id }});
+  const result = await showAlignmentService.execute({ id });
 
-  return response.json({ alignment, sequences });
+  return response.json(result);
 });
 
 module.exports = alignmentsRouter;

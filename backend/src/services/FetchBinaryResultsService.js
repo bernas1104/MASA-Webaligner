@@ -6,10 +6,16 @@ require('dotenv').config({
 
 const Sequence = require('../models/Sequence');
 
+const AppError = require('../errors/AppError');
+
 class FetchBinaryResultsService {
     async execute({ id }) {
-        const [{ dataValues: { file: s0 }}, { dataValues: { file: s1 }}] =
-            await Sequence.findAll({ where: { alignmentId: id }});
+        const sequences = await Sequence.findAll({
+            where: { alignmentId: id }
+        });
+
+        const s0 = sequences[0].file;
+        const s1 = sequences[1].file;
 
         const folder = s0.match(/.*[^\.fasta]/g) + '-' + s1.match(/.*[^\.fasta]/g);
 

@@ -9,6 +9,8 @@ const DownloadNCBIFileService = require(
 );
 
 describe('Service responsible for accessing the NCBI API and retrieve FASTA files', () => {
+    jest.setTimeout(10000);
+
     const downloadNCBIFileService = new DownloadNCBIFileService();
 
     const id = uuid();

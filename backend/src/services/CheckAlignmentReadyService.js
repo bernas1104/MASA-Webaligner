@@ -13,15 +13,12 @@ class CheckAlignmentReadyService {
             path.resolve(__dirname, '..', '..', '__tests__', 'results',
                 path.parse(s0).name + '-' + path.parse(s1).name);
 
-        if(!only1){
-            filePath = path.join(filePath, 'alignment.00.bin');
+        if(!only1)
+            filePath = path.resolve(filePath, 'alignment.00.bin');
+        else
+            filePath = path.resolve(filePath, 'statistics_01.00');
 
-            isReady = await mz.exists(filePath);
-        } else {
-            filePath = path.join(filePath, 'statistics_01.00');
-
-            isReady = await mz.exists(filePath);
-        }
+        isReady = await mz.exists(filePath);
 
         return isReady;
     }

@@ -48,8 +48,8 @@ describe('Service responsible for retrieving the .bin files from the server', ()
             'utf-8'
         );
 
-        const s0 = await saveInputToFileService.execute({ id, text: s0text });
-        const s1 = await saveInputToFileService.execute({ id, text: s1text });
+        const s0 = await saveInputToFileService.execute({ text: s0text });
+        const s1 = await saveInputToFileService.execute({ text: s1text });
 
         const s0file = await Sequence.create({
             file: s0,
@@ -68,7 +68,7 @@ describe('Service responsible for retrieving the .bin files from the server', ()
         });
 
         execSync(
-            'masa-openmp --alignment-edges=++ ' +
+            'cudalign --alignment-edges=++ ' +
             path.join(filesPath, s0file.file) + ' ' +
             path.join(filesPath, s1file.file) + ' ' +
             '-d ' + path.join(resultPath, `${path.parse(s0file.file).name}-${path.parse(s1file.file).name}`) +
@@ -93,7 +93,7 @@ describe('Service responsible for retrieving the .bin files from the server', ()
     afterAll(async () => {
         await Alignment.destroy({ truncate: true, cascade: true });
         await sequelize.close();
-        await execSync(`rm -rf ${path.join(resultPath, '*')}`);
-        await execSync(`rm ${path.join(filesPath, '*')}`);
+        // await execSync(`rm -rf ${path.join(resultPath, '*')}`);
+        // await execSync(`rm ${path.join(filesPath, '*')}`);
     });
 });

@@ -58,7 +58,7 @@ class GetFileNameService {
 
             const saveInputToFileService = new SaveInputToFileService();
 
-            fileName = saveInputToFileService.execute({ id, text: input});
+            fileName = saveInputToFileService.execute({ text: input });
 
             break;
         default:

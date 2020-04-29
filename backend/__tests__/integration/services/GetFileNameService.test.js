@@ -11,6 +11,8 @@ const GetFileNameService = require(
 const AppError = require('../../../src/errors/AppError');
 
 describe('', () => {
+    jest.setTimeout(10000);
+
     const getFileNameService = new GetFileNameService();
 
     const filesPath = path.resolve(__dirname, '..', '..', 'uploads');
