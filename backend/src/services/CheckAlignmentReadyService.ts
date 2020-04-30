@@ -5,7 +5,7 @@ require('dotenv').config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
 });
 
-interface CheckAlignmentReadyServiceDTO {
+export interface CheckAlignmentReadyServiceDTO {
   s0: string;
   s1: string;
   only1: boolean;

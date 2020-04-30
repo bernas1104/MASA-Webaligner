@@ -1,3 +1,5 @@
+import { getRepository } from 'typeorm';
+
 import Alignment from '../models/Alignment';
 import Sequence from '../models/Sequence';
 
@@ -6,9 +8,9 @@ import AppError from '../errors/AppError';
 interface CreateSequenceServiceDTO {
   file: string;
   size: number;
-  origin: string;
+  origin: number;
   edge: string;
-  alignmentId: string;
+  alignment_id: string;
 }
 
 export default class CreateSequenceService {
@@ -17,20 +19,27 @@ export default class CreateSequenceService {
     size,
     origin,
     edge,
-    alignmentId,
+    alignment_id,
   }: CreateSequenceServiceDTO): Promise<Sequence> {
-    const alignment = await Alignment.findByPk(alignmentId);
+    const alignmentRepository = getRepository(Alignment);
+    const sequenceRepository = getRepository(Sequence);
+
+    const alignment = await alignmentRepository.findOne({
+      where: { id: alignment_id },
+    });
 
     if (!alignment)
       throw new AppError('There is no Alignment to attach this sequence');
 
-    const sequence = await Sequence.create({
+    const sequence = sequenceRepository.create({
       file,
       size,
       origin,
       edge,
-      alignmentId,
+      alignment_id,
     });
+
+    await sequenceRepository.save(sequence);
 
     return sequence;
   }

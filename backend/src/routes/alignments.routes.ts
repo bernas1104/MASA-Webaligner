@@ -5,9 +5,6 @@ import fs from 'fs';
 
 import uploadConfig from '../config/upload';
 
-import Alignment from '../models/Alignment';
-import Sequence from '../models/Sequence';
-
 import validadeCreateAlignment from '../validations/validateCreateAlignment';
 
 import GetFileNameService from '../services/GetFileNameService';
@@ -58,8 +55,8 @@ alignmentsRouter.post(
       input: s0input,
       files: request.files,
     });
-    request.savedFiles = { s0 };
-    const s0folder = s0 !== undefined ? s0.match(/.*[^.fasta]/g)[0] : null;
+    request.savedFiles.s0 = s0;
+    const s0folder = s0 !== undefined ? s0.match(/.*[^.fasta]/g)![0] : null;
 
     const s1 = await getFileNameService.execute({
       num: 1,
@@ -67,8 +64,8 @@ alignmentsRouter.post(
       input: s1input,
       files: request.files,
     });
-    request.savedFiles = { s1 };
-    const s1folder = s1 !== undefined ? s1.match(/.*[^.fasta]/g)[0] : null;
+    request.savedFiles.s1 = s1;
+    const s1folder = s1 !== undefined ? s1.match(/.*[^.fasta]/g)![0] : null;
 
     const filesPath =
       process.env.NODE_ENV !== 'test'
@@ -99,7 +96,7 @@ alignmentsRouter.post(
       size: fs.statSync(path.join(filesPath, s0)).size,
       origin: s0origin,
       edge: s0edge,
-      alignmentId: alignment.id,
+      alignment_id: alignment.id,
     });
 
     const sequence1 = await createSequenceService.execute({
@@ -107,7 +104,7 @@ alignmentsRouter.post(
       size: fs.statSync(path.join(filesPath, s1)).size,
       origin: s1origin,
       edge: s1edge,
-      alignmentId: alignment.id,
+      alignment_id: alignment.id,
     });
 
     const selectMASAExtensionService = new SelectMASAExtensionService();
@@ -152,4 +149,4 @@ alignmentsRouter.get('/:id', async (request, response) => {
   return response.json(result);
 });
 
-module.exports = alignmentsRouter;
+export default alignmentsRouter;

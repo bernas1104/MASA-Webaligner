@@ -1,18 +1,19 @@
 import express, { Request, Response, NextFunction } from 'express';
-import 'express-async-errors';
 import cors from 'cors';
 import BullBoard from 'bull-board';
 import { errors } from 'celebrate';
 import path from 'path';
 import { exec } from 'child_process';
+import 'express-async-errors';
+import 'reflect-metadata';
 
-// TypeORM
+import './database';
 
 import DeleteUploadedFileService from './services/DeleteUploadedFileService';
 
 import AppError from './errors/AppError';
 
-// import routes from './routes/index';
+import routes from './routes/index';
 import { mailQueue, masaQueue } from './lib/Queue';
 
 require('dotenv').config({
@@ -32,7 +33,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// app.use(routes);
+app.use(routes);
 app.use(errors());
 app.use(
   (

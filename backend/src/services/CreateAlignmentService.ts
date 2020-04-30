@@ -1,3 +1,5 @@
+import { getRepository } from 'typeorm';
+
 import Alignment from '../models/Alignment';
 
 interface CreateAlignmentServiceDTO {
@@ -22,7 +24,9 @@ export default class CreateAlignmentService {
     fullName,
     email,
   }: CreateAlignmentServiceDTO): Promise<Alignment> {
-    const alignment = await Alignment.create({
+    const alignmentRepository = getRepository(Alignment);
+
+    const alignment = alignmentRepository.create({
       extension,
       only1,
       clearn,
@@ -32,6 +36,8 @@ export default class CreateAlignmentService {
       fullName,
       email,
     });
+
+    await alignmentRepository.save(alignment);
 
     return alignment;
   }
