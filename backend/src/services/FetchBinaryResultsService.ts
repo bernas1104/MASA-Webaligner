@@ -1,9 +1,8 @@
 import path from 'path';
 import fs from 'fs';
+import { getRepository } from 'typeorm';
 
 import Sequence from '../models/Sequence';
-
-// import AppError from '../errors/AppError';
 
 require('dotenv').config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
@@ -15,8 +14,10 @@ interface FetchBinaryResultsServiceDTO {
 
 export default class FetchBinaryResultsService {
   async execute({ id }: FetchBinaryResultsServiceDTO): Promise<Buffer> {
-    const sequences = await Sequence.findAll({
-      where: { alignmentId: id },
+    const sequenceRepository = getRepository(Sequence);
+
+    const sequences = await sequenceRepository.find({
+      where: { alignment_id: id },
     });
 
     const s0 = sequences[0].file;

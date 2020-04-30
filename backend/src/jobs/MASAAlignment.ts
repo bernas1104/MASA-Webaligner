@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 
-interface MASAAlignmentJob {
+export interface MASAAlignmentJob {
   masa: string;
   only1?: boolean;
   clearn?: boolean;

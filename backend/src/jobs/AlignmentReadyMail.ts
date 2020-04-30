@@ -1,7 +1,6 @@
-import { ProcessPromiseFunction } from 'bull';
 import Mail from '../lib/Mail';
 
-interface AlignmentReadyMailJob {
+export interface AlignmentReadyMailJob {
   fullName?: string;
   email: string;
   address: string;

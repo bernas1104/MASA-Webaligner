@@ -14,7 +14,7 @@ import { uuid } from 'uuidv4';
 import Alignment from './Alignment';
 
 @Entity('sequences')
-export default class Sequence {
+class Sequence {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -48,3 +48,5 @@ export default class Sequence {
     this.id = uuid();
   }
 }
+
+export default Sequence;

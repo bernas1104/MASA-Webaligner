@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { getRepository } from 'typeorm';
 
 import Sequence from '../models/Sequence';
 
@@ -18,13 +19,11 @@ interface StageIResults {
 
 export default class FetchStageIResultsService {
   async execute({ id }: FetchStageIResultsServiceDTO): Promise<StageIResults> {
-    const sequences = await Sequence.findAll({
-      where: { alignmentId: id },
+    const sequenceRepository = getRepository(Sequence);
+
+    const [{ file: s0 }, { file: s1 }] = await sequenceRepository.find({
+      where: { alignment_id: id },
     });
-
-    const s0 = sequences[0].file;
-    const s1 = sequences[1].file;
-
     const filePath =
       process.env.NODE_ENV !== 'test'
         ? path.resolve(

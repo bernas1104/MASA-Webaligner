@@ -1,5 +1,5 @@
 import { createConnection } from 'typeorm';
 
-require('dotenv');
+// require('dotenv');
 
-createConnection(process.env.NODE_ENV !== 'test' ? 'default' : 'test');
+createConnection(/* process.env.NODE_ENV !== 'test' ? 'default' : 'test' */);

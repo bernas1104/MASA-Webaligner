@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { getRepository } from 'typeorm';
 
 import Sequence from '../models/Sequence';
 
@@ -18,14 +19,11 @@ interface FastaFiles {
 
 export default class FetchFastaFilesService {
   async execute({ id }: FetchFastaFilesServiceDTO): Promise<FastaFiles> {
-    const [
-      {
-        dataValues: { file: s0 },
-      },
-      {
-        dataValues: { file: s1 },
-      },
-    ] = await Sequence.findAll({ where: { alignmentId: id } });
+    const sequenceRepository = getRepository(Sequence);
+
+    const [{ file: s0 }, { file: s1 }] = await sequenceRepository.find({
+      where: { alignment_id: id },
+    });
 
     const filesPath =
       process.env.NODE_ENV !== 'test'

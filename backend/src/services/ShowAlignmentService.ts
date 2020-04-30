@@ -1,3 +1,5 @@
+import { getRepository } from 'typeorm';
+
 import Alignment from '../models/Alignment';
 import Sequence from '../models/Sequence';
 
@@ -14,12 +16,15 @@ interface ShowAlignment {
 
 export default class ShowAlignmentService {
   async execute({ id }: ShowAlignmentServiceDTO): Promise<ShowAlignment> {
-    const alignment = await Alignment.findByPk(id);
+    const alignmentRepository = getRepository(Alignment);
+    const sequenceRepository = getRepository(Sequence);
+
+    const alignment = await alignmentRepository.findOne({ where: { id } });
 
     if (!alignment) throw new AppError('Alignment not found', 400);
 
-    const sequences = await Sequence.findAll({
-      where: { alignmentId: id },
+    const sequences = await sequenceRepository.find({
+      where: { alignment_id: id },
     });
 
     if (sequences.length !== 2) throw new AppError('Sequences not found', 400);

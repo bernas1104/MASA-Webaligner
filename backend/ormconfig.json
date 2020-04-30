@@ -1,32 +1,18 @@
-[
-  {
-    "name": "default",
-    "type": "postgres",
-    "host": "localhost",
-    "port": "5432",
-    "username": "postgres",
-    "password": "110492-Bb",
-    "database": "masa_webaligner_type_dev",
-    "migrations": [
-      "./src/database/migrations/*.ts"
-    ],
-    "cli": {
-      "migrationsDir": "./src/database/migrations"
-    }
-  },
-  {
-    "name": "test",
-    "type": "postgres",
-    "host": "localhost",
-    "port": "5432",
-    "username": "postgres",
-    "password": "110492-Bb",
-    "database": "masa_webaligner_type_test",
-    "migrations": [
-      "./src/database/migrations/*.ts"
-    ],
-    "cli": {
-      "migrationsDir": "./src/database/migrations"
-    }
+{
+  "name": "default",
+  "type": "postgres",
+  "host": "localhost",
+  "port": "5432",
+  "username": "postgres",
+  "password": "110492-Bb",
+  "database": "masa_webaligner_type_dev",
+  "entities": [
+    "./src/models/*.ts"
+  ],
+  "migrations": [
+    "./src/database/migrations/*.ts"
+  ],
+  "cli": {
+    "migrationsDir": "./src/database/migrations"
   }
-]
+}

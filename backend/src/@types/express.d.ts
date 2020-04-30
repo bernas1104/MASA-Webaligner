@@ -7,8 +7,8 @@ declare namespace Express {
       s1input: Express.Multer.File[];
     };
     savedFiles: {
-      s0: string;
-      s1: string;
+      s0?: string;
+      s1?: string;
     };
   }
 }

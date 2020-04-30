@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -29,7 +29,7 @@ alignmentsRouter.post(
     { name: 's1input', maxCount: 1 },
   ]),
   validadeCreateAlignment,
-  async (request, response) => {
+  async (request: Request, response: Response) => {
     const {
       extension,
       only1,
@@ -55,7 +55,7 @@ alignmentsRouter.post(
       input: s0input,
       files: request.files,
     });
-    request.savedFiles.s0 = s0;
+    request.savedFiles = { s0 };
     const s0folder = s0 !== undefined ? s0.match(/.*[^.fasta]/g)![0] : null;
 
     const s1 = await getFileNameService.execute({
@@ -64,7 +64,7 @@ alignmentsRouter.post(
       input: s1input,
       files: request.files,
     });
-    request.savedFiles.s1 = s1;
+    request.savedFiles = { s1 };
     const s1folder = s1 !== undefined ? s1.match(/.*[^.fasta]/g)![0] : null;
 
     const filesPath =
