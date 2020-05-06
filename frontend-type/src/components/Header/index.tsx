@@ -53,19 +53,25 @@ const Header: React.FC = () => {
 
         <NavigationLinks>
           <li>
-            <a href="l">MASA Project</a>
+            <a href="#masa-project">MASA Project</a>
           </li>
           <li>
-            <a href="l">MASA Aligner</a>
+            <a href="about:blank">MASA Aligner</a>
           </li>
           <li>
-            <a href="l">About</a>
+            <a href="#about-us">About</a>
           </li>
           <li>
-            <a href="l">Contact</a>
+            <a href="#contact-us">Contact</a>
           </li>
           <li>
-            <a href="l">Contribute</a>
+            <a
+              href="https://github.com/edanssandes/MASA-Core/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Contribute
+            </a>
           </li>
         </NavigationLinks>
       </NavigationHeader>

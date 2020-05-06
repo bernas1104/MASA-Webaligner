@@ -30,6 +30,8 @@ const Home: React.FC = () => {
         <img src="https://via.placeholder.com/1920x1080" alt="" />
       </CoverImg>
 
+      <span id="masa-project" />
+
       <Container>
         <MASAProject>
           <h2>MASA Project</h2>
@@ -67,6 +69,7 @@ const Home: React.FC = () => {
               </p>
             </Card>
           </CardsContainer>
+          <span id="about-us" />
         </MASAProject>
 
         <AboutUs>
@@ -95,7 +98,7 @@ const Home: React.FC = () => {
       </Container>
 
       <Footer>
-        <ContactUs>
+        <ContactUs id="contact-us">
           <h2>Contact Us</h2>
 
           <ContactContainer>
@@ -139,13 +142,13 @@ const Home: React.FC = () => {
                   <h3>SOCIAL</h3>
                   <ul>
                     <li>
-                      <a href="l">
+                      <a href="about:blank">
                         <FaFacebookF size={20} color="#f5f5f5" />
                         MASA Project
                       </a>
                     </li>
                     <li>
-                      <a href="l">
+                      <a href="about:blank">
                         <FaTwitter size={20} color="#f5f5f5" />
                         @MASAProject
                       </a>
