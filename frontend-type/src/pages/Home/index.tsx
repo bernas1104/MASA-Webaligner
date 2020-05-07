@@ -20,6 +20,7 @@ import {
 } from './styles';
 
 import Header from '../../components/Header';
+import TextInput from '../../components/TextInput';
 
 const Home: React.FC = () => {
   return (
@@ -164,8 +165,8 @@ const Home: React.FC = () => {
               onSubmit={(e) => e.preventDefault()}
               className="contact-form"
             >
-              <input type="text" placeholder="Your name" />
-              <input type="text" placeholder="Your e-mail" />
+              <TextInput />
+              <TextInput />
               <textarea
                 name="message"
                 cols={30}

@@ -2,12 +2,20 @@ import styled from 'styled-components';
 
 export const CoverImg = styled.div`
   width: 100vw;
+  height: calc(100vh - 75px);
+
+  display: flex;
+  align-items: center;
+  margin-top: 75px;
+
+  background: #d0d0d0;
 
   img {
     width: 100%;
     max-width: 100%;
-    height: 100vh;
+    max-height: 100%;
     margin-bottom: 100px;
+    align-self: center;
   }
 `;
 
@@ -171,11 +179,6 @@ export const ContactContainer = styled.div`
 
   padding: 50px 20px;
 
-  .contact-info,
-  .contact-form {
-    flex: 1;
-  }
-
   @media (max-width: 1000px) {
     flex-direction: column;
   }
@@ -289,11 +292,11 @@ export const ContactForm = styled.form`
 
   padding-left: 50px;
 
-  * {
+  > * {
     flex: 1;
   }
 
-  * + * {
+  > * + * {
     margin-top: 20px;
   }
 
