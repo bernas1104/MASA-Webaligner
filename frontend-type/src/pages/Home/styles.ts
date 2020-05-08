@@ -290,7 +290,7 @@ export const ContactForm = styled.form`
   justify-content: center;
   width: 100%;
 
-  padding-left: 50px;
+  margin-left: 25px;
 
   > * {
     flex: 1;
@@ -298,32 +298,6 @@ export const ContactForm = styled.form`
 
   > * + * {
     margin-top: 20px;
-  }
-
-  textarea {
-    resize: none;
-  }
-
-  input[type='text'],
-  textarea {
-    border: none;
-    border-bottom: 1px solid #f5f5f5;
-    background: transparent;
-
-    color: #f5f5f5;
-    padding: 8px 16px;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
-  }
-
-  input[type='submit'] {
-    border: 1px solid #f5f5f5;
-    border-radius: 5px;
-    background: #f5f5f5;
-
-    color: #00376f;
-    font-weight: 500;
-    padding: 8px 16px;
   }
 
   @media (max-width: 1000px) {
@@ -354,11 +328,11 @@ export const FooterContainer = styled.div`
   a {
     color: #f5f5f5;
     text-decoration: none;
-    transition: opacity 0.2s;
-    -webkit-transition: opacity 0.2s;
+    transition: color 0.2s;
+    -webkit-transition: color 0.2s;
   }
 
   a:hover {
-    opacity: 0.5;
+    color: #29a83f;
   }
 `;

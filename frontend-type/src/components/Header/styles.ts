@@ -1,4 +1,12 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
+
+interface SidemenuProps {
+  isToggled: boolean;
+}
+
+interface FrozenScreenProps {
+  isToggled: boolean;
+}
 
 export const NavigationHeader = styled.header`
   position: fixed;
@@ -20,6 +28,7 @@ export const NavigationHeader = styled.header`
   .menu-icon {
     display: none;
     padding-bottom: 5px;
+    cursor: pointer;
   }
 
   .f1 {
@@ -63,8 +72,15 @@ export const NavigationHeader = styled.header`
 
     .menu-icon {
       display: block;
-      margin-right: 50px;
+
+      border: none;
       padding: 0;
+      margin-right: 50px;
+      background: #f5f5f5;
+    }
+
+    .menu-icon::-moz-focus-inner {
+      border: 0;
     }
   }
 
@@ -116,10 +132,9 @@ export const NavigationLinks = styled.ul`
   }
 `;
 
-export const SideMenu = styled.div`
+export const Sidemenu = styled.div<SidemenuProps>`
   position: fixed;
   top: 0;
-  left: 0;
   left: -400px;
   z-index: 99;
 
@@ -132,15 +147,37 @@ export const SideMenu = styled.div`
   display: flex;
   flex-direction: column;
 
-  a:first-child {
+  button {
     align-self: flex-end;
     margin-bottom: 20px;
+    border: none;
+    background: #f5f5f5;
+    cursor: pointer;
+  }
+
+  button::-moz-focus-inner {
+    border: 0;
   }
 
   transition: left ease-in-out 0.5s;
+
+  ${(props) =>
+    props.isToggled &&
+    css`
+      left: 0;
+
+      ul {
+        display: block;
+        margin: 0;
+
+        li + li {
+          margin-top: 20px;
+        }
+      }
+    `}
 `;
 
-export const FrozenScreen = styled.div`
+export const FrozenScreen = styled.div<FrozenScreenProps>`
   display: none;
 
   position: fixed;
@@ -152,4 +189,10 @@ export const FrozenScreen = styled.div`
   height: 100vh;
 
   background: rgba(0, 0, 0, 0.5);
+
+  ${(props) =>
+    props.isToggled &&
+    css`
+      display: block;
+    `}
 `;

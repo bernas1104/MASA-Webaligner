@@ -3,7 +3,6 @@ import styled, { css } from 'styled-components';
 interface ContainerProps {
   isFocused: boolean;
   isFilled: boolean;
-  // isErrored: boolean;
 }
 
 export const Container = styled.div<ContainerProps>`
@@ -13,7 +12,7 @@ export const Container = styled.div<ContainerProps>`
   padding: 8px 0;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   transition: border-color 0.2s;
   -webkit-transition: border-color 0.2s;
 
@@ -28,7 +27,7 @@ export const Container = styled.div<ContainerProps>`
     border-bottom: 2px solid #29a83f;
     transform: scaleX(0);
 
-    transition: transform 0.2s;
+    transition: transform 0.2;
     -webkit-transition: transform 0.2s;
   }
 
@@ -36,12 +35,16 @@ export const Container = styled.div<ContainerProps>`
     transform: scaleX(1);
   }
 
-  input {
+  textarea {
     flex: 1;
     border: none;
+    padding: 8px 0;
 
+    font-size: 16px;
+    resize: none;
     color: #f5f5f5;
     background: transparent;
+    z-index: 2;
 
     transition: opacity 0.2s;
     -webkit-transition: opacity 0.2s;

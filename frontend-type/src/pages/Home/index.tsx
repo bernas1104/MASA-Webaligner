@@ -1,6 +1,13 @@
 import React from 'react';
-import { MdMail, MdLocationOn, MdCall } from 'react-icons/md';
+import {
+  MdPerson,
+  MdMail,
+  MdLocationOn,
+  MdCall,
+  MdMessage,
+} from 'react-icons/md';
 import { FaTwitter, FaFacebookF } from 'react-icons/fa';
+// import { Form } from '@unform/web';
 
 import {
   CoverImg,
@@ -21,6 +28,8 @@ import {
 
 import Header from '../../components/Header';
 import TextInput from '../../components/TextInput';
+import TextAreaInput from '../../components/TextAreaInput';
+import Button from '../../components/Button';
 
 const Home: React.FC = () => {
   return (
@@ -165,15 +174,16 @@ const Home: React.FC = () => {
               onSubmit={(e) => e.preventDefault()}
               className="contact-form"
             >
-              <TextInput />
-              <TextInput />
-              <textarea
-                name="message"
-                cols={30}
-                rows={5}
-                placeholder="Your message"
-              />
-              <input type="submit" value="SEND" />
+              <TextInput name="name" icon={MdPerson}>
+                Your name
+              </TextInput>
+              <TextInput name="email" icon={MdMail}>
+                Your email
+              </TextInput>
+              <TextAreaInput name="message" icon={MdMessage}>
+                Your message
+              </TextAreaInput>
+              <Button type="submit" value="Send" />
             </ContactForm>
           </ContactContainer>
         </ContactUs>
@@ -189,6 +199,7 @@ const Home: React.FC = () => {
               Bernardo Costa Nascimento
             </a>
           </p>
+          <p>/</p>
         </FooterContainer>
       </Footer>
     </>

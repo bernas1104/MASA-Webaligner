@@ -1,50 +1,42 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { MdMenu, MdClear } from 'react-icons/md';
 
 import {
   NavigationHeader,
   NavigationLinks,
-  SideMenu,
+  Sidemenu,
   FrozenScreen,
 } from './styles';
-import './styles.scss';
 
 const Header: React.FC = () => {
-  function handleToggleMenu(event: React.MouseEvent): void {
-    event.preventDefault();
+  const [isToggled, setIsToggled] = useState(false);
 
-    const sidemenu = document.querySelector('.sidemenu');
+  const handleToggleMenu = useCallback((): void => {
+    if (!isToggled) {
+      document.querySelector('body')?.setAttribute('style', 'overflow: hidden');
 
-    if (!sidemenu?.classList.contains('show-sidemenu')) {
-      const navLinks = document.querySelector('header > ul');
+      const sidemenu = document.querySelector('.sidemenu');
+      if (sidemenu?.children.length === 1) {
+        const navLinks = document.querySelector('header > ul');
 
-      if (navLinks) {
-        const clone = navLinks.cloneNode(true);
-        sidemenu?.append(clone);
-
-        document.querySelector('.sidemenu > ul')?.classList.add('db', 'sm-ul');
+        if (navLinks) {
+          const clone = navLinks.cloneNode(true);
+          sidemenu?.append(clone);
+        }
       }
-
-      sidemenu?.classList.add('show-sidemenu');
-      document.querySelector('.frozen-screen')?.classList.add('db');
-      document.querySelector('body')?.classList.add('no-scroll');
     } else {
-      sidemenu?.classList.remove('show-sidemenu');
-      document.querySelector('.frozen-screen')?.classList.remove('db');
-      document.querySelector('body')?.classList.remove('no-scroll');
+      document.querySelector('body')?.removeAttribute('style');
     }
-  }
+
+    setIsToggled(!isToggled);
+  }, [isToggled]);
 
   return (
     <>
       <NavigationHeader>
-        <a
-          onClick={(event) => handleToggleMenu(event)}
-          className="menu-icon"
-          href="about:blank"
-        >
+        <button type="button" onClick={handleToggleMenu} className="menu-icon">
           <MdMenu size={30} color="#333" />
-        </a>
+        </button>
 
         <a className="logo" href="localhost">
           MASA
@@ -76,13 +68,21 @@ const Header: React.FC = () => {
         </NavigationLinks>
       </NavigationHeader>
 
-      <SideMenu className="sidemenu">
-        <a onClick={(event) => handleToggleMenu(event)} href="about:blank">
+      <Sidemenu
+        isToggled={isToggled}
+        className="sidemenu"
+        onClick={handleToggleMenu}
+      >
+        <button type="button" onClick={handleToggleMenu}>
           <MdClear size={30} color="#333" />
-        </a>
-      </SideMenu>
+        </button>
+      </Sidemenu>
 
-      <FrozenScreen className="frozen-screen" />
+      <FrozenScreen
+        isToggled={isToggled}
+        className="frozen-screen"
+        onClick={handleToggleMenu}
+      />
     </>
   );
 };

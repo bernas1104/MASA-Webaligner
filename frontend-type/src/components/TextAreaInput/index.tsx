@@ -1,14 +1,14 @@
 import React, {
-  useRef,
-  useState,
-  InputHTMLAttributes,
+  TextareaHTMLAttributes,
   useCallback,
+  useState,
+  useRef,
 } from 'react';
 import { IconBaseProps } from 'react-icons';
 
 import { Container } from './styles';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   name: string;
   icon?: React.ComponentType<IconBaseProps>;
 }
@@ -17,22 +17,20 @@ interface PlaceholdersType {
   [key: string]: string;
 }
 
-const TextInput: React.FC<InputProps> = ({
+const TextAreaInput: React.FC<TextAreaProps> = ({
   name,
   icon: Icon,
   children,
   ...rest
 }) => {
   const placeholders: PlaceholdersType = {
-    name: 'Ex: John Doe',
-    email: 'Ex: johndoe@gmail.com',
+    message: 'Ex: Hi, my name is John Doe and I have a question...',
   };
 
-  const [isFilled, setIsFilled] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isFilled, setIsFilled] = useState(false);
 
-  const inputLabel = useRef<HTMLLabelElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleInputFocus = useCallback((): void => {
     setIsFocused(true);
@@ -52,15 +50,14 @@ const TextInput: React.FC<InputProps> = ({
 
   return (
     <Container isFilled={isFilled} isFocused={isFocused}>
-      <label ref={inputLabel} htmlFor={name}>
-        {children}
-      </label>
-      <input
+      <label htmlFor={name}>{children}</label>
+      <textarea
         ref={inputRef}
-        id={name}
-        type="text"
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
+        name={name}
+        cols={30}
+        rows={5}
         {...rest}
       />
       {Icon && <Icon size={25} color="#f5f5f5" />}
@@ -68,4 +65,4 @@ const TextInput: React.FC<InputProps> = ({
   );
 };
 
-export default TextInput;
+export default TextAreaInput;
