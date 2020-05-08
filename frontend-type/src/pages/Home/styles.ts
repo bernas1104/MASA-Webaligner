@@ -292,16 +292,13 @@ export const ContactForm = styled.form`
 
   margin-left: 25px;
 
-  > * {
-    flex: 1;
-  }
-
   > * + * {
     margin-top: 20px;
   }
 
   @media (max-width: 1000px) {
     margin-top: 100px;
+    margin-right: 25px;
     padding-left: 0;
   }
 `;

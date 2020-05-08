@@ -42,9 +42,6 @@ export const Container = styled.div<ContainerProps>`
 
     color: #f5f5f5;
     background: transparent;
-
-    transition: opacity 0.2s;
-    -webkit-transition: opacity 0.2s;
   }
 
   label {

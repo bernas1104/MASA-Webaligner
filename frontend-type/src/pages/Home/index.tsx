@@ -183,7 +183,9 @@ const Home: React.FC = () => {
               <TextAreaInput name="message" icon={MdMessage}>
                 Your message
               </TextAreaInput>
-              <Button type="submit" value="Send" />
+              <Button type="submit" value="Send">
+                Send
+              </Button>
             </ContactForm>
           </ContactContainer>
         </ContactUs>
@@ -199,7 +201,6 @@ const Home: React.FC = () => {
               Bernardo Costa Nascimento
             </a>
           </p>
-          <p>/</p>
         </FooterContainer>
       </Footer>
     </>

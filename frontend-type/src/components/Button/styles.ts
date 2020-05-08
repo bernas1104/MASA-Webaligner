@@ -1,14 +1,16 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
+  display: flex;
+  justify-content: flex-end;
+
   button {
     cursor: pointer;
 
-    padding: 8px 16px !important;
+    padding: 8px 32px !important;
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
 
-    width: 100%;
     border: none;
     border-radius: 4px;
     color: #00376f;
