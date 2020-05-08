@@ -1,10 +1,10 @@
 import styled, { css } from 'styled-components';
 
-interface RadioboxProps {
-  isChecked: boolean;
+interface InnerCircleProps {
+  isChecked: boolean | undefined;
 }
 
-export const Container = styled.div<RadioboxProps>`
+export const Container = styled.div`
   outline: 0;
   display: inline-block;
 
@@ -83,7 +83,7 @@ export const OutterCircle = styled.div`
   border: 2px solid #f5f5f5;
 `;
 
-export const InnerCircle = styled.div<RadioboxProps>`
+export const InnerCircle = styled.div<InnerCircleProps>`
   position: absolute;
   top: 0;
   left: 0;

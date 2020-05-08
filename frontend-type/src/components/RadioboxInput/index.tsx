@@ -1,50 +1,30 @@
-import React, {
-  InputHTMLAttributes,
-  useState,
-  useCallback,
-  useRef,
-  forwardRef,
-  useImperativeHandle,
-} from 'react';
+import React, { InputHTMLAttributes } from 'react';
 
 import { Container, OutterCircle, InnerCircle } from './styles';
 
 interface RadioboxProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
-  value: string;
 }
 
-interface RadioboxRef {
-  checked: boolean | undefined;
-}
-
-const CheckboxInput: React.RefForwardingComponent<
-  RadioboxRef,
-  RadioboxProps
-> = ({ name, value, ...rest }, inputRef) => {
-  const radioRef = useRef<HTMLInputElement>(null);
-
-  const [isChecked, setIsChecked] = useState(false);
-
-  const handleClick = useCallback(() => {
-    setIsChecked(!isChecked);
-  }, [isChecked]);
-
-  useImperativeHandle(inputRef, () => ({
-    checked: radioRef.current?.checked,
-  }));
-
+const CheckboxInput: React.FC<RadioboxProps> = ({
+  name,
+  value,
+  checked,
+  onClick,
+  ...rest
+}) => {
   return (
-    <Container isChecked={isChecked}>
-      <label htmlFor={name} role="presentation" onClick={handleClick}>
+    <Container onClick={onClick}>
+      <label htmlFor={name}>
         <div className="radio-container">
           <OutterCircle />
-          <InnerCircle isChecked={isChecked} />
+          <InnerCircle isChecked={checked} />
           <input
-            ref={radioRef}
             type="radio"
             name={name}
             value={value}
+            checked={checked}
+            readOnly
             {...rest}
           />
           <div className="radio-hover" />
@@ -56,4 +36,4 @@ const CheckboxInput: React.RefForwardingComponent<
   );
 };
 
-export default forwardRef(CheckboxInput);
+export default CheckboxInput;

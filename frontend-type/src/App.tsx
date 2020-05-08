@@ -1,14 +1,17 @@
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 
 import Global from './styles/global';
 
-import Home from './pages/Home';
+import Routes from './routes';
 
 function App(): JSX.Element {
   return (
     <>
-      <Home />
-      <Global />
+      <BrowserRouter>
+        <Routes />
+        <Global />
+      </BrowserRouter>
     </>
   );
 }

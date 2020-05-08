@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MdMenu, MdClear } from 'react-icons/md';
 
 import {
@@ -38,23 +39,23 @@ const Header: React.FC = () => {
           <MdMenu size={30} color="#333" />
         </button>
 
-        <a className="logo" href="localhost">
+        <Link className="logo" to="/">
           MASA
           <span className="webaligner">&nbsp;Webaligner</span>
-        </a>
+        </Link>
 
         <NavigationLinks>
           <li>
-            <a href="#masa-project">MASA Project</a>
+            <a href="/#masa-project">MASA Project</a>
           </li>
           <li>
-            <a href="about:blank">MASA Aligner</a>
+            <Link to="/alignments">MASA Aligner</Link>
           </li>
           <li>
-            <a href="#about-us">About</a>
+            <a href="/#about-us">About</a>
           </li>
           <li>
-            <a href="#contact-us">Contact</a>
+            <a href="/#contact-us">Contact</a>
           </li>
           <li>
             <a
