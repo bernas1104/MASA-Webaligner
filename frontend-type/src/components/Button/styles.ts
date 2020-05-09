@@ -1,6 +1,10 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const Container = styled.div`
+interface ContainerProps {
+  marginTop: number;
+}
+
+export const Container = styled.div<ContainerProps>`
   display: flex;
   justify-content: flex-end;
 
@@ -28,4 +32,10 @@ export const Container = styled.div`
   button::-moz-focus-inner {
     border: 0;
   }
+
+  ${(props) =>
+    props.marginTop &&
+    css`
+      margin-top: ${props.marginTop}px;
+    `}
 `;

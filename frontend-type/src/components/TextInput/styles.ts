@@ -42,6 +42,12 @@ export const Container = styled.div<ContainerProps>`
 
     color: #f5f5f5;
     background: transparent;
+
+    &::placeholder,
+    &::-webkit-input-placeholder {
+      color: #f5f5f5;
+      opacity: 0.4;
+    }
   }
 
   label {

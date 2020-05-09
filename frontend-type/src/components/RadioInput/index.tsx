@@ -4,11 +4,13 @@ import { Container, OutterCircle, InnerCircle } from './styles';
 
 interface RadioboxProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
+  label: string;
 }
 
 const CheckboxInput: React.FC<RadioboxProps> = ({
   name,
   value,
+  label,
   checked,
   onClick,
   ...rest
@@ -30,7 +32,7 @@ const CheckboxInput: React.FC<RadioboxProps> = ({
           <div className="radio-hover" />
         </div>
 
-        <div className="label-container">{value}</div>
+        <div className="label-container">{label}</div>
       </label>
     </Container>
   );

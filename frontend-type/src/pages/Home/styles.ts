@@ -29,7 +29,7 @@ export const Container = styled.div`
   padding: 0 50px;
   padding-bottom: 70px;
 
-  color: #fff;
+  color: #333;
 `;
 
 export const MASAProject = styled.section`

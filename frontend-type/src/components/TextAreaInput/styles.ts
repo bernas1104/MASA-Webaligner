@@ -49,6 +49,12 @@ export const Container = styled.div<ContainerProps>`
 
     transition: opacity 0.2s;
     -webkit-transition: opacity 0.2s;
+
+    &::placeholder,
+    &::-webkit-input-placeholder {
+      color: #f5f5f5;
+      opacity: 0.4;
+    }
   }
 
   label {

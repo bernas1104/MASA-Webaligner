@@ -50,10 +50,10 @@ export const Container = styled.div`
         pointer-events: none;
 
         opacity: 0;
-        background: white;
+        background: #007715;
         border-radius: 50%;
 
-        transition: opacity ease-in-out 0.2s;
+        transition: opacity ease-in-out 0.4s;
         -webkit-transition: opacity ease-in-out 0.2s;
       }
     }
@@ -80,7 +80,7 @@ export const OutterCircle = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid #f5f5f5;
+  border: 2px solid #007715;
 `;
 
 export const InnerCircle = styled.div<InnerCircleProps>`
@@ -91,7 +91,7 @@ export const InnerCircle = styled.div<InnerCircleProps>`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #f5f5f5;
+  background: #007715;
   transform: scale(0.001);
   transition: transform ease 280ms;
 

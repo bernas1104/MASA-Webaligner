@@ -5,11 +5,17 @@ import { Container } from './styles';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: React.ComponentType<IconBaseProps>;
+  marginTop?: number;
 }
 
-const Button: React.FC<ButtonProps> = ({ icon: Icon, value, ...rest }) => {
+const Button: React.FC<ButtonProps> = ({
+  icon: Icon,
+  marginTop = 0,
+  value,
+  ...rest
+}) => {
   return (
-    <Container>
+    <Container marginTop={marginTop}>
       <button type="button" {...rest}>
         {Icon && <Icon size={20} color="#f5f5f5" />}
         {value}
