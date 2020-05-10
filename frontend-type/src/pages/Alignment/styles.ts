@@ -269,3 +269,65 @@ export const ContactInput = styled.div`
     margin-left: 25px;
   }
 `;
+
+export const SequencesContainer = styled.div`
+  margin-top: 50px;
+
+  width: 100%;
+  display: flex;
+
+  > div:first-child {
+    margin-right: 25px;
+  }
+
+  > div:last-child {
+    margin-left: 25px;
+  }
+`;
+
+export const SequenceInput = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  h2 {
+    color: #007715;
+    font-size: 36px;
+    font-weight: bold;
+    font-family: 'Roboto Condensed', sans-serif;
+  }
+
+  .input-type,
+  .edge-title {
+    display: flex;
+    align-items: center;
+    margin-top: 30px;
+    color: #007715;
+
+    h3 {
+      font-size: 24px;
+    }
+
+    svg {
+      margin-right: 25px;
+    }
+  }
+
+  .radio-type {
+    margin-top: 15px;
+    padding-left: 2px;
+  }
+
+  .sequence-input {
+    padding-top: 30px;
+    margin-bottom: auto;
+  }
+
+  .input-edge {
+    display: flex;
+
+    .edge-title {
+      margin-right: 30px;
+    }
+  }
+`;

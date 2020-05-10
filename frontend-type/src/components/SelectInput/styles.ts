@@ -9,8 +9,9 @@ export const Container = styled.div<ContainerProps>`
   position: relative;
   border-bottom: 2px solid #f5f5f5;
 
-  padding: 8px 0;
+  padding-top: 20px;
 
+  width: 100%;
   display: flex;
   align-items: center;
   transition: border-color 0.2s;
@@ -36,27 +37,46 @@ export const Container = styled.div<ContainerProps>`
   }
 
   select {
-    flex: 1;
+    width: 100%;
     border: none;
 
-    color: #f5f5f5;
+    color: #333;
     background: transparent;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:focus {
+      outline: none;
+    }
+
+    option:invalid,
+    option[value=''],
+    option:first-child {
+      color: pink;
+    }
   }
 
   label {
     position: absolute;
     left: 0;
-    top: 16px;
+    top: 28px;
     display: inline-block;
 
     transition: all 0.2s;
+  }
+
+  svg {
+    position: absolute;
+    right: 0;
+    z-index: -1;
   }
 
   ${(props) =>
     (props.isFocused || props.isFilled) &&
     css`
       label {
-        top: -8px !important;
+        top: 10px !important;
         font-size: 12px;
       }
 

@@ -37,13 +37,15 @@ const SelectInput: React.FC<SelectProps> = ({ icon: Icon }) => {
         onFocus={handleSelectFocus}
         onBlur={handleSelectBlur}
         placeholder="lorem ipsum"
+        defaultValue=""
       >
-        {/* <option disabled selected hidden /> */}
+        // eslint-disable-next-line jsx-a11y/control-has-associated-label
+        <option value="" disabled hidden />
         <option value="1">1</option>
         <option value="2">2</option>
         <option value="3">3</option>
       </select>
-      {Icon && <Icon size={25} color="#f5f5f5" />}
+      {Icon && <Icon size={25} color="#333" />}
     </Container>
   );
 };

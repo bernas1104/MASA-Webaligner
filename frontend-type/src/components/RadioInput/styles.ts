@@ -44,7 +44,7 @@ export const Container = styled.div`
         top: calc(50% - 20px);
         left: calc(50% - 20px);
 
-        z-index: 1;
+        /*z-index: 1;*/
         width: 40px;
         height: 40px;
         pointer-events: none;

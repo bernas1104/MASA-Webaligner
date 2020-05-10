@@ -13,6 +13,7 @@ export const NavigationHeader = styled.header`
   top: 0;
   left: 0;
   right: 0;
+  z-index: 2;
 
   width: 100%;
   max-width: 100vw;
@@ -185,6 +186,7 @@ export const FrozenScreen = styled.div<FrozenScreenProps>`
   left: 0;
   bottom: 0;
   right: 0;
+  z-index: 3;
   width: 100vw;
   height: 100vh;
 
