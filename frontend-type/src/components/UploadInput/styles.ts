@@ -8,7 +8,7 @@ export const Container = styled.div`
   button {
     cursor: pointer;
 
-    padding: 8px 32px;
+    padding: 4px 32px;
     border: 1px solid #007715;
     border-radius: 5px;
     background: transparent;

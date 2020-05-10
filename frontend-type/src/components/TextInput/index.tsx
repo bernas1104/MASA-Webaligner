@@ -13,21 +13,13 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ComponentType<IconBaseProps>;
 }
 
-interface PlaceholdersType {
-  [key: string]: string;
-}
-
 const TextInput: React.FC<InputProps> = ({
   name,
+  placeholder = '',
   icon: Icon,
   children,
   ...rest
 }) => {
-  const placeholders: PlaceholdersType = {
-    name: 'Ex: John Doe',
-    email: 'Ex: johndoe@gmail.com',
-  };
-
   const [isFilled, setIsFilled] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -38,8 +30,8 @@ const TextInput: React.FC<InputProps> = ({
     setIsFocused(true);
 
     if (inputRef.current?.value === '')
-      inputRef.current?.setAttribute('placeholder', placeholders[name]);
-  }, [placeholders, name]);
+      inputRef.current?.setAttribute('placeholder', placeholder);
+  }, [placeholder]);
 
   const handleInputBlur = useCallback((): void => {
     setIsFocused(false);

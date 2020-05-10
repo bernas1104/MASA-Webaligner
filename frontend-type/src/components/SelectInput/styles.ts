@@ -62,6 +62,8 @@ export const Container = styled.div<ContainerProps>`
     left: 0;
     top: 28px;
     display: inline-block;
+    z-index: -1;
+    color: #a5a5a5;
 
     transition: all 0.2s;
   }

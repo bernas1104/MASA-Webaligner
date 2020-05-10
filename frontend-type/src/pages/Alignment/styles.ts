@@ -249,7 +249,7 @@ export const ContactInput = styled.div`
 
   > div {
     flex: 1;
-    border-color: #333;
+    border-color: #00376f;
     margin-top: 25px;
 
     input {
@@ -257,7 +257,7 @@ export const ContactInput = styled.div`
     }
 
     input::placeholder {
-      color: #555555;
+      color: #555;
     }
   }
 
@@ -321,6 +321,20 @@ export const SequenceInput = styled.div`
   .sequence-input {
     padding-top: 30px;
     margin-bottom: auto;
+
+    div {
+      border-color: #00376f;
+
+      input,
+      textarea {
+        color: #333;
+      }
+
+      input::placeholder,
+      textarea::placeholder {
+        color: #555;
+      }
+    }
   }
 
   .input-edge {

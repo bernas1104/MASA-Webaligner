@@ -10,9 +10,16 @@ import { Container } from './styles';
 
 interface SelectProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ComponentType<IconBaseProps>;
+  label: string;
+  options: string[];
 }
 
-const SelectInput: React.FC<SelectProps> = ({ icon: Icon }) => {
+const SelectInput: React.FC<SelectProps> = ({
+  icon: Icon,
+  options,
+  name = '',
+  label,
+}) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
 
@@ -30,20 +37,21 @@ const SelectInput: React.FC<SelectProps> = ({ icon: Icon }) => {
 
   return (
     <Container isFocused={isFocused} isFilled={isFilled}>
-      <label htmlFor="lorem">lorem</label>
+      <label htmlFor={name}>{label}</label>
       <select
         ref={selectRef}
-        name="lorem"
+        name={name}
         onFocus={handleSelectFocus}
         onBlur={handleSelectBlur}
-        placeholder="lorem ipsum"
         defaultValue=""
       >
         // eslint-disable-next-line jsx-a11y/control-has-associated-label
         <option value="" disabled hidden />
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
+        {options.map((option) => (
+          <option value={option} key={option}>
+            {option}
+          </option>
+        ))}
       </select>
       {Icon && <Icon size={25} color="#333" />}
     </Container>

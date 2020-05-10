@@ -174,13 +174,21 @@ const Home: React.FC = () => {
               onSubmit={(e) => e.preventDefault()}
               className="contact-form"
             >
-              <TextInput name="name" icon={MdPerson}>
+              <TextInput name="name" placeholder="Ex: John Doe" icon={MdPerson}>
                 Your name
               </TextInput>
-              <TextInput name="email" icon={MdMail}>
+              <TextInput
+                name="email"
+                placeholder="Ex: johndoe@gmail.com"
+                icon={MdMail}
+              >
                 Your email
               </TextInput>
-              <TextAreaInput name="message" icon={MdMessage}>
+              <TextAreaInput
+                name="message"
+                placeholder="Ex: Hi, my name is John Doe and I have a question..."
+                icon={MdMessage}
+              >
                 Your message
               </TextAreaInput>
               <Button type="submit" value="Send">

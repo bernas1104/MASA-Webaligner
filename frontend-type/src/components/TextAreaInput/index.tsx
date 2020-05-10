@@ -13,20 +13,13 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   icon?: React.ComponentType<IconBaseProps>;
 }
 
-interface PlaceholdersType {
-  [key: string]: string;
-}
-
 const TextAreaInput: React.FC<TextAreaProps> = ({
   name,
+  placeholder = '',
   icon: Icon,
   children,
   ...rest
 }) => {
-  const placeholders: PlaceholdersType = {
-    message: 'Ex: Hi, my name is John Doe and I have a question...',
-  };
-
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
 
@@ -36,8 +29,8 @@ const TextAreaInput: React.FC<TextAreaProps> = ({
     setIsFocused(true);
 
     if (inputRef.current?.value === '')
-      inputRef.current?.setAttribute('placeholder', placeholders[name]);
-  }, [placeholders, name]);
+      inputRef.current?.setAttribute('placeholder', placeholder);
+  }, [placeholder]);
 
   const handleInputBlur = useCallback((): void => {
     setIsFocused(false);

@@ -25,6 +25,12 @@ import TextAreaInput from '../../components/TextAreaInput';
 import SelectInput from '../../components/SelectInput';
 import UploadInput from '../../components/UploadInput';
 
+interface StateNames {
+  [key: string]: Function;
+}
+
+const edges: string[] = ['1', '2', '3', '+', '*'];
+
 const Alignment: React.FC = () => {
   const [isShowing, setIsShowing] = useState(false);
 
@@ -36,50 +42,28 @@ const Alignment: React.FC = () => {
   const [reverse, setReverse] = useState('');
   const [s0origin, setS0Origin] = useState('');
   const [s1origin, setS1Origin] = useState('');
-  //const [s0edge, setS0Edge] = useState('');
-  //const [s1edge, setS1Edge] = useState('');
+  // const [s0input, setS0Input] = useState('');
+  // const [s1input, setS1Input] = useState('');
+  // const [s0edge, setS0Edge] = useState('');
+  // const [s1edge, setS1Edge] = useState('');
 
-  const handleExtension = useCallback((value: string) => {
-    setExtension(value);
-  }, []);
+  const states: StateNames = {
+    extension: setExtension,
+    only1: setOnly1,
+    clearn: setClearN,
+    blockPruning: setBlockPruning,
+    complement: setComplement,
+    reverse: setReverse,
+    s0origin: setS0Origin,
+    s1origin: setS1Origin,
+  };
 
-  const handleOnly1 = useCallback((value: string) => {
-    setOnly1(value);
-  }, []);
-
-  const handleClearN = useCallback((value: string) => {
-    setClearN(value);
-  }, []);
-
-  const handleBlockPruning = useCallback((value: string) => {
-    setBlockPruning(value);
-  }, []);
-
-  const handleComplement = useCallback((value: string) => {
-    setComplement(value);
-  }, []);
-
-  const handleReverse = useCallback((value: string) => {
-    setReverse(value);
-  }, []);
-
-  const handleS0Origin = useCallback((value: string) => {
-    setS0Origin(value);
-  }, []);
-
-  const handleS1Origin = useCallback((value: string) => {
-    setS1Origin(value);
-  }, []);
-
-  /*
-  const handleS0Edge = useCallback((value: string) => {
-    setS0Edge(value);
-  }, []);
-
-  const handleS1Edge = useCallback((value: string) => {
-    setS1Edge(value);
-  }, []);
-  */
+  const handleInput = useCallback(
+    (name: string, value: string) => {
+      states[name](value);
+    },
+    [states],
+  );
 
   return (
     <>
@@ -111,7 +95,7 @@ const Alignment: React.FC = () => {
                     value={option[1]}
                     label={option[0]}
                     checked={option[1] === extension}
-                    onClick={() => handleExtension(option[1])}
+                    onClick={() => handleInput('extension', option[1])}
                   />
                 ))}
               </div>
@@ -133,7 +117,7 @@ const Alignment: React.FC = () => {
                     value={option[1]}
                     label={option[0]}
                     checked={option[1] === only1}
-                    onClick={() => handleOnly1(option[1])}
+                    onClick={() => handleInput('only1', option[1])}
                   />
                 ))}
               </div>
@@ -165,7 +149,7 @@ const Alignment: React.FC = () => {
                       value={option[1]}
                       label={option[0]}
                       checked={option[1] === clearn}
-                      onClick={() => handleClearN(option[1])}
+                      onClick={() => handleInput('clearn', option[1])}
                     />
                   ))}
                 </div>
@@ -187,7 +171,7 @@ const Alignment: React.FC = () => {
                       value={option[1]}
                       label={option[0]}
                       checked={option[1] === blockPruning}
-                      onClick={() => handleBlockPruning(option[1])}
+                      onClick={() => handleInput('blockPruning', option[1])}
                     />
                   ))}
                 </div>
@@ -210,7 +194,7 @@ const Alignment: React.FC = () => {
                       value={option[1]}
                       label={option[0]}
                       checked={option[1] === complement}
-                      onClick={() => handleComplement(option[1])}
+                      onClick={() => handleInput('complement', option[1])}
                     />
                   ))}
                 </div>
@@ -233,7 +217,7 @@ const Alignment: React.FC = () => {
                       value={option[1]}
                       label={option[0]}
                       checked={option[1] === reverse}
-                      onClick={() => handleReverse(option[1])}
+                      onClick={() => handleInput('reverse', option[1])}
                     />
                   ))}
                 </div>
@@ -249,8 +233,12 @@ const Alignment: React.FC = () => {
               </ContactTitle>
 
               <ContactInput>
-                <TextInput name="name">Your name</TextInput>
-                <TextInput name="email">Your email</TextInput>
+                <TextInput name="name" placeholder="Ex: John Doe">
+                  Your name
+                </TextInput>
+                <TextInput name="email" placeholder="Ex: johndoe@gmail.com">
+                  Your email
+                </TextInput>
               </ContactInput>
             </ContactContainer>
 
@@ -275,20 +263,25 @@ const Alignment: React.FC = () => {
                       value={option[1]}
                       label={option[0]}
                       checked={option[1] === s0origin}
-                      onClick={() => handleS0Origin(option[1])}
+                      onClick={() => handleInput('s0origin', option[1])}
                     />
                   ))}
                 </div>
 
                 <div className="sequence-input">
                   {s0origin === '1' && (
-                    <TextInput name="s1input">Second sequence</TextInput>
+                    <TextInput name="s0input" placeholder="Ex: AF133821.1">
+                      Second sequence
+                    </TextInput>
                   )}
 
                   {s0origin === '2' && <UploadInput />}
 
                   {s0origin === '3' && (
-                    <TextAreaInput name="s1input">
+                    <TextAreaInput
+                      name="s0input"
+                      placeholder={'Ex: >Sequence Name\nAGGCCTAATTATGNACCAT'}
+                    >
                       Your second sequence
                     </TextAreaInput>
                   )}
@@ -300,7 +293,12 @@ const Alignment: React.FC = () => {
                     <h3>Edge</h3>
                   </div>
 
-                  <SelectInput icon={MdArrowDropDown} />
+                  <SelectInput
+                    icon={MdArrowDropDown}
+                    options={edges}
+                    label="Edge of first sequence"
+                    name="s0edge"
+                  />
                 </div>
               </SequenceInput>
 
@@ -324,20 +322,25 @@ const Alignment: React.FC = () => {
                       value={option[1]}
                       label={option[0]}
                       checked={option[1] === s1origin}
-                      onClick={() => handleS1Origin(option[1])}
+                      onClick={() => handleInput('s1origin', option[1])}
                     />
                   ))}
                 </div>
 
                 <div className="sequence-input">
                   {s1origin === '1' && (
-                    <TextInput name="s1input">Second sequence</TextInput>
+                    <TextInput name="s1input" placeholder="Ex: AY352275.1">
+                      Second sequence
+                    </TextInput>
                   )}
 
                   {s1origin === '2' && <UploadInput />}
 
                   {s1origin === '3' && (
-                    <TextAreaInput name="s1input">
+                    <TextAreaInput
+                      name="s1input"
+                      placeholder={'Ex: >Sequence Name\nTGGCCGAAATTANGNACCNN'}
+                    >
                       Your second sequence
                     </TextAreaInput>
                   )}
@@ -349,7 +352,12 @@ const Alignment: React.FC = () => {
                     <h3>Edge</h3>
                   </div>
 
-                  <SelectInput icon={MdArrowDropDown} />
+                  <SelectInput
+                    icon={MdArrowDropDown}
+                    options={edges}
+                    label="Edge for the second sequence"
+                    name="s1edge"
+                  />
                 </div>
               </SequenceInput>
             </SequencesContainer>
