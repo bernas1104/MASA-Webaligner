@@ -18,6 +18,7 @@ const TextInput: React.FC<InputProps> = ({
   placeholder = '',
   icon: Icon,
   children,
+  onChange,
   ...rest
 }) => {
   const [isFilled, setIsFilled] = useState(false);
@@ -53,6 +54,7 @@ const TextInput: React.FC<InputProps> = ({
         type="text"
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
+        onChange={onChange}
         {...rest}
       />
       {Icon && <Icon size={25} color="#f5f5f5" />}

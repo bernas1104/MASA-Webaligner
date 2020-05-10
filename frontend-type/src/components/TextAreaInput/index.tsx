@@ -18,6 +18,7 @@ const TextAreaInput: React.FC<TextAreaProps> = ({
   placeholder = '',
   icon: Icon,
   children,
+  onChange,
   ...rest
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -48,6 +49,7 @@ const TextAreaInput: React.FC<TextAreaProps> = ({
         ref={inputRef}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
+        onChange={onChange}
         name={name}
         cols={30}
         rows={5}

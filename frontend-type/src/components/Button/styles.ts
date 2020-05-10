@@ -2,11 +2,18 @@ import styled, { css } from 'styled-components';
 
 interface ContainerProps {
   marginTop: number;
+  align?: string;
 }
 
 export const Container = styled.div<ContainerProps>`
   display: flex;
   justify-content: flex-end;
+
+  ${(props) =>
+    props.align &&
+    css`
+      justify-content: ${props.align};
+    `}
 
   button {
     cursor: pointer;

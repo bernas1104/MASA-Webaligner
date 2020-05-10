@@ -295,13 +295,13 @@ export const SequenceInput = styled.div`
     font-size: 36px;
     font-weight: bold;
     font-family: 'Roboto Condensed', sans-serif;
+    margin-bottom: 30px;
   }
 
   .input-type,
   .edge-title {
     display: flex;
     align-items: center;
-    margin-top: 30px;
     color: #007715;
 
     h3 {
@@ -339,6 +339,8 @@ export const SequenceInput = styled.div`
 
   .input-edge {
     display: flex;
+    align-items: center;
+    margin-top: 30px;
 
     .edge-title {
       margin-right: 30px;

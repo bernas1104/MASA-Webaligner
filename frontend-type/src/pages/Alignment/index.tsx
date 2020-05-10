@@ -1,5 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import { MdInfoOutline, MdArrowDropDown } from 'react-icons/md';
+import * as Yup from 'yup';
 
 import Header from '../../components/Header';
 import {
@@ -25,27 +27,43 @@ import TextAreaInput from '../../components/TextAreaInput';
 import SelectInput from '../../components/SelectInput';
 import UploadInput from '../../components/UploadInput';
 
+import api from '../../services/api';
+
 interface StateNames {
   [key: string]: Function;
+}
+
+interface FormDateProps {
+  [key: string]: string | Blob;
 }
 
 const edges: string[] = ['1', '2', '3', '+', '*'];
 
 const Alignment: React.FC = () => {
+  const history = useHistory();
+
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [isShowing, setIsShowing] = useState(false);
 
   const [extension, setExtension] = useState('');
   const [only1, setOnly1] = useState('');
-  const [clearn, setClearN] = useState('');
-  const [blockPruning, setBlockPruning] = useState('');
-  const [complement, setComplement] = useState('');
-  const [reverse, setReverse] = useState('');
+  const [clearn, setClearN] = useState('false');
+  const [blockPruning, setBlockPruning] = useState('true');
+  const [complement, setComplement] = useState('0');
+  const [reverse, setReverse] = useState('0');
   const [s0origin, setS0Origin] = useState('');
   const [s1origin, setS1Origin] = useState('');
-  // const [s0input, setS0Input] = useState('');
-  // const [s1input, setS1Input] = useState('');
-  // const [s0edge, setS0Edge] = useState('');
-  // const [s1edge, setS1Edge] = useState('');
+  const [s0input, setS0Input] = useState('');
+  const [s1input, setS1Input] = useState('');
+  const [s0edge, setS0Edge] = useState('');
+  const [s1edge, setS1Edge] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+
+  const [s0FileName, setS0FileName] = useState('');
+  const [s1FileName, setS1FileName] = useState('');
 
   const states: StateNames = {
     extension: setExtension,
@@ -56,13 +74,118 @@ const Alignment: React.FC = () => {
     reverse: setReverse,
     s0origin: setS0Origin,
     s1origin: setS1Origin,
+    s0input: setS0Input,
+    s1input: setS1Input,
+    s0edge: setS0Edge,
+    s1edge: setS1Edge,
+    fullName: setFullName,
+    email: setEmail,
   };
 
+  useEffect(() => {
+    setS0Input('');
+    setS0FileName('');
+  }, [s0origin]);
+
+  useEffect(() => {
+    setS1Input('');
+    setS1FileName('');
+  }, [s1origin]);
+
   const handleInput = useCallback(
-    (name: string, value: string) => {
-      states[name](value);
+    (field: string, value: string | File) => {
+      states[field](value);
     },
     [states],
+  );
+
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent) => {
+      event.preventDefault();
+
+      const data: FormDateProps = {
+        extension,
+        only1,
+        clearn,
+        blockPruning,
+        complement,
+        reverse,
+        s0origin,
+        s1origin,
+        s0input,
+        s1input,
+        s0edge,
+        s1edge,
+        fullName,
+        email,
+      };
+
+      try {
+        const schema = Yup.object().shape({
+          extension: Yup.number()
+            .min(1)
+            .max(3)
+            .required('extension must select a MASA Extension'),
+          only1: Yup.boolean().required(
+            'only1 must select the stages to be executed',
+          ),
+          clearn: Yup.boolean().optional().default(false),
+          blockPuning: Yup.boolean().optional().default(true),
+          complement: Yup.number().optional().min(0).max(3).default(0),
+          reverse: Yup.number().optional().min(0).max(3).default(0),
+          s0origin: Yup.number()
+            .min(1)
+            .max(3)
+            .required('s0origin must select the first sequence origin'),
+          s1origin: Yup.number()
+            .min(1)
+            .max(3)
+            .required('s1origin must select the second sequence origin'),
+          s0edge: Yup.string()
+            .matches(/^[1|2|3|+|*]$/g)
+            .required('s0edge must be one of: 1, 2, 3, +, *'),
+          s1edge: Yup.string()
+            .matches(/^[1|2|3|+|*]$/g)
+            .required('s1edge must be one of: 1, 2, 3, +, *'),
+          fullName: Yup.string().optional(),
+          email: Yup.string().email().optional(),
+        });
+
+        await schema.validate(data, { abortEarly: false });
+
+        formRef.current?.reset();
+
+        const formData = new FormData();
+
+        const keys = Object.keys(data);
+        keys.forEach((key) => {
+          formData.append(key, data[key]);
+        });
+
+        const response = await api.post('alignments', formData);
+
+        history.push(`/results/${response.data.alignment.id}`);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [
+      extension,
+      only1,
+      clearn,
+      blockPruning,
+      complement,
+      reverse,
+      s0origin,
+      s1origin,
+      s0input,
+      s1input,
+      s0edge,
+      s1edge,
+      fullName,
+      email,
+      history,
+    ],
   );
 
   return (
@@ -77,7 +200,7 @@ const Alignment: React.FC = () => {
         </p>
 
         <AlignerContainer>
-          <Form>
+          <Form ref={formRef} onSubmit={handleSubmit}>
             <InputConfiguration>
               <div className="configuration-title">
                 <MdInfoOutline size={25} />
@@ -124,9 +247,17 @@ const Alignment: React.FC = () => {
             </InputConfiguration>
 
             <OptionalConfigurationsTitle isShowing={isShowing}>
-              <div className="optional-configuration-title">
+              <div
+                className="optional-configuration-title"
+                role="presentation"
+                onClick={() => btnRef.current?.click()}
+              >
                 <h2>Optional Configuration</h2>
-                <button type="button" onClick={() => setIsShowing(!isShowing)}>
+                <button
+                  ref={btnRef}
+                  type="button"
+                  onClick={() => setIsShowing(!isShowing)}
+                >
                   <MdArrowDropDown size={25} color="#007715" />
                 </button>
               </div>
@@ -140,8 +271,8 @@ const Alignment: React.FC = () => {
                 </div>
                 <div className="input-control">
                   {[
-                    ['True', 'false'],
-                    ['False', 'true'],
+                    ['True', 'true'],
+                    ['False', 'false'],
                   ].map((option) => (
                     <RadioInput
                       key={option[1]}
@@ -162,8 +293,8 @@ const Alignment: React.FC = () => {
                 </div>
                 <div className="input-control">
                   {[
-                    ['Enabled', 'false'],
-                    ['Disabled', 'true'],
+                    ['Enabled', 'true'],
+                    ['Disabled', 'false'],
                   ].map((option) => (
                     <RadioInput
                       key={option[1]}
@@ -233,10 +364,20 @@ const Alignment: React.FC = () => {
               </ContactTitle>
 
               <ContactInput>
-                <TextInput name="name" placeholder="Ex: John Doe">
+                <TextInput
+                  value={fullName}
+                  onChange={(e) => handleInput('fullName', e.target.value)}
+                  name="fullName"
+                  placeholder="Ex: John Doe"
+                >
                   Your name
                 </TextInput>
-                <TextInput name="email" placeholder="Ex: johndoe@gmail.com">
+                <TextInput
+                  value={email}
+                  onChange={(e) => handleInput('email', e.target.value)}
+                  name="email"
+                  placeholder="Ex: johndoe@gmail.com"
+                >
                   Your email
                 </TextInput>
               </ContactInput>
@@ -270,17 +411,35 @@ const Alignment: React.FC = () => {
 
                 <div className="sequence-input">
                   {s0origin === '1' && (
-                    <TextInput name="s0input" placeholder="Ex: AF133821.1">
+                    <TextInput
+                      value={s0input}
+                      name="s0input"
+                      placeholder="Ex: AF133821.1"
+                      onChange={(e) => handleInput('s0input', e.target.value)}
+                    >
                       Second sequence
                     </TextInput>
                   )}
 
-                  {s0origin === '2' && <UploadInput />}
+                  {s0origin === '2' && (
+                    <UploadInput
+                      filename={s0FileName}
+                      name="s0input"
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          setS0FileName(e.target.files[0].name);
+                          handleInput('s0input', e.target.files[0]);
+                        }
+                      }}
+                    />
+                  )}
 
                   {s0origin === '3' && (
                     <TextAreaInput
+                      value={s0input}
                       name="s0input"
                       placeholder={'Ex: >Sequence Name\nAGGCCTAATTATGNACCAT'}
+                      onChange={(e) => handleInput('s0input', e.target.value)}
                     >
                       Your second sequence
                     </TextAreaInput>
@@ -298,6 +457,8 @@ const Alignment: React.FC = () => {
                     options={edges}
                     label="Edge of first sequence"
                     name="s0edge"
+                    value={s0edge}
+                    onChange={(e) => handleInput('s0edge', e.target.value)}
                   />
                 </div>
               </SequenceInput>
@@ -329,15 +490,32 @@ const Alignment: React.FC = () => {
 
                 <div className="sequence-input">
                   {s1origin === '1' && (
-                    <TextInput name="s1input" placeholder="Ex: AY352275.1">
+                    <TextInput
+                      value={s1input}
+                      onChange={(e) => handleInput('s1input', e.target.value)}
+                      name="s1input"
+                      placeholder="Ex: AY352275.1"
+                    >
                       Second sequence
                     </TextInput>
                   )}
 
-                  {s1origin === '2' && <UploadInput />}
+                  {s1origin === '2' && (
+                    <UploadInput
+                      filename={s1FileName}
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          setS1FileName(e.target.files[0].name);
+                          handleInput('s1input', e.target.files[0]);
+                        }
+                      }}
+                    />
+                  )}
 
                   {s1origin === '3' && (
                     <TextAreaInput
+                      value={s1input}
+                      onChange={(e) => handleInput('s1input', e.target.value)}
                       name="s1input"
                       placeholder={'Ex: >Sequence Name\nTGGCCGAAATTANGNACCNN'}
                     >
@@ -357,6 +535,8 @@ const Alignment: React.FC = () => {
                     options={edges}
                     label="Edge for the second sequence"
                     name="s1edge"
+                    value={s1edge}
+                    onChange={(e) => handleInput('s1edge', e.target.value)}
                   />
                 </div>
               </SequenceInput>
@@ -366,7 +546,8 @@ const Alignment: React.FC = () => {
               marginTop={50}
               type="submit"
               value="Align Sequences"
-              onClick={(e) => e.preventDefault()}
+              align="center"
+              // onClick={(e) => e.preventDefault()}
             />
           </Form>
         </AlignerContainer>

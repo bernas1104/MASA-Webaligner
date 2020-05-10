@@ -9,7 +9,7 @@ export const Container = styled.div<ContainerProps>`
   position: relative;
   border-bottom: 2px solid #f5f5f5;
 
-  padding-top: 20px;
+  padding-bottom: 5px;
 
   width: 100%;
   display: flex;
@@ -39,6 +39,7 @@ export const Container = styled.div<ContainerProps>`
   select {
     width: 100%;
     border: none;
+    font-size: 16px;
 
     color: #333;
     background: transparent;
@@ -49,18 +50,12 @@ export const Container = styled.div<ContainerProps>`
     &:focus {
       outline: none;
     }
-
-    option:invalid,
-    option[value=''],
-    option:first-child {
-      color: pink;
-    }
   }
 
   label {
     position: absolute;
     left: 0;
-    top: 28px;
+    top: 0;
     display: inline-block;
     z-index: -1;
     color: #a5a5a5;
@@ -78,7 +73,7 @@ export const Container = styled.div<ContainerProps>`
     (props.isFocused || props.isFilled) &&
     css`
       label {
-        top: 10px !important;
+        top: -15px !important;
         font-size: 12px;
       }
 

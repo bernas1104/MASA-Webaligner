@@ -1,13 +1,28 @@
-import React, { useRef } from 'react';
+import React, { useRef, InputHTMLAttributes } from 'react';
 
 import { Container } from './styles';
 
-const UploadInput: React.FC = () => {
+interface UploadInputProps extends InputHTMLAttributes<HTMLInputElement> {
+  filename: string;
+}
+
+const UploadInput: React.FC<UploadInputProps> = ({
+  name,
+  filename,
+  onChange,
+  ...rest
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <Container>
-      <input ref={inputRef} type="file" name="lorem" />
+      <input
+        ref={inputRef}
+        type="file"
+        name={name}
+        onChange={onChange}
+        {...rest}
+      />
       <button
         type="button"
         onClick={() => {
@@ -16,7 +31,7 @@ const UploadInput: React.FC = () => {
       >
         Upload File
       </button>
-      <span>LoremIpsum.fasta</span>
+      <span>{filename || 'No file chosen'}</span>
     </Container>
   );
 };

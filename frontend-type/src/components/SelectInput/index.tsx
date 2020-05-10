@@ -1,14 +1,14 @@
 import React, {
-  InputHTMLAttributes,
   useRef,
   useState,
   useCallback,
+  SelectHTMLAttributes,
 } from 'react';
 import { IconBaseProps } from 'react-icons';
 
 import { Container } from './styles';
 
-interface SelectProps extends InputHTMLAttributes<HTMLInputElement> {
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   icon?: React.ComponentType<IconBaseProps>;
   label: string;
   options: string[];
@@ -16,9 +16,11 @@ interface SelectProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const SelectInput: React.FC<SelectProps> = ({
   icon: Icon,
-  options,
   name = '',
   label,
+  options,
+  value,
+  onChange,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
@@ -43,7 +45,8 @@ const SelectInput: React.FC<SelectProps> = ({
         name={name}
         onFocus={handleSelectFocus}
         onBlur={handleSelectBlur}
-        defaultValue=""
+        value={value}
+        onChange={onChange}
       >
         // eslint-disable-next-line jsx-a11y/control-has-associated-label
         <option value="" disabled hidden />
