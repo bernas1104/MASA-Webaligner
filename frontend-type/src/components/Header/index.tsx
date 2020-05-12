@@ -2,12 +2,9 @@ import React, { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MdMenu, MdClear } from 'react-icons/md';
 
-import {
-  NavigationHeader,
-  NavigationLinks,
-  Sidemenu,
-  FrozenScreen,
-} from './styles';
+import { NavigationHeader, NavigationLinks, Sidemenu } from './styles';
+
+import FrozenScreen from '../FrozenScreen';
 
 const Header: React.FC = () => {
   const [isToggled, setIsToggled] = useState(false);

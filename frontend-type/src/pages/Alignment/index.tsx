@@ -26,8 +26,9 @@ import TextInput from '../../components/TextInput';
 import TextAreaInput from '../../components/TextAreaInput';
 import SelectInput from '../../components/SelectInput';
 import UploadInput from '../../components/UploadInput';
+import FrozenScreen from '../../components/FrozenScreen';
 
-import api from '../../services/api';
+import api from '../../services/apiClient';
 
 interface StateNames {
   [key: string]: Function;
@@ -61,6 +62,7 @@ const Alignment: React.FC = () => {
   const [s1edge, setS1Edge] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [isToggled, setIsToggled] = useState(false);
 
   const [s0FileName, setS0FileName] = useState('');
   const [s1FileName, setS1FileName] = useState('');
@@ -103,24 +105,26 @@ const Alignment: React.FC = () => {
     async (event: React.FormEvent) => {
       event.preventDefault();
 
-      const data: FormDateProps = {
-        extension,
-        only1,
-        clearn,
-        blockPruning,
-        complement,
-        reverse,
-        s0origin,
-        s1origin,
-        s0input,
-        s1input,
-        s0edge,
-        s1edge,
-        fullName,
-        email,
-      };
+      setIsToggled(true);
 
       try {
+        const data: FormDateProps = {
+          extension,
+          only1,
+          clearn,
+          blockPruning,
+          complement,
+          reverse,
+          s0origin,
+          s1origin,
+          s0input,
+          s1input,
+          s0edge,
+          s1edge,
+          fullName,
+          email,
+        };
+
         const schema = Yup.object().shape({
           extension: Yup.number()
             .min(1)
@@ -153,8 +157,6 @@ const Alignment: React.FC = () => {
 
         await schema.validate(data, { abortEarly: false });
 
-        formRef.current?.reset();
-
         const formData = new FormData();
 
         const keys = Object.keys(data);
@@ -166,6 +168,7 @@ const Alignment: React.FC = () => {
 
         history.push(`/results/${response.data.alignment.id}`);
       } catch (err) {
+        setIsToggled(false);
         console.log(err);
       }
     },
@@ -547,11 +550,12 @@ const Alignment: React.FC = () => {
               type="submit"
               value="Align Sequences"
               align="center"
-              // onClick={(e) => e.preventDefault()}
             />
           </Form>
         </AlignerContainer>
       </Container>
+
+      <FrozenScreen isToggled={isToggled} />
     </>
   );
 };

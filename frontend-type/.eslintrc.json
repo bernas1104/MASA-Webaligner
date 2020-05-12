@@ -29,12 +29,17 @@
       "prettier"
   ],
   "rules": {
+    "no-await-in-loop": "off",
     "jsx-a11y/label-has-associated-control": [ 2, {
       "labelComponents": ["CustomInputLabel"],
       "labelAttributes": ["label"],
       "controlComponents": ["CustomInput"],
       "depth": 3
     }],
+    "@typescript-eslint/camelcase": "warn",
+    "no-cond-assign": "warn",
+    "no-bitwise": "warn",
+    "no-continue": "off",
     "no-unused-expressions": "off",
     "react/jsx-props-no-spreading": "off",
     "react/prop-types": "off",

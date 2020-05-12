@@ -4,10 +4,6 @@ interface SidemenuProps {
   isToggled: boolean;
 }
 
-interface FrozenScreenProps {
-  isToggled: boolean;
-}
-
 export const NavigationHeader = styled.header`
   position: fixed;
   top: 0;
@@ -175,26 +171,5 @@ export const Sidemenu = styled.div<SidemenuProps>`
           margin-top: 20px;
         }
       }
-    `}
-`;
-
-export const FrozenScreen = styled.div<FrozenScreenProps>`
-  display: none;
-
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 3;
-  width: 100vw;
-  height: 100vh;
-
-  background: rgba(0, 0, 0, 0.5);
-
-  ${(props) =>
-    props.isToggled &&
-    css`
-      display: block;
     `}
 `;

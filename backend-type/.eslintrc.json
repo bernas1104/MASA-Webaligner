@@ -23,6 +23,9 @@
     "prettier"
   ],
   "rules": {
+    "no-cond-assign": "off",
+    "no-continue": "off",
+    "no-bitwise": "off",
     "@typescript-eslint/no-unused-vars": [
       "error", {
         "argsIgnorePattern": "_"
@@ -37,7 +40,8 @@
       "error",
       "ignorePackages",
       {
-        "ts": "never"
+        "ts": "never",
+        "js": "never"
       }
     ]
   },
