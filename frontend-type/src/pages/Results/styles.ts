@@ -68,6 +68,10 @@ export const Container = styled.div<ContainerProps>`
         }
       }
     `}
+
+    @media screen and (max-width: 768px) {
+    padding: 15px;
+  }
 `;
 
 export const GraphContainer = styled.div`
@@ -138,7 +142,7 @@ export const TextContainer = styled.div`
         }
       }
 
-      form {
+      .adjust {
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -162,6 +166,44 @@ export const TextContainer = styled.div`
 
         > div + div {
           margin-top: 15px;
+        }
+
+        .submit {
+          display: flex;
+          justify-content: flex-end;
+          z-index: 2;
+
+          div + div {
+            margin-left: 25px;
+          }
+
+          @media screen and (max-width: 400px) {
+            flex-direction: column;
+            justify-content: flex-start;
+
+            div + div {
+              margin-left: 0;
+              margin-top: 25px;
+            }
+          }
+        }
+      }
+
+      @media screen and (max-width: 768px) {
+        width: 100%;
+        flex-direction: column !important;
+
+        .summary {
+          z-index: 2;
+          width: 100%;
+          overflow-x: auto;
+          font-size: 10px;
+        }
+
+        .adjust {
+          margin-top: 25px;
+          width: 100%;
+          padding-left: 0;
         }
       }
     }

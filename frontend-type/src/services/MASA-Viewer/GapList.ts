@@ -58,12 +58,10 @@ export default class GapList extends Array {
   };
 
   getOffset = (pos: number): number => {
-    let position = 0;
-
     if (pos < 1) {
-      position = 1;
+      pos = 1;
     } else if (pos > Math.max(this.startPosition, this.endPosition)) {
-      position = Math.max(this.startPosition, this.endPosition);
+      pos = Math.max(this.startPosition, this.endPosition);
     }
 
     let i0 = 0;
@@ -71,20 +69,20 @@ export default class GapList extends Array {
 
     let offset;
 
-    if (this.length === 0 || position < this[0].getPosition()) {
+    if (this.length === 0 || pos < this[0].getPosition()) {
       if (this.startPosition < this.endPosition) {
-        offset = this.startOffset + (position - this.startPosition);
+        offset = this.startOffset + (pos - this.startPosition);
       } else {
-        offset = this.endOffset - (position - this.endPosition);
+        offset = this.endOffset - (pos - this.endPosition);
       }
     } else {
       while (Math.abs(i1 - i0) > 1) {
         const im = Math.floor((i0 + i1) / 2);
 
         const gapPos = this[im].getPosition();
-        if (gapPos > position) {
+        if (gapPos > pos) {
           i1 = im;
-        } else if (gapPos < position) {
+        } else if (gapPos < pos) {
           i0 = im;
         } else {
           i0 = im;
@@ -94,7 +92,7 @@ export default class GapList extends Array {
 
       let diffPos;
       if (this.startPosition < this.endPosition) {
-        diffPos = position - this[i0].getPosition();
+        diffPos = pos - this[i0].getPosition();
 
         if (diffPos === 0) {
           offset = this[i0].getOffset();
@@ -102,7 +100,7 @@ export default class GapList extends Array {
           offset = this[i0].getOffset() + this[i0].getLength() + diffPos;
         }
       } else {
-        diffPos = position - this[i0].getPosition();
+        diffPos = pos - this[i0].getPosition();
         offset = this[i0].getOffset() - diffPos;
       }
     }

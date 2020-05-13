@@ -97,8 +97,43 @@ const Results: React.FC<ResultsProps> = (props) => {
   const [graph, setGraph] = useState<GraphProps | null>(null);
   const [min, setMin] = useState('');
   const [max, setMax] = useState('');
+  const [resetValues, setResetValues] = useState<number[]>([]);
 
   const [render, setRender] = useState(0);
+
+  const binSearch = useCallback((arr, coord, low = true): number[] => {
+    let start = 0;
+    let end = arr.length - 1;
+    let result: number[] = [];
+
+    if (low) {
+      while (start <= end) {
+        const mid = Math.floor((start + end) / 2);
+
+        if (arr[mid] >= coord) {
+          end = mid - 1;
+
+          if (arr[mid] === coord) result = [arr[mid], mid];
+        } else {
+          start = mid + 1;
+        }
+      }
+    } else {
+      while (start <= end) {
+        const mid = Math.floor((start + end) / 2);
+
+        if (arr[mid] <= coord) {
+          start = mid + 1;
+
+          if (arr[mid] === coord) result = [arr[mid], mid];
+        } else {
+          end = mid - 1;
+        }
+      }
+    }
+
+    return result;
+  }, []);
 
   const hasMoreChunks = useCallback((): boolean => {
     return (
@@ -244,19 +279,6 @@ const Results: React.FC<ResultsProps> = (props) => {
           );
       }
 
-      alignment
-        .getAlignmentWithGaps(0)
-        .reset(
-          alignment.getSequenceStartOffset(0),
-          alignment.getSequenceEndOffset(0),
-        );
-      alignment
-        .getAlignmentWithGaps(1)
-        .reset(
-          alignment.getSequenceStartOffset(1),
-          alignment.getSequenceEndOffset(1),
-        );
-
       const description: string[] = [];
       description.push(
         alignment
@@ -273,6 +295,11 @@ const Results: React.FC<ResultsProps> = (props) => {
           .getDescription(),
       );
 
+      setResetValues([
+        alignment.getSequenceStartPosition(0),
+        alignment.getSequenceEndPosition(0),
+      ]);
+
       setAlignmentData({
         alignment,
         description,
@@ -282,6 +309,19 @@ const Results: React.FC<ResultsProps> = (props) => {
 
   useEffect(() => {
     if (alignmentData) {
+      alignmentData.alignment
+        .getAlignmentWithGaps(0)
+        .reset(
+          alignmentData.alignment.getSequenceStartOffset(0),
+          alignmentData.alignment.getSequenceEndOffset(0),
+        );
+      alignmentData.alignment
+        .getAlignmentWithGaps(1)
+        .reset(
+          alignmentData.alignment.getSequenceStartOffset(1),
+          alignmentData.alignment.getSequenceEndOffset(1),
+        );
+
       const textChunkSum = new TextChunkSum(
         alignmentData.alignment.getAlignmentParams().getMatch(),
         alignmentData.alignment.getAlignmentParams().getMismatch(),
@@ -305,67 +345,138 @@ const Results: React.FC<ResultsProps> = (props) => {
   }, [alignmentData, getNextChunk, hasMoreChunks]);
 
   useEffect(() => {
-    if (!alignmentInfo?.alignment.only1 && alignmentData) {
-      const s0gapped = alignmentData?.alignment.getAlignmentWithGaps(0).getSB();
-      const s1gapped = alignmentData?.alignment.getAlignmentWithGaps(1).getSB();
+    if (graph === null) {
+      if (!alignmentInfo?.alignment.only1 && alignmentData) {
+        const s0gapped = alignmentData?.alignment
+          .getAlignmentWithGaps(0)
+          .getSB();
+        const s1gapped = alignmentData?.alignment
+          .getAlignmentWithGaps(1)
+          .getSB();
 
-      if (s0gapped && s1gapped) {
-        const xAxis = [];
-        const yAxis = [];
-        for (
-          let i = 0,
-            x = alignmentData?.alignment.getSequenceStartPosition(0),
-            y = alignmentData?.alignment.getSequenceStartPosition(1);
-          i < s0gapped.length;
-          i += 1
-        ) {
-          if (x && y) {
-            if (s0gapped[i] === s1gapped[i]) {
-              alignmentData?.alignment.getDir(0) === 1
-                ? xAxis.push((x += 1))
-                : xAxis.push((x -= 1));
-              alignmentData?.alignment.getDir(1) === 1
-                ? yAxis.push((y += 1))
-                : yAxis.push((y -= 1));
-            } else if (s0gapped[i] !== '-' && s1gapped[i] !== '-') {
-              alignmentData?.alignment.getDir(0) === 1
-                ? xAxis.push((x += 1))
-                : xAxis.push((x -= 1));
-              alignmentData?.alignment.getDir(1) === 1
-                ? yAxis.push((y += 1))
-                : yAxis.push((y -= 1));
-            } else if (s0gapped[i] === '-') {
-              xAxis.push(x);
-              alignmentData?.alignment.getDir(1) === 1
-                ? yAxis.push((y += 1))
-                : yAxis.push((y -= 1));
-            } else {
-              alignmentData?.alignment.getDir(0) === 1
-                ? xAxis.push((x += 1))
-                : xAxis.push((x -= 1));
-              yAxis.push(y);
+        if (s0gapped && s1gapped) {
+          const xAxis = [];
+          const yAxis = [];
+          for (
+            let i = 0,
+              x = alignmentData?.alignment.getSequenceStartPosition(0),
+              y = alignmentData?.alignment.getSequenceStartPosition(1);
+            i < s0gapped.length;
+            i += 1
+          ) {
+            if (x && y) {
+              if (s0gapped[i] === s1gapped[i]) {
+                alignmentData?.alignment.getDir(0) === 1
+                  ? xAxis.push(x++)
+                  : xAxis.push(x--);
+                alignmentData?.alignment.getDir(1) === 1
+                  ? yAxis.push(y++)
+                  : yAxis.push(y--);
+              } else if (s0gapped[i] !== '-' && s1gapped[i] !== '-') {
+                alignmentData?.alignment.getDir(0) === 1
+                  ? xAxis.push(x++)
+                  : xAxis.push(x--);
+                alignmentData?.alignment.getDir(1) === 1
+                  ? yAxis.push(y++)
+                  : yAxis.push(y--);
+              } else if (s0gapped[i] === '-') {
+                xAxis.push(x);
+                alignmentData?.alignment.getDir(1) === 1
+                  ? yAxis.push(y++)
+                  : yAxis.push(y--);
+              } else {
+                alignmentData?.alignment.getDir(0) === 1
+                  ? xAxis.push(x++)
+                  : xAxis.push(x--);
+                yAxis.push(y);
+              }
             }
           }
+
+          setGraph({
+            xAxis,
+            yAxis,
+            range: s0gapped.length,
+          });
+
+          setRender(2);
         }
-
-        setGraph({
-          xAxis,
-          yAxis,
-          range: s0gapped.length,
-        });
-
-        setRender(2);
-        if (chunksRef.current)
-          chunksRef.current.innerHTML = alignmentText?.chunks.join('')!;
-        if (chunksSumRef.current)
-          chunksSumRef.current.innerHTML = alignmentText?.chunkSum!;
       }
     }
-  }, [alignmentText, alignmentInfo, alignmentData]);
+  }, [alignmentText, alignmentInfo, alignmentData, graph]);
 
   useEffect(() => {
-    console.log(min, max);
-  }, [min, max]);
+    if (render === 2) {
+      if (alignmentText) {
+        if (chunksRef.current)
+          chunksRef.current.innerHTML = alignmentText.chunks.join('');
+        if (chunksSumRef.current)
+          chunksSumRef.current.innerHTML = alignmentText.chunkSum;
+      }
+    }
+  }, [render, alignmentText]);
+
+  const handleAdjustTextResults = useCallback(
+    (/*event: React.FormEvent*/ event: React.MouseEvent, reset: boolean) => {
+      event.preventDefault();
+
+      setTimeout(() => {
+        if (alignmentData && graph) {
+          const xRange =
+            reset === false
+              ? [parseInt(min, 10), parseInt(max, 10)]
+              : [...resetValues];
+
+          if (xRange[0] > xRange[1]) {
+            const tmp = xRange[1];
+            xRange[0] = tmp;
+          }
+
+          const [x0, x0Coord] = binSearch(graph.xAxis, xRange[0]);
+          const [x1, x1Coord] = binSearch(graph.xAxis, xRange[1], false);
+
+          const y0 = graph.yAxis[x0Coord];
+          const y1 = graph.yAxis[x1Coord];
+
+          let offsetY0 = alignmentData.alignment.getSequenceOffset(1, y0);
+          let offsetY1 = alignmentData.alignment.getSequenceOffset(1, y1) + 1;
+          let offsetX0 = alignmentData.alignment.getSequenceOffset(0, x0);
+          let offsetX1 = alignmentData.alignment.getSequenceOffset(0, x1) + 1;
+
+          let tmp;
+          if (offsetX0 > offsetX1) {
+            tmp = offsetX0;
+            offsetX0 = offsetX1;
+            offsetX1 = tmp;
+          }
+          if (offsetY0 > offsetY1) {
+            tmp = offsetY0;
+            offsetY0 = offsetY1;
+            offsetY1 = tmp;
+          }
+
+          let offset0 = Math.max(offsetY0, offsetX0);
+          let offset1 = Math.max(offsetY1, offsetX1);
+
+          if (offset0 < 0) offset0 = 0;
+          if (offset1 < 0) offset1 = 0;
+
+          const data = alignmentData;
+          data.alignment = data.alignment.truncate(offset0, offset1);
+
+          setAlignmentData({
+            alignment: data.alignment,
+            description: data.description,
+          });
+        }
+      }, 500);
+    },
+    [alignmentData, binSearch, graph, min, max, resetValues],
+  );
+
+  // useEffect(() => {
+  //   if (alignmentData) console.log(alignmentData);
+  // }, [alignmentData, alignmentText]);
 
   return (
     <>
@@ -390,7 +501,7 @@ const Results: React.FC<ResultsProps> = (props) => {
               <div className="results-summary">
                 <div className="summary" ref={chunksSumRef} />
 
-                <form>
+                <div className="adjust">
                   <TextInput
                     name="min"
                     value={min}
@@ -407,12 +518,24 @@ const Results: React.FC<ResultsProps> = (props) => {
                   >
                     Superior limit
                   </TextInput>
-                  <Button
-                    type="submit"
-                    value="Adjust"
-                    onClick={(e) => e.preventDefault()}
-                  />
-                </form>
+
+                  <div className="submit">
+                    <Button
+                      type="submit"
+                      value="Adjust"
+                      onClick={(e) => {
+                        handleAdjustTextResults(e, false);
+                      }}
+                    />
+                    <Button
+                      type="submit"
+                      value="Reset"
+                      onClick={(e) => {
+                        handleAdjustTextResults(e, true);
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </TextContainer>
