@@ -1,6 +1,7 @@
 interface ChartOptionsProps {
   tooltip: {
     trigger: string;
+    triggerOn?: string;
     position?: Function;
   };
   title: {
@@ -88,8 +89,8 @@ export default function ChartOptions({
   return {
     tooltip: {
       trigger: 'none',
-      position(pt: string[]) {
-        return [pt[0], '5%'];
+      position(pt: number[]) {
+        return [pt[0], '10%', { contentSize: [100, 50], viewSize: [80, 30] }];
       },
     },
     title: {

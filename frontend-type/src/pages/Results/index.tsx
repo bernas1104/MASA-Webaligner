@@ -60,6 +60,12 @@ interface AlignmentInfoProps {
     s0file: string;
     s1file: string;
   };
+  stage1?: {
+    bestScoreInformation: {
+      bestPosition: number[];
+      bestScore: number;
+    };
+  };
 }
 
 interface AlignmentProps {
@@ -81,12 +87,15 @@ interface GraphProps {
 }
 
 const Results: React.FC<ResultsProps> = (props) => {
+  const minmax = [1, 1];
+
   const chunksRef = useRef<HTMLDivElement>(null);
   const chunksSumRef = useRef<HTMLDivElement>(null);
 
   const [tries, setTries] = useState(0);
   const [isToggled, setIsToggled] = useState(false);
 
+  const [id, setId] = useState('');
   const [alignmentData, setAlignmentData] = useState<AlignmentProps | null>(
     null,
   );
@@ -95,11 +104,10 @@ const Results: React.FC<ResultsProps> = (props) => {
   );
   const [alignmentText, setAlignmentText] = useState<ChunksProps | null>(null);
   const [graph, setGraph] = useState<GraphProps | null>(null);
-  const [min, setMin] = useState('');
-  const [max, setMax] = useState('');
   const [resetValues, setResetValues] = useState<number[]>([]);
 
   const [render, setRender] = useState(0);
+  const [errors, setErrors] = useState(0x0000);
 
   const binSearch = useCallback((arr, coord, low = true): number[] => {
     let start = 0;
@@ -186,22 +194,20 @@ const Results: React.FC<ResultsProps> = (props) => {
     }
 
     const routeProps = props;
-    const { id } = routeProps.match.params;
+    const { id: alignmentId } = routeProps.match.params;
 
-    api.get(`alignments-exist/${id}`).then((response) => {
+    api.get(`alignments-exist/${alignmentId}`).then((response) => {
       const {
         data: { exists },
       } = response;
 
-      if (exists) setTries(0);
-      else {
-        console.log('ERROR: 0x0001');
-      }
+      if (exists) setId(alignmentId);
+      else setErrors(0x0001);
     });
   }, [props]);
 
   useEffect(() => {
-    async function fetchAlignment(id: string): Promise<void> {
+    async function fetchAlignment(): Promise<void> {
       const {
         data: { alignment, sequences },
       } = await api.get(`alignments/${id}`);
@@ -209,101 +215,116 @@ const Results: React.FC<ResultsProps> = (props) => {
       const { only1 } = alignment;
 
       if (only1) {
+        const { data: stage1 } = await api.get(`files/stage-i/${id}`);
+
+        console.log(stage1);
+
         setAlignmentInfo({
           alignment,
           sequences,
+          stage1,
         });
+        setRender(1);
       } else {
-        const { data: binary } = await api.get(`files/bin/${id}`);
+        try {
+          const { data: binary } = await api.get(`files/bin/${id}`);
 
-        const { data: fasta } = await api.get(`files/fasta/${id}`);
+          try {
+            const { data: fasta } = await api.get(`files/fasta/${id}`);
 
-        setAlignmentInfo({
-          alignment,
-          sequences,
-          binary,
-          fasta,
-        });
+            setAlignmentInfo({
+              alignment,
+              sequences,
+              binary,
+              fasta,
+            });
+          } catch (err) {
+            setErrors(0x0004);
+          }
+        } catch (err) {
+          setErrors(0x0002);
+        }
       }
     }
 
-    const routeProps = props;
-    const { id } = routeProps.match.params;
+    if (id !== '') {
+      api.get(`alignments-ready/${id}`).then((response) => {
+        const {
+          data: { isReady },
+        } = response;
 
-    api.get(`alignments-ready/${id}`).then((response) => {
-      const {
-        data: { isReady },
-      } = response;
-
-      if (isReady) {
-        fetchAlignment(id);
-      } else {
-        setTimeout(() => {
-          setTries(tries + 1);
-        }, 5000 * tries);
-      }
-    });
-  }, [props, tries]);
+        if (isReady) {
+          fetchAlignment();
+        } else {
+          setTimeout(() => {
+            setTries(tries + 1);
+          }, 5000 * tries);
+        }
+      });
+    }
+  }, [id, tries]);
 
   useEffect(() => {
-    if (alignmentInfo && alignmentInfo.binary) {
-      const alignment = AlignmentBinaryFile.read(
-        Buffer.from(alignmentInfo.binary.data),
-      );
+    if (alignmentInfo) {
+      if (!alignmentInfo.alignment.only1 && alignmentInfo.binary) {
+        const alignment = AlignmentBinaryFile.read(
+          Buffer.from(alignmentInfo.binary.data),
+        );
 
-      if (alignmentInfo && alignmentInfo.fasta) {
-        alignment
-          .getAlignmentParams()
-          .getSequences()[0]
-          .setData(
-            new SequenceData({
-              file: alignmentInfo.fasta.s0file,
-              modifiers: alignment
-                .getAlignmentParams()
-                .getSequences()[0]
-                .getModifiers(),
-            }),
-          );
+        if (alignmentInfo && alignmentInfo.fasta) {
+          alignment
+            .getAlignmentParams()
+            .getSequences()[0]
+            .setData(
+              new SequenceData({
+                file: alignmentInfo.fasta.s0file,
+                modifiers: alignment
+                  .getAlignmentParams()
+                  .getSequences()[0]
+                  .getModifiers(),
+              }),
+            );
 
-        alignment
-          .getAlignmentParams()
-          .getSequences()[1]
-          .setData(
-            new SequenceData({
-              file: alignmentInfo.fasta.s1file,
-              modifiers: alignment
-                .getAlignmentParams()
-                .getSequences()[1]
-                .getModifiers(),
-            }),
-          );
+          alignment
+            .getAlignmentParams()
+            .getSequences()[1]
+            .setData(
+              new SequenceData({
+                file: alignmentInfo.fasta.s1file,
+                modifiers: alignment
+                  .getAlignmentParams()
+                  .getSequences()[1]
+                  .getModifiers(),
+              }),
+            );
+        }
+
+        const description: string[] = [];
+        description.push(
+          alignment
+            .getAlignmentParams()
+            .getSequence(0)
+            .getInfo()
+            .getDescription(),
+        );
+        description.push(
+          alignment
+            .getAlignmentParams()
+            .getSequence(1)
+            .getInfo()
+            .getDescription(),
+        );
+
+        setResetValues([
+          alignment.getSequenceStartPosition(0),
+          alignment.getSequenceEndPosition(0),
+        ]);
+
+        setAlignmentData({
+          alignment,
+          description,
+        });
       }
-
-      const description: string[] = [];
-      description.push(
-        alignment
-          .getAlignmentParams()
-          .getSequence(0)
-          .getInfo()
-          .getDescription(),
-      );
-      description.push(
-        alignment
-          .getAlignmentParams()
-          .getSequence(1)
-          .getInfo()
-          .getDescription(),
-      );
-
-      setResetValues([
-        alignment.getSequenceStartPosition(0),
-        alignment.getSequenceEndPosition(0),
-      ]);
-
-      setAlignmentData({
-        alignment,
-        description,
-      });
     }
   }, [alignmentInfo]);
 
@@ -417,15 +438,12 @@ const Results: React.FC<ResultsProps> = (props) => {
   }, [render, alignmentText]);
 
   const handleAdjustTextResults = useCallback(
-    (/*event: React.FormEvent*/ event: React.MouseEvent, reset: boolean) => {
+    (event: React.MouseEvent, reset: boolean) => {
       event.preventDefault();
 
       setTimeout(() => {
         if (alignmentData && graph) {
-          const xRange =
-            reset === false
-              ? [parseInt(min, 10), parseInt(max, 10)]
-              : [...resetValues];
+          const xRange = reset === false ? minmax : [...resetValues];
 
           if (xRange[0] > xRange[1]) {
             const tmp = xRange[1];
@@ -434,10 +452,8 @@ const Results: React.FC<ResultsProps> = (props) => {
 
           const [x0, x0Coord] = binSearch(graph.xAxis, xRange[0]);
           const [x1, x1Coord] = binSearch(graph.xAxis, xRange[1], false);
-
           const y0 = graph.yAxis[x0Coord];
           const y1 = graph.yAxis[x1Coord];
-
           let offsetY0 = alignmentData.alignment.getSequenceOffset(1, y0);
           let offsetY1 = alignmentData.alignment.getSequenceOffset(1, y1) + 1;
           let offsetX0 = alignmentData.alignment.getSequenceOffset(0, x0);
@@ -454,16 +470,12 @@ const Results: React.FC<ResultsProps> = (props) => {
             offsetY0 = offsetY1;
             offsetY1 = tmp;
           }
-
           let offset0 = Math.max(offsetY0, offsetX0);
           let offset1 = Math.max(offsetY1, offsetX1);
-
           if (offset0 < 0) offset0 = 0;
           if (offset1 < 0) offset1 = 0;
-
           const data = alignmentData;
           data.alignment = data.alignment.truncate(offset0, offset1);
-
           setAlignmentData({
             alignment: data.alignment,
             description: data.description,
@@ -471,17 +483,17 @@ const Results: React.FC<ResultsProps> = (props) => {
         }
       }, 500);
     },
-    [alignmentData, binSearch, graph, min, max, resetValues],
+    [alignmentData, binSearch, graph, resetValues, minmax],
   );
 
-  // useEffect(() => {
-  //   if (alignmentData) console.log(alignmentData);
-  // }, [alignmentData, alignmentText]);
+  useEffect(() => {
+    console.log(alignmentInfo?.stage1?.bestScoreInformation.bestPosition);
+  }, [alignmentInfo]);
 
   return (
     <>
       <Header />
-      {render === 2 && (
+      {render === 2 && errors === 0x0000 && (
         <Container render={render}>
           <GraphContainer>
             <ReactEcharts
@@ -504,17 +516,52 @@ const Results: React.FC<ResultsProps> = (props) => {
                 <div className="adjust">
                   <TextInput
                     name="min"
-                    value={min}
-                    onChange={(e) => setMin(e.target.value)}
                     placeholder="Ex: 423"
+                    onChange={(event) => {
+                      const value = parseInt(event.target.value, 10);
+
+                      if (
+                        value <
+                        alignmentData?.alignment.getSequenceStartPosition(0)!
+                      ) {
+                        minmax[0] = alignmentData?.alignment.getSequenceStartPosition(
+                          0,
+                        )!;
+                      } else if (
+                        value >
+                        alignmentData?.alignment.getSequenceEndPosition(0)!
+                      ) {
+                        minmax[0] = alignmentData?.alignment.getSequenceEndPosition(
+                          0,
+                        )!;
+                      } else {
+                        minmax[0] = value;
+                      }
+                    }}
                   >
                     Inferior limit
                   </TextInput>
                   <TextInput
                     name="max"
-                    value={max}
-                    onChange={(e) => setMax(e.target.value)}
                     placeholder="Ex: 9794"
+                    onChange={(event) => {
+                      const value = parseInt(event.target.value, 10);
+
+                      if (value < minmax[0]) {
+                        const tmp = minmax[0];
+                        minmax[1] = tmp;
+                      } else if (
+                        value > minmax[0] &&
+                        value <
+                          alignmentData?.alignment.getSequenceEndPosition(0)!
+                      ) {
+                        minmax[1] = value;
+                      } else {
+                        minmax[1] = alignmentData?.alignment.getSequenceEndPosition(
+                          0,
+                        )!;
+                      }
+                    }}
                   >
                     Superior limit
                   </TextInput>
@@ -542,7 +589,7 @@ const Results: React.FC<ResultsProps> = (props) => {
         </Container>
       )}
 
-      {render === 1 && (
+      {render === 1 && errors === 0x000 && (
         <Container render={render}>
           <h2>
             AF133821.1 HIV-1 isolate MB2059 from Kenya, complete genome
@@ -562,7 +609,7 @@ const Results: React.FC<ResultsProps> = (props) => {
             <ResultsCard className="m-l25">
               <h3>Stage I Results</h3>
               <hr />
-              <pre>{ResultsText.stageIResults}</pre>
+              <pre>{alignmentInfo?.stage1?.bestScoreInformation.bestScore}</pre>
             </ResultsCard>
           </div>
         </Container>
@@ -586,7 +633,10 @@ const Results: React.FC<ResultsProps> = (props) => {
         </Sidemenu>
       )}
 
-      {render === 0 && <FrozenScreen isToggled={render === 0} />}
+      {render === 0 && errors === 0x0000 && (
+        <FrozenScreen isToggled={render === 0} />
+      )}
+      {errors !== 0x0000 && <h1 style={{ fontSize: 100 }}>ERROR</h1>}
     </>
   );
 };
