@@ -6,16 +6,6 @@ import FetchFastaFilesService from '../services/FetchFastaFilesService';
 
 const filesRouter = Router({ strict: true });
 
-filesRouter.get('/stage-i/:id', async (request, response) => {
-  const { id } = request.params;
-
-  const fetchStageIResultsService = new FetchStageIResultsService();
-
-  const bestScoreInformation = await fetchStageIResultsService.execute({ id });
-
-  return response.json({ bestScoreInformation });
-});
-
 filesRouter.get('/bin/:id', async (request, response) => {
   const { id } = request.params;
 

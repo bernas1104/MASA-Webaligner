@@ -24,8 +24,8 @@ import SequenceData from '../../services/MASA-Viewer/SequenceData';
 import TextChunk from '../../services/MASA-Viewer/TextChunk';
 import TextChunkSum from '../../services/MASA-Viewer/TextChunkSum';
 import SequenceWithGaps from '../../services/MASA-Viewer/SequenceWithGaps';
+import AlignmentUtils from '../../services/MASA-Viewer/AlignmentUtils';
 
-import ResultsText from './results';
 import ChartOptions from './ChartOptions';
 
 type ResultsProps = RouteComponentProps<{
@@ -52,6 +52,10 @@ interface AlignmentInfoProps {
     origin: number;
     size: number;
   }[];
+  statistics: {
+    globalStatistics: string[];
+    stageIStatistics: string[];
+  };
   binary?: {
     data: Buffer[];
     type: string;
@@ -59,12 +63,6 @@ interface AlignmentInfoProps {
   fasta?: {
     s0file: string;
     s1file: string;
-  };
-  stage1?: {
-    bestScoreInformation: {
-      bestPosition: number[];
-      bestScore: number;
-    };
   };
 }
 
@@ -86,9 +84,9 @@ interface GraphProps {
   range: number;
 }
 
-const Results: React.FC<ResultsProps> = (props) => {
-  const minmax = [1, 1];
+const Origins = ['NCBI API', 'File Upload', 'Text Input'];
 
+const Results: React.FC<ResultsProps> = (props) => {
   const chunksRef = useRef<HTMLDivElement>(null);
   const chunksSumRef = useRef<HTMLDivElement>(null);
 
@@ -105,6 +103,8 @@ const Results: React.FC<ResultsProps> = (props) => {
   const [alignmentText, setAlignmentText] = useState<ChunksProps | null>(null);
   const [graph, setGraph] = useState<GraphProps | null>(null);
   const [resetValues, setResetValues] = useState<number[]>([]);
+  const [min, setMin] = useState('');
+  const [max, setMax] = useState('');
 
   const [render, setRender] = useState(0);
   const [errors, setErrors] = useState(0x0000);
@@ -209,21 +209,18 @@ const Results: React.FC<ResultsProps> = (props) => {
   useEffect(() => {
     async function fetchAlignment(): Promise<void> {
       const {
-        data: { alignment, sequences },
+        data: { alignment, sequences, statistics },
       } = await api.get(`alignments/${id}`);
 
       const { only1 } = alignment;
 
       if (only1) {
-        const { data: stage1 } = await api.get(`files/stage-i/${id}`);
-
-        console.log(stage1);
-
         setAlignmentInfo({
           alignment,
           sequences,
-          stage1,
+          statistics,
         });
+
         setRender(1);
       } else {
         try {
@@ -235,6 +232,7 @@ const Results: React.FC<ResultsProps> = (props) => {
             setAlignmentInfo({
               alignment,
               sequences,
+              statistics,
               binary,
               fasta,
             });
@@ -366,7 +364,7 @@ const Results: React.FC<ResultsProps> = (props) => {
   }, [alignmentData, getNextChunk, hasMoreChunks]);
 
   useEffect(() => {
-    if (graph === null) {
+    if (!graph) {
       if (!alignmentInfo?.alignment.only1 && alignmentData) {
         const s0gapped = alignmentData?.alignment
           .getAlignmentWithGaps(0)
@@ -443,7 +441,13 @@ const Results: React.FC<ResultsProps> = (props) => {
 
       setTimeout(() => {
         if (alignmentData && graph) {
-          const xRange = reset === false ? minmax : [...resetValues];
+          const xRange =
+            reset === false
+              ? [parseInt(min, 10), parseInt(max, 10)]
+              : [...resetValues];
+
+          setMin('');
+          setMax('');
 
           if (xRange[0] > xRange[1]) {
             const tmp = xRange[1];
@@ -483,12 +487,8 @@ const Results: React.FC<ResultsProps> = (props) => {
         }
       }, 500);
     },
-    [alignmentData, binSearch, graph, resetValues, minmax],
+    [alignmentData, binSearch, graph, resetValues, min, max],
   );
-
-  useEffect(() => {
-    console.log(alignmentInfo?.stage1?.bestScoreInformation.bestPosition);
-  }, [alignmentInfo]);
 
   return (
     <>
@@ -517,6 +517,7 @@ const Results: React.FC<ResultsProps> = (props) => {
                   <TextInput
                     name="min"
                     placeholder="Ex: 423"
+                    value={min}
                     onChange={(event) => {
                       const value = parseInt(event.target.value, 10);
 
@@ -524,18 +525,24 @@ const Results: React.FC<ResultsProps> = (props) => {
                         value <
                         alignmentData?.alignment.getSequenceStartPosition(0)!
                       ) {
-                        minmax[0] = alignmentData?.alignment.getSequenceStartPosition(
-                          0,
-                        )!;
+                        setMin(
+                          String(
+                            alignmentData?.alignment.getSequenceStartPosition(
+                              0,
+                            )!,
+                          ),
+                        );
                       } else if (
                         value >
                         alignmentData?.alignment.getSequenceEndPosition(0)!
                       ) {
-                        minmax[0] = alignmentData?.alignment.getSequenceEndPosition(
-                          0,
-                        )!;
+                        setMin(
+                          String(
+                            alignmentData?.alignment.getSequenceEndPosition(0)!,
+                          ),
+                        );
                       } else {
-                        minmax[0] = value;
+                        setMin(event.target.value);
                       }
                     }}
                   >
@@ -544,22 +551,24 @@ const Results: React.FC<ResultsProps> = (props) => {
                   <TextInput
                     name="max"
                     placeholder="Ex: 9794"
+                    value={max}
                     onChange={(event) => {
                       const value = parseInt(event.target.value, 10);
 
-                      if (value < minmax[0]) {
-                        const tmp = minmax[0];
-                        minmax[1] = tmp;
+                      if (value < parseInt(min, 10)) {
+                        setMax(min);
                       } else if (
-                        value > minmax[0] &&
+                        value > parseInt(min, 10) &&
                         value <
                           alignmentData?.alignment.getSequenceEndPosition(0)!
                       ) {
-                        minmax[1] = value;
+                        setMax(event.target.value);
                       } else {
-                        minmax[1] = alignmentData?.alignment.getSequenceEndPosition(
-                          0,
-                        )!;
+                        setMax(
+                          String(
+                            alignmentData?.alignment.getSequenceEndPosition(0)!,
+                          ),
+                        );
                       }
                     }}
                   >
@@ -603,13 +612,17 @@ const Results: React.FC<ResultsProps> = (props) => {
             <ResultsCard className="m-r25">
               <h3>Global Statistics</h3>
               <hr />
-              <pre>{ResultsText.globalStatistics}</pre>
+              {alignmentInfo?.statistics.globalStatistics.map((line, i = 0) => (
+                <p key={i++}>{line}</p>
+              ))}
             </ResultsCard>
 
             <ResultsCard className="m-l25">
               <h3>Stage I Results</h3>
               <hr />
-              <pre>{alignmentInfo?.stage1?.bestScoreInformation.bestScore}</pre>
+              {alignmentInfo?.statistics.stageIStatistics.map((line, i = 0) => (
+                <p key={i++}>{line}</p>
+              ))}
             </ResultsCard>
           </div>
         </Container>
@@ -618,7 +631,53 @@ const Results: React.FC<ResultsProps> = (props) => {
       {render === 2 && (
         <Sidemenu isToggled={isToggled}>
           <div className="sidemenu-container">
-            <pre>{ResultsText.statistics}</pre>
+            <h3>Alignment Information</h3>
+            <br />
+            <pre>name 1</pre>
+            <pre>
+              Type:
+              {` ${Origins[alignmentInfo?.sequences[0].origin! - 1]}`}
+            </pre>
+            <pre>Alignment: N/A</pre>
+            <pre>
+              Size:
+              {AlignmentUtils.formatSequenceSize(
+                alignmentInfo?.sequences[0].size!,
+              )}
+            </pre>
+
+            <br />
+
+            <pre>name 2</pre>
+            <pre>
+              Type:
+              {` ${Origins[alignmentInfo?.sequences[1].origin! - 1]}`}
+            </pre>
+            <pre>Alignment: N/A</pre>
+            <pre>
+              Size:
+              {AlignmentUtils.formatSequenceSize(
+                alignmentInfo?.sequences[1].size!,
+              )}
+            </pre>
+
+            <br />
+            <br />
+
+            <h3>Global Statistics</h3>
+            <br />
+            {alignmentInfo?.statistics.globalStatistics.map((line, i = 0) => (
+              <pre key={i++}>{line}</pre>
+            ))}
+
+            <br />
+            <br />
+
+            <h3>Stage I Statistics</h3>
+            <br />
+            {alignmentInfo?.statistics.stageIStatistics.map((line, i = 0) => (
+              <pre key={i++}>{line}</pre>
+            ))}
           </div>
 
           <button

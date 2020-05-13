@@ -248,6 +248,10 @@ export const Sidemenu = styled.div<SidemenuProps>`
     padding: 50px 20px;
     overflow: auto;
 
+    h3 {
+      color: #007715;
+    }
+
     pre {
       font-size: 14px;
     }
