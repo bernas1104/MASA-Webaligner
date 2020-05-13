@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { execSync as exec } from 'child_process';
 
 export interface MASAAlignmentJob {
   masa: string;
@@ -57,11 +57,11 @@ export default {
 
     if (!only1) {
       await exec(`
-        ${masa} --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -1 > /dev/null 2>&1 &&
-        ${masa} --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -2 > /dev/null 2>&1 &&
-        ${masa} --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -3 > /dev/null 2>&1 &&
-        ${masa} --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -4 > /dev/null 2>&1 &&
-        ${masa} --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -5 > /dev/null 2>&1
+        ${masa} --ram-size=1000M --disk-size=500M --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -1 > /dev/null 2>&1 &&
+        ${masa} --ram-size=1000M --disk-size=500M --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -2 > /dev/null 2>&1 &&
+        ${masa} --ram-size=1000M --disk-size=500M --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -3 > /dev/null 2>&1 &&
+        ${masa} --ram-size=1000M --disk-size=500M --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -4 > /dev/null 2>&1 &&
+        ${masa} --ram-size=1000M --disk-size=500M --alignment-edges=${s0edge}${s1edge} ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${filesPath}/${s0} ${filesPath}/${s1} -d ${resultsPath}/${s0folder}-${s1folder} -5 > /dev/null 2>&1
       `);
     } else {
       await exec(`

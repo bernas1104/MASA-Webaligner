@@ -946,4 +946,27 @@ Best Position: (10035,10280)
         Cells: 1.0316e+08 (1.0527e+08)
         MCUPS: 11526.2344`;
 
-export default { results, sumary, statistics };
+const globalStatistics = `START: 0.0000 (0) avg.: -nan
+SEQUENCES: 0.1320 (1) avg.: 0.1320
+INIT: 223.7170 (1) avg.: 223.7170
+STAGE1: 13.1190 (1) avg.: 13.1190
+TOTAL:  236.9680
+
+Total: 236.9680
+Matrix: 1.0316e+08
+MCUPS: 435.3322`;
+
+const stageIResults = `Best Score: 2981
+Best Position: (10035,10280)
+Stage1 times:
+  PREPARE: 0.3890 (1) avg.: 0.3890
+  INIT: 0.0000 (1) avg.: 0.0000
+  ALIGN: 12.1280 (1) avg.:12.1280
+  END: 0.4860 (1) avg.: 0.4860
+  TOTAL: 13.0030
+
+Total: 13.0030
+Cells: 1.0316e+08 (1.0527e+08)
+MCUPS: 7933.5381`;
+
+export default { results, sumary, statistics, globalStatistics, stageIResults };

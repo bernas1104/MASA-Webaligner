@@ -56,7 +56,7 @@ alignmentsRouter.post(
       files: request.files,
     });
     request.savedFiles = { s0 };
-    const s0folder = s0 !== undefined ? s0.match(/.*[^.fasta]/g)![0] : null;
+    const s0folder = s0 !== undefined ? path.parse(s0).name : null;
 
     const s1 = await getFileNameService.execute({
       num: 1,
@@ -65,7 +65,7 @@ alignmentsRouter.post(
       files: request.files,
     });
     request.savedFiles = { s1 };
-    const s1folder = s1 !== undefined ? s1.match(/.*[^.fasta]/g)![0] : null;
+    const s1folder = s1 !== undefined ? path.parse(s1).name : null;
 
     const filesPath =
       process.env.NODE_ENV !== 'test'

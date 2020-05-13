@@ -23,7 +23,7 @@ filesRouter.get('/bin/:id', async (request, response) => {
 
   const binaryResults = await fetchBinaryResultsServices.execute({ id });
 
-  return response.json({ binaryResults });
+  return response.json(binaryResults);
 });
 
 filesRouter.get('/fasta/:id', async (request, response) => {

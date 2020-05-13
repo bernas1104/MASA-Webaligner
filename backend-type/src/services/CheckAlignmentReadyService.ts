@@ -1,22 +1,30 @@
 import path from 'path';
 import mz from 'mz/fs';
+import { getRepository } from 'typeorm';
+
+import Alignment from '../models/Alignment';
+import Sequence from '../models/Sequence';
 
 require('dotenv').config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
 });
 
 export interface CheckAlignmentReadyServiceDTO {
-  s0: string;
-  s1: string;
-  only1: boolean;
+  id: string;
 }
 
 export default class CheckAlignmentReadyService {
-  async execute({
-    s0,
-    s1,
-    only1,
-  }: CheckAlignmentReadyServiceDTO): Promise<boolean> {
+  async execute({ id }: CheckAlignmentReadyServiceDTO): Promise<boolean> {
+    const alignmentsRepository = getRepository(Alignment);
+    const sequencesRepository = getRepository(Sequence);
+
+    const alignment = await alignmentsRepository.findOne({ where: { id } });
+    const { only1 } = alignment!;
+
+    const [{ file: s0 }, { file: s1 }] = await sequencesRepository.find({
+      where: { alignment_id: id },
+    });
+
     let filePath =
       process.env.NODE_ENV !== 'test'
         ? path.resolve(
