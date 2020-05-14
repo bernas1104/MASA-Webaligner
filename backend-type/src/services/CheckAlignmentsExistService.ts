@@ -12,11 +12,8 @@ export default class CheckAlignmentsExistService {
   }: CheckAlignmentsExistServiceDTO): Promise<boolean> {
     const alignmentsRepository = getRepository(Alignment);
 
-    try {
-      await alignmentsRepository.findOne({ where: { id } });
-      return true;
-    } catch (err) {
-      return false;
-    }
+    const alignment = await alignmentsRepository.findOne({ where: { id } });
+
+    return !!alignment;
   }
 }
