@@ -60,20 +60,16 @@ export default class ShowAlignmentService {
       .split('\n')
       .splice(3);
 
-    if (alignment.only1) {
-      console.log(globalStatistics);
-      globalStatistics.splice(4, 5);
-    }
+    if (alignment.only1) globalStatistics.splice(4, 5);
 
     let stageIStatistics = fs
       .readFileSync(path.resolve(filesPath, 'statistics_01.00'), 'utf-8')
       .split('\n');
 
-    if (!alignment.only1) {
-      stageIStatistics = stageIStatistics.splice(14, 10);
-    } else {
-      stageIStatistics = stageIStatistics.splice(11, 10);
-    }
+    if (stageIStatistics[14].includes('GPU')) stageIStatistics.splice(14, 4);
+
+    if (!alignment.only1) stageIStatistics = stageIStatistics.splice(14, 10);
+    else stageIStatistics = stageIStatistics.splice(11, 10);
 
     const statistics = {
       names,

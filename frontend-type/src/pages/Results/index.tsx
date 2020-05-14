@@ -189,11 +189,6 @@ const Results: React.FC<ResultsProps> = (props) => {
   );
 
   useEffect(() => {
-    if (chunksRef.current && chunksSumRef.current) {
-      chunksRef.current.innerHTML = '';
-      chunksSumRef.current.innerHTML = '';
-    }
-
     const routeProps = props;
     const { id: alignmentId } = routeProps.match.params;
 
@@ -265,7 +260,7 @@ const Results: React.FC<ResultsProps> = (props) => {
 
   useEffect(() => {
     if (alignmentInfo) {
-      if (!alignmentInfo.alignment.only1 && alignmentInfo.binary) {
+      if (alignmentInfo.binary) {
         const alignment = AlignmentBinaryFile.read(
           Buffer.from(alignmentInfo.binary.data),
         );
