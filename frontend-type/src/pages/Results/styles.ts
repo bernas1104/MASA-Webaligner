@@ -366,3 +366,14 @@ export const ResultsCard = styled.div`
     margin-top: 30px;
   }
 `;
+
+export const ErrorContainer = styled.div`
+  width: 100%;
+  max-width: 1440px;
+  height: calc(100vh - 78px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 78px auto 0 auto;
+`;

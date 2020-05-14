@@ -9,6 +9,7 @@ import {
   TextContainer,
   Sidemenu,
   ResultsCard,
+  ErrorContainer,
 } from './styles';
 
 import api from '../../services/apiClient';
@@ -691,7 +692,12 @@ const Results: React.FC<ResultsProps> = (props) => {
       {render === 0 && errors === 0x0000 && (
         <FrozenScreen isToggled={render === 0} />
       )}
-      {errors !== 0x0000 && <h1 style={{ fontSize: 100 }}>ERROR</h1>}
+
+      {errors !== 0x0000 && (
+        <ErrorContainer>
+          <h1>Error!</h1>
+        </ErrorContainer>
+      )}
     </>
   );
 };
