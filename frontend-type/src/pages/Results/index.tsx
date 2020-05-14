@@ -53,6 +53,7 @@ interface AlignmentInfoProps {
     size: number;
   }[];
   statistics: {
+    names: string[];
     globalStatistics: string[];
     stageIStatistics: string[];
   };
@@ -601,11 +602,11 @@ const Results: React.FC<ResultsProps> = (props) => {
       {render === 1 && errors === 0x000 && (
         <Container render={render}>
           <h2>
-            AF133821.1 HIV-1 isolate MB2059 from Kenya, complete genome
+            {alignmentInfo?.statistics.names[0]}
             <br />
             vs.
             <br />
-            AY352275.1 HIV-1 isolate SF33 from USA, complete genome
+            {alignmentInfo?.statistics.names[1]}
           </h2>
 
           <div className="cards">
@@ -633,7 +634,7 @@ const Results: React.FC<ResultsProps> = (props) => {
           <div className="sidemenu-container">
             <h3>Alignment Information</h3>
             <br />
-            <pre>name 1</pre>
+            <pre>{alignmentInfo?.statistics.names[0]}</pre>
             <pre>
               Type:
               {` ${Origins[alignmentInfo?.sequences[0].origin! - 1]}`}
@@ -648,7 +649,7 @@ const Results: React.FC<ResultsProps> = (props) => {
 
             <br />
 
-            <pre>name 2</pre>
+            <pre>{alignmentInfo?.statistics.names[1]}</pre>
             <pre>
               Type:
               {` ${Origins[alignmentInfo?.sequences[1].origin! - 1]}`}

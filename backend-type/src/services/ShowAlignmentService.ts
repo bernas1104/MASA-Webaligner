@@ -19,6 +19,7 @@ interface ShowAlignment {
   alignment: Alignment;
   sequences: Sequence[];
   statistics: {
+    names: string[];
     globalStatistics: string[];
     stageIStatistics: string[];
   };
@@ -48,21 +49,34 @@ export default class ShowAlignmentService {
         ? path.resolve(__dirname, '..', '..', 'results', folder)
         : path.resolve(__dirname, '..', '..', '__tests__', 'results', folder);
 
-    let globalStatistics = fs
+    const names = fs
+      .readFileSync(path.resolve(filesPath, 'info'), 'utf-8')
+      .split('\n')
+      .map(name => name.slice(5))
+      .splice(0, 2);
+
+    const globalStatistics = fs
       .readFileSync(path.resolve(filesPath, 'statistics'), 'utf-8')
       .split('\n')
       .splice(3);
 
     if (alignment.only1) {
-      globalStatistics = globalStatistics.splice(4, 4);
+      console.log(globalStatistics);
+      globalStatistics.splice(4, 5);
     }
 
-    const stageIStatistics = fs
+    let stageIStatistics = fs
       .readFileSync(path.resolve(filesPath, 'statistics_01.00'), 'utf-8')
-      .split('\n')
-      .splice(18, 11);
+      .split('\n');
+
+    if (!alignment.only1) {
+      stageIStatistics = stageIStatistics.splice(14, 10);
+    } else {
+      stageIStatistics = stageIStatistics.splice(11, 10);
+    }
 
     const statistics = {
+      names,
       globalStatistics,
       stageIStatistics,
     };
