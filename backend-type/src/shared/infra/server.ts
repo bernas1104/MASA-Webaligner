@@ -1,40 +1,35 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express /* , { Request, Response, NextFunction } */ from 'express';
 import cors from 'cors';
-import BullBoard from 'bull-board';
+// import BullBoard from 'bull-board';
 import { errors } from 'celebrate';
-import path from 'path';
-import { exec } from 'child_process';
+import { execSync as exec } from 'child_process';
 import 'express-async-errors';
 import 'reflect-metadata';
 
-import './database';
+import '@shared/infra/typeorm';
+import uploadConfig from '@config/upload';
+// import AppError from '@shared/errors/AppError';
 
-import DeleteUploadedFileService from './services/DeleteUploadedFileService';
-
-import AppError from './errors/AppError';
-
-import routes from './routes/index';
-import { mailQueue, masaQueue } from './lib/Queue';
+// import DeleteUploadedFileService from './services/DeleteUploadedFileService';
+import routes from './http/routes/index';
+// import { mailQueue, masaQueue } from './lib/Queue';
 
 require('dotenv').config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
 });
 
-const rootDir =
-  process.env.NODE_ENV !== 'test'
-    ? path.resolve(__dirname, '..')
-    : path.resolve(__dirname, '..', '__tests__');
+const rootDir = uploadConfig.tmpFolder;
 exec(`mkdir ${rootDir}/uploads ${rootDir}/results`);
 
 const app = express();
-
-// TypeORM Connection ?
 
 app.use(cors());
 app.use(express.json());
 
 app.use(routes);
 app.use(errors());
+
+/*
 app.use(
   (
     err: Error | AppError,
@@ -73,17 +68,18 @@ app.use(
       });
     }
 
-    console.log(err);
-
     return response.status(500).json({
       status: 'error',
       message: 'Internal Server Error',
     });
   },
 );
+*/
 
+/*
 BullBoard.setQueues([masaQueue.bull, mailQueue.bull]);
 app.use('/admin/queues', BullBoard.UI);
+*/
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(process.env.PORT || 3334, () => {

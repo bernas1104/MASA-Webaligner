@@ -9,12 +9,12 @@ require('dotenv').config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
 });
 
-export interface CheckAlignmentReadyServiceDTO {
+export interface IRequest {
   id: string;
 }
 
 export default class CheckAlignmentReadyService {
-  async execute({ id }: CheckAlignmentReadyServiceDTO): Promise<boolean> {
+  async execute({ id }: IRequest): Promise<boolean> {
     const alignmentsRepository = getRepository(Alignment);
     const sequencesRepository = getRepository(Sequence);
 

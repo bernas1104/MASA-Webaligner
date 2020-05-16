@@ -1,24 +1,26 @@
-import { Request, Express } from 'express';
+import { Request /* , Express */ } from 'express';
 import multer from 'multer';
 import path from 'path';
-import { uuid } from 'uuidv4';
+import crypto from 'crypto';
 
-require('dotenv').config({
-  path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
-});
+const tmpFolder = path.resolve(__dirname, '..', '..', 'tmp');
 
 export default {
+  tmpFolder,
+  uploadsFolder: path.resolve(__dirname, tmpFolder, 'uploads'),
+  resultsFolder: path.resolve(__dirname, tmpFolder, 'results'),
+
   storage: multer.diskStorage({
-    destination:
-      process.env.NODE_ENV !== 'test'
-        ? path.resolve(__dirname, '..', '..', 'uploads')
-        : path.resolve(__dirname, '..', '..', '__tests__', 'uploads'),
-    filename: (req, file, cb) => {
-      const id = uuid();
-      const ext = path.extname(file.originalname);
-      cb(null, `${id}${ext}`);
+    destination: tmpFolder,
+
+    filename(_: Request, file, cb) {
+      const fileHash = crypto.randomBytes(10).toString('HEX');
+      const fileName = `${fileHash}-${file.originalname}`;
+
+      return cb(null, fileName);
     },
   }),
+  /*
   fileFilter: (req: Request, file: Express.Multer.File, cb: Function): void => {
     const ext = path.extname(file.originalname);
 
@@ -28,4 +30,5 @@ export default {
 
     cb(null, true);
   },
+  */
 };

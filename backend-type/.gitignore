@@ -4,5 +4,8 @@ node_modules/*
 yarn.lock
 yarn-error.log
 
-results/*
-uploads/*
+tmp/results/*
+tmp/uploads/*
+
+!tmp/results/.gitkeep
+!tmp/uploads/.gitkeep
