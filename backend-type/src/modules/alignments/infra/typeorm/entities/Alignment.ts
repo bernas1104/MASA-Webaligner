@@ -4,10 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  BeforeInsert,
 } from 'typeorm';
-
-import { uuid } from 'uuidv4';
 
 @Entity('alignments')
 class Alignment {
@@ -17,6 +14,9 @@ class Alignment {
   @Column('integer')
   extension: number;
 
+  @Column('varchar')
+  type: string;
+
   @Column('boolean')
   only1: boolean;
 
@@ -24,7 +24,7 @@ class Alignment {
   clearn: boolean;
 
   @Column('boolean')
-  blockPruning: boolean;
+  block_pruning: boolean;
 
   @Column('integer')
   complement: number;
@@ -33,7 +33,7 @@ class Alignment {
   reverse: number;
 
   @Column('varchar')
-  fullName: string;
+  full_name: string;
 
   @Column('varchar')
   email: string;
@@ -43,11 +43,6 @@ class Alignment {
 
   @UpdateDateColumn()
   updated_at: Date;
-
-  @BeforeInsert()
-  addId(): void {
-    this.id = uuid();
-  }
 }
 
 export default Alignment;

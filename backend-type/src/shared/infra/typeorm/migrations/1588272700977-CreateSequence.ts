@@ -5,7 +5,7 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-export class CreateSequence1588272700977 implements MigrationInterface {
+export default class CreateSequence1588272700977 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -16,6 +16,7 @@ export class CreateSequence1588272700977 implements MigrationInterface {
             type: 'uuid',
             isPrimary: true,
             generationStrategy: 'uuid',
+            default: 'uuid_generate_v4()',
           },
           {
             name: 'file',
@@ -30,11 +31,6 @@ export class CreateSequence1588272700977 implements MigrationInterface {
           {
             name: 'origin',
             type: 'integer',
-            isNullable: false,
-          },
-          {
-            name: 'edge',
-            type: 'varchar',
             isNullable: false,
           },
           {

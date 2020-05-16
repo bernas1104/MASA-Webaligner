@@ -1,5 +1,4 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
-// import { v4 } from 'uuid';
 
 export default class CreateAlignment1588260754710
   implements MigrationInterface {
@@ -13,6 +12,12 @@ export default class CreateAlignment1588260754710
             type: 'uuid',
             isPrimary: true,
             generationStrategy: 'uuid',
+            default: 'uuid_generate_v4()',
+          },
+          {
+            name: 'type',
+            type: 'varchar',
+            isNullable: false,
           },
           {
             name: 'extension',
@@ -30,7 +35,7 @@ export default class CreateAlignment1588260754710
             default: false,
           },
           {
-            name: 'blockPruning',
+            name: 'block_pruning',
             type: 'boolean',
             default: true,
           },
@@ -45,7 +50,7 @@ export default class CreateAlignment1588260754710
             default: 0,
           },
           {
-            name: 'fullName',
+            name: 'full_name',
             type: 'varchar',
             isNullable: true,
           },

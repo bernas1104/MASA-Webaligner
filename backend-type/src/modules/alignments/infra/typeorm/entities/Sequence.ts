@@ -4,12 +4,9 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  BeforeInsert,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-
-import { uuid } from 'uuidv4';
 
 import Alignment from './Alignment';
 
@@ -28,9 +25,6 @@ class Sequence {
   origin: number;
 
   @Column('varchar')
-  edge: string;
-
-  @Column('varchar')
   alignment_id: string;
 
   @OneToOne(() => Alignment)
@@ -42,11 +36,6 @@ class Sequence {
 
   @UpdateDateColumn()
   updated_at: Date;
-
-  @BeforeInsert()
-  addId(): void {
-    this.id = uuid();
-  }
 }
 
 export default Sequence;
