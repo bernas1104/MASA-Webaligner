@@ -13,7 +13,7 @@ interface FetchBinaryResultsServiceDTO {
 }
 
 export default class FetchBinaryResultsService {
-  async execute({ id }: FetchBinaryResultsServiceDTO): Promise<Buffer> {
+  public async execute({ id }: FetchBinaryResultsServiceDTO): Promise<Buffer> {
     const sequenceRepository = getRepository(Sequence);
 
     const sequences = await sequenceRepository.find({
@@ -23,7 +23,7 @@ export default class FetchBinaryResultsService {
     const s0 = sequences[0].file;
     const s1 = sequences[1].file;
 
-    const folder = `${s0.match(/.*[^.fasta]/g)}-${s1.match(/.*[^.fasta]/g)}`;
+    const folder = `${path.parse(s0).name}-${path.parse(s1).name}`;
 
     const filePath =
       process.env.NODE_ENV !== 'test'

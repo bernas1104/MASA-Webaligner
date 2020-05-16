@@ -8,3 +8,5 @@ export default class CheckFastaFormatService {
     return verifier.test(sequence);
   }
 }
+
+// ^>(.*?)\n([AGCTN]+[\n]?)+$

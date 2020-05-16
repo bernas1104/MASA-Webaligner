@@ -18,7 +18,7 @@ interface FastaFiles {
 }
 
 export default class FetchFastaFilesService {
-  async execute({ id }: FetchFastaFilesServiceDTO): Promise<FastaFiles> {
+  public async execute({ id }: FetchFastaFilesServiceDTO): Promise<FastaFiles> {
     const sequenceRepository = getRepository(Sequence);
 
     const [{ file: s0 }, { file: s1 }] = await sequenceRepository.find({
