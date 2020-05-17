@@ -1,4 +1,5 @@
 export default interface IAlignerProvider {
+  extension: string;
   type?: string;
   only1?: boolean;
   clearn?: boolean;

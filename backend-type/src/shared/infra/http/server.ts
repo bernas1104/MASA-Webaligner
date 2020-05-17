@@ -1,33 +1,33 @@
 import express /* , { Request, Response, NextFunction } */ from 'express';
 import cors from 'cors';
 // import BullBoard from 'bull-board';
-import { errors } from 'celebrate';
-import { execSync as exec } from 'child_process';
+// import { errors } from 'celebrate';
+// import { execSync as exec } from 'child_process';
 import 'express-async-errors';
 import 'reflect-metadata';
 
 import '@shared/infra/typeorm';
-import uploadConfig from '@config/upload';
+import '@shared/container';
+import { container } from 'tsyringe';
+import BullQueueProvider from '@shared/container/providers/QueueProvider/implementations/BullQueueProvider';
+// import uploadConfig from '@config/upload';
 // import AppError from '@shared/errors/AppError';
 
 // import DeleteUploadedFileService from './services/DeleteUploadedFileService';
-import routes from './http/routes/index';
+// import routes from './routes/index';
 // import { mailQueue, masaQueue } from './lib/Queue';
 
 require('dotenv').config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
 });
 
-const rootDir = uploadConfig.tmpFolder;
-exec(`mkdir ${rootDir}/uploads ${rootDir}/results`);
-
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.use(routes);
-app.use(errors());
+// app.use(routes);
+// app.use(errors());
 
 /*
 app.use(

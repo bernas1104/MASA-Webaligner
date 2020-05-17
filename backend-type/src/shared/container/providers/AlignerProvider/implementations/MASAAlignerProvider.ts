@@ -8,6 +8,7 @@ import IRequestAlignmentDTO from '../dtos/IRequestAlignmentDTO';
 
 export default class MASACUDAlignAlignerProvider implements IAlignerProvider {
   public processAlignment({
+    extension,
     type,
     only1,
     clearn,
@@ -38,7 +39,7 @@ export default class MASACUDAlignAlignerProvider implements IAlignerProvider {
     if (block_pruning === false) exeBlockPruning = '--no-block-pruning';
 
     exec(
-      `masa-openmp --ram-size=1000M --disk-size=500M ${
+      `${extension} --ram-size=1000M --disk-size=500M ${
         edges ? `--alignment-edges=${edges}` : ''
       } ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${path.resolve(
         uploadConfig.uploadsFolder,
@@ -51,7 +52,7 @@ export default class MASACUDAlignAlignerProvider implements IAlignerProvider {
 
     if (!only1) {
       exec(
-        `masa-openmp --ram-size=1000M --disk-size=500M ${
+        `${extension} --ram-size=1000M --disk-size=500M ${
           edges ? `--alignment-edges=${edges}` : ''
         } ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${path.resolve(
           uploadConfig.uploadsFolder,
@@ -63,7 +64,7 @@ export default class MASACUDAlignAlignerProvider implements IAlignerProvider {
       );
 
       exec(
-        `masa-openmp --ram-size=1000M --disk-size=500M ${
+        `${extension} --ram-size=1000M --disk-size=500M ${
           edges ? `--alignment-edges=${edges}` : ''
         } ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${path.resolve(
           uploadConfig.uploadsFolder,
@@ -75,7 +76,7 @@ export default class MASACUDAlignAlignerProvider implements IAlignerProvider {
       );
 
       exec(
-        `masa-openmp --ram-size=1000M --disk-size=500M ${
+        `${extension} --ram-size=1000M --disk-size=500M ${
           edges ? `--alignment-edges=${edges}` : ''
         } ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${path.resolve(
           uploadConfig.uploadsFolder,
@@ -87,7 +88,7 @@ export default class MASACUDAlignAlignerProvider implements IAlignerProvider {
       );
 
       exec(
-        `masa-openmp --ram-size=1000M --disk-size=500M ${
+        `${extension} --ram-size=1000M --disk-size=500M ${
           edges ? `--alignment-edges=${edges}` : ''
         } ${exeClearn}${exeComplement}${exeReverse}${exeBlockPruning} ${path.resolve(
           uploadConfig.uploadsFolder,
