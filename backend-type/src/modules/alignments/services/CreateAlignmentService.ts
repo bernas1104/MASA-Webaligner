@@ -1,43 +1,49 @@
-import { getRepository } from 'typeorm';
+import { injectable, inject } from 'tsyringe';
 
-import Alignment from '../models/Alignment';
+import Alignment from '@modules/alignments/infra/typeorm/entities/Alignment';
+import IAlignmentsRepository from '@modules/alignments/repositories/IAlignmentsRepository';
 
-interface CreateAlignmentServiceDTO {
+interface IRequest {
+  type: string;
   extension: number;
   only1?: boolean;
   clearn?: boolean;
-  blockPruning?: boolean;
+  block_pruning?: boolean;
   complement?: number;
   reverse?: number;
-  fullName?: string;
+  full_name?: string;
   email?: string;
 }
 
+@injectable()
 export default class CreateAlignmentService {
+  constructor(
+    @inject('AlignmentsRepository')
+    private alignmentsRepository: IAlignmentsRepository,
+  ) {}
+
   async execute({
+    type,
     extension,
     only1,
     clearn,
     complement,
     reverse,
-    blockPruning,
-    fullName,
+    block_pruning,
+    full_name,
     email,
-  }: CreateAlignmentServiceDTO): Promise<Alignment> {
-    const alignmentRepository = getRepository(Alignment);
-
-    const alignment = alignmentRepository.create({
+  }: IRequest): Promise<Alignment> {
+    const alignment = this.alignmentsRepository.create({
+      type,
       extension,
       only1,
       clearn,
       complement,
       reverse,
-      blockPruning,
-      fullName,
+      block_pruning,
+      full_name,
       email,
     });
-
-    await alignmentRepository.save(alignment);
 
     return alignment;
   }

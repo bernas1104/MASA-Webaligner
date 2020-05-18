@@ -8,8 +8,8 @@ import 'reflect-metadata';
 
 import '@shared/infra/typeorm';
 import '@shared/container';
-import { container } from 'tsyringe';
-import BullQueueProvider from '@shared/container/providers/QueueProvider/implementations/BullQueueProvider';
+// import { container } from 'tsyringe';
+// import BullQueueProvider from '@shared/container/providers/QueueProvider/implementations/BullQueueProvider';
 // import uploadConfig from '@config/upload';
 // import AppError from '@shared/errors/AppError';
 
@@ -79,6 +79,26 @@ app.use(
 /*
 BullBoard.setQueues([masaQueue.bull, mailQueue.bull]);
 app.use('/admin/queues', BullBoard.UI);
+*/
+
+/*
+setTimeout(() => {
+  const x = container.resolve(BullQueueProvider);
+
+  x.processMailJobs();
+  x.eventListnerMail();
+
+  x.addMailJob({
+    to: { name: 'Bernardo', email: 'bernardoc1104@gmail.com' },
+    subject: 'Lorem Ipsum',
+    template: {
+      file: 'todo',
+      variables: {
+        lorem: 'ipsum',
+      },
+    },
+  });
+}, 5000);
 */
 
 if (process.env.NODE_ENV !== 'test') {

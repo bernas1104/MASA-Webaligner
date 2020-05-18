@@ -1,6 +1,8 @@
 import { injectable, inject } from 'tsyringe';
 import Bull, { Job, Queue } from 'bull';
 import 'reflect-metadata';
+
+import redisConfig from '@config/redis';
 import '@shared/container/providers';
 
 import IMailProvider from '@shared/container/providers/MailProvider/models/IMailProvider';
@@ -26,8 +28,19 @@ export default class BullQueueProvider implements IQueueProvider {
     @inject('MASAAlignerProvider')
     private masaProvider: IAlignerProvider,
   ) {
-    this.MASAQueue = new Bull('MASAQueue');
-    this.MailQueue = new Bull('MailQueue');
+    this.MASAQueue = new Bull('MASAQueue', {
+      redis: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+      },
+    });
+
+    this.MailQueue = new Bull('MailQueue', {
+      redis: {
+        host: redisConfig.host,
+        port: redisConfig.port,
+      },
+    });
   }
 
   public async addMASAJob(data: IRequestAlignmentDTO): Promise<Job> {
@@ -53,47 +66,43 @@ export default class BullQueueProvider implements IQueueProvider {
       return this.mailProvider.sendMail(data);
     });
   }
+
+  public eventListnerMASA(): void {
+    this.MASAQueue.on('failed', (job, err) => {
+      console.log('Job failed', this.MASAQueue.name, job.data);
+      console.log(err);
+    });
+
+    this.MASAQueue.on('completed', async job => {
+      console.log('Job completed', this.MASAQueue.name, job.data);
+      const { fullName, email, id } = job.data;
+      if (
+        fullName !== undefined &&
+        fullName !== '' &&
+        email !== undefined &&
+        email !== ''
+      ) {
+        await job.progress(50);
+        this.MailQueue.add({
+          fullName,
+          email,
+          address: `http://masa-webaligner.unb.br/alignments/${id}`,
+        });
+
+        await job.progress(100);
+      }
+    });
+  }
+
+  public eventListnerMail(): void {
+    this.MailQueue.on('failed', (job, err) => {
+      console.log('Job failed', this.MailQueue.name, job.data);
+      console.log(err);
+    });
+
+    this.MailQueue.on('completed', async job => {
+      console.log('Job completed', this.MailQueue.name, job.data);
+      await job.progress(100);
+    });
+  }
 }
-
-// MASACUDAlign.bull.process(async job => {
-//   const data = job.data as IRequestAlignmentDTO;
-//   MASACUDAlign.handle(data);
-// });
-
-// MASAOpenMP.bull.process(async job => {
-//   const data = job.data as IRequestAlignmentDTO;
-//   MASAOpenMP.handle(data);
-// });
-
-// AlignmentReadyMail.bull.process(async job => {
-//   const data = job.data as ISendMailDTO;
-//   AlignmentReadyMail.handle(data);
-// });
-
-// MASACUDAlign.bull.on('failed', (job, err) => {
-//   console.log('Job failed', MASACUDAlign.name, job.data);
-//   console.log(err);
-// });
-
-// MASACUDAlign.bull.on('completed', async job => {
-//   console.log('Job completed', MASACUDAlign.name, job.data);
-
-//   const { fullName, email, id } = job.data;
-
-//   if (
-//     fullName !== undefined &&
-//     fullName !== '' &&
-//     email !== undefined &&
-//     email !== ''
-//   ) {
-//     await job.progress(50);
-
-//     AlignmentReadyMail.bull.add({
-//       fullName,
-//       email,
-//       address: `http://masa-webaligner.unb.br/alignments/${id}`,
-//     });
-//   }
-
-//   await job.progress(100);
-// });
