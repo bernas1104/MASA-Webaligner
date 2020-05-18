@@ -1,4 +1,5 @@
 export default interface IAlignerProvider {
+  id: string;
   masa: string;
   type?: string;
   only1?: boolean;
@@ -8,4 +9,6 @@ export default interface IAlignerProvider {
   reverse?: number;
   s0: string;
   s1: string;
+  full_name: string;
+  email: string;
 }

@@ -91,6 +91,7 @@ export default class AlignmentsController {
 
     const masaQueue = container.resolve(BullQueueProvider);
     masaQueue.addMASAJob({
+      id: alignment.id,
       masa,
       type,
       only1,
@@ -100,6 +101,8 @@ export default class AlignmentsController {
       reverse,
       s0,
       s1,
+      full_name,
+      email,
     });
 
     return response.json({ alignment, sequence0, sequence1 });

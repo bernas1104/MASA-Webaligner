@@ -1,5 +1,6 @@
-import { injectable, inject } from 'tsyringe';
+import path from 'path';
 import Bull, { Job, Queue } from 'bull';
+import { injectable, inject } from 'tsyringe';
 
 import redisConfig from '@config/redis';
 import '@shared/container/providers';
@@ -71,18 +72,40 @@ export default class BullQueueProvider implements IQueueProvider {
 
     this.MASAQueue.on('completed', async job => {
       console.log('Job completed', this.MASAQueue.name, job.data);
-      const { fullName, email, id } = job.data;
+      const { full_name, email, id } = job.data;
+
       if (
-        fullName !== undefined &&
-        fullName !== '' &&
+        full_name !== undefined &&
+        full_name !== '' &&
         email !== undefined &&
         email !== ''
       ) {
         await job.progress(50);
-        this.MailQueue.add({
-          fullName,
-          email,
-          address: `http://masa-webaligner.unb.br/alignments/${id}`,
+
+        await this.addMailJob({
+          to: {
+            name: full_name,
+            email,
+          },
+          subject: 'Your sequence alignment is ready!',
+          template: {
+            file: path.resolve(
+              __dirname,
+              '..',
+              '..',
+              '..',
+              '..',
+              '..',
+              'modules',
+              'alignments',
+              'views',
+              'alignment_ready.hbs',
+            ),
+            variables: {
+              full_name,
+              address: `http://masa-webaligner.unb.br/${id}`,
+            },
+          },
         });
 
         await job.progress(100);

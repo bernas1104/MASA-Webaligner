@@ -74,7 +74,7 @@ export default class DiskStorageProvider implements IStorageProvider {
 
   public async loadBinaryFile(binFilepath: string): Promise<Buffer> {
     const binFile = await fs.promises.readFile(
-      path.resolve(binFilepath, 'alignment.00.bin'),
+      path.resolve(uploadConfig.resultsFolder, binFilepath, 'alignment.00.bin'),
     );
 
     return binFile;
