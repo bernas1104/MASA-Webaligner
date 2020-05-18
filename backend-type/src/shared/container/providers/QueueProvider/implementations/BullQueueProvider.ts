@@ -1,6 +1,5 @@
 import { injectable, inject } from 'tsyringe';
 import Bull, { Job, Queue } from 'bull';
-import 'reflect-metadata';
 
 import redisConfig from '@config/redis';
 import '@shared/container/providers';
@@ -11,9 +10,6 @@ import IAlignerProvider from '@shared/container/providers/AlignerProvider/models
 import IRequestAlignmentDTO from '@shared/container/providers/AlignerProvider/dtos/IRequestAlignmentDTO';
 import ISendMailDTO from '@shared/container/providers/MailProvider/dtos/ISendMailDTO';
 import IQueueProvider from '../models/IQueueProvider';
-
-// import { MASACUDAlign, MASAOpenMP } from './BullQueues/MASAAlignment';
-// import AlignmentReadyMail from './BullQueues/AlignmentReadyMail';
 
 @injectable()
 export default class BullQueueProvider implements IQueueProvider {

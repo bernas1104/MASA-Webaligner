@@ -1,35 +1,37 @@
 import fs from 'fs';
 import path from 'path';
-import { container } from 'tsyringe';
 import { Request, Response } from 'express';
+import { container } from 'tsyringe';
 
 import uploadConfig from '@config/upload';
 
-import GetFileNameService from '@modules/alignments/services/GetFileNameService';
+import GetFileNameService from '@modules/files/services/GetFileNameService';
 import SelectMASAExtensionService from '@modules/alignments/services/SelectMASAExtensionService';
 import CreateAlignmentService from '@modules/alignments/services/CreateAlignmentService';
 import CreateSequenceService from '@modules/alignments/services/CreateSequenceService';
+import ShowAlignmentService from '@modules/alignments/services/ShowAlignmentService';
+
+import BullQueueProvider from '@shared/container/providers/QueueProvider/implementations/BullQueueProvider';
 
 export default class AlignmentsController {
-  async create(request: Request, response: Response) {
+  public async create(request: Request, response: Response): Promise<Response> {
     const {
       extension,
+      type,
       only1,
       clearn,
       complement,
       reverse,
-      blockPruning,
+      block_pruning,
       s0origin,
       s1origin,
-      s0edge,
-      s1edge,
       s0input,
       s1input,
-      fullName,
+      full_name,
       email,
     } = request.body;
 
-    const getFileNameService = new GetFileNameService();
+    const getFileNameService = container.resolve(GetFileNameService);
 
     const s0 = await getFileNameService.execute({
       num: 0,
@@ -47,44 +49,69 @@ export default class AlignmentsController {
     });
     request.savedFiles = { s1 };
 
-    const createAlignmentService = new CreateAlignmentService();
+    const createAlignmentService = container.resolve(CreateAlignmentService);
 
     const alignment = await createAlignmentService.execute({
       extension,
+      type,
       only1,
       clearn,
       complement,
       reverse,
-      blockPruning,
-      fullName,
+      block_pruning,
+      full_name,
       email,
     });
 
-    const createSequenceService = new CreateSequenceService();
+    const createSequenceService = container.resolve(CreateSequenceService);
 
     const sequence0 = await createSequenceService.execute({
       file: s0,
-      size: fs.statSync(path.join(uploadConfig.uploadsFolder, s0)).size,
+      size: fs.statSync(path.resolve(uploadConfig.uploadsFolder, s0)).size,
       origin: s0origin,
-      edge: s0edge,
       alignment_id: alignment.id,
     });
 
     const sequence1 = await createSequenceService.execute({
       file: s1,
-      size: fs.statSync(path.join(uploadConfig.uploadsFolder, s1)).size,
+      size: fs.statSync(path.resolve(uploadConfig.uploadsFolder, s1)).size,
       origin: s1origin,
-      edge: s1edge,
       alignment_id: alignment.id,
     });
 
-    const selectMASAExtensionService = new SelectMASAExtensionService();
+    const selectMASAExtensionService = container.resolve(
+      SelectMASAExtensionService,
+    );
+
     const masa = selectMASAExtensionService.execute({
       extension,
       s0,
       s1,
     });
 
+    const masaQueue = container.resolve(BullQueueProvider);
+    masaQueue.addMASAJob({
+      masa,
+      type,
+      only1,
+      clearn,
+      block_pruning,
+      complement,
+      reverse,
+      s0,
+      s1,
+    });
+
     return response.json({ alignment, sequence0, sequence1 });
+  }
+
+  public async show(request: Request, response: Response): Promise<Response> {
+    const { id } = request.params;
+
+    const showAlignmentService = container.resolve(ShowAlignmentService);
+
+    const result = await showAlignmentService.execute(id);
+
+    return response.json(result);
   }
 }

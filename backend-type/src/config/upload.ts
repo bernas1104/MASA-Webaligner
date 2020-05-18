@@ -1,7 +1,7 @@
-import { Request /* , Express */ } from 'express';
+import { Request } from 'express';
 import multer from 'multer';
 import path from 'path';
-import crypto from 'crypto';
+import { uuid } from 'uuidv4';
 
 const tmpFolder = path.resolve(__dirname, '..', '..', 'tmp');
 
@@ -14,21 +14,9 @@ export default {
     destination: tmpFolder,
 
     filename(_: Request, file, cb) {
-      const fileHash = crypto.randomBytes(10).toString('HEX');
-      const fileName = `${fileHash}-${file.originalname}`;
-
-      return cb(null, fileName);
+      const id = uuid();
+      const ext = path.extname(file.originalname);
+      cb(null, `${id}${ext}`);
     },
   }),
-  /*
-  fileFilter: (req: Request, file: Express.Multer.File, cb: Function): void => {
-    const ext = path.extname(file.originalname);
-
-    if (ext !== '.fasta') {
-      cb(null, false);
-    }
-
-    cb(null, true);
-  },
-  */
 };

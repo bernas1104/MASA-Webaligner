@@ -4,8 +4,8 @@ import Alignment from '@modules/alignments/infra/typeorm/entities/Alignment';
 import IAlignmentsRepository from '@modules/alignments/repositories/IAlignmentsRepository';
 
 interface IRequest {
-  type: string;
   extension: number;
+  type: string;
   only1?: boolean;
   clearn?: boolean;
   block_pruning?: boolean;
@@ -22,28 +22,8 @@ export default class CreateAlignmentService {
     private alignmentsRepository: IAlignmentsRepository,
   ) {}
 
-  async execute({
-    type,
-    extension,
-    only1,
-    clearn,
-    complement,
-    reverse,
-    block_pruning,
-    full_name,
-    email,
-  }: IRequest): Promise<Alignment> {
-    const alignment = this.alignmentsRepository.create({
-      type,
-      extension,
-      only1,
-      clearn,
-      complement,
-      reverse,
-      block_pruning,
-      full_name,
-      email,
-    });
+  async execute(data: IRequest): Promise<Alignment> {
+    const alignment = this.alignmentsRepository.create(data);
 
     return alignment;
   }

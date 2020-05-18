@@ -7,7 +7,7 @@
   "password": "110492-Bb",
   "database": "masa_webaligner_type_dev",
   "entities": [
-    "./src/modules/alignments/typeorm/entities/*.ts"
+    "./src/modules/alignments/infra/typeorm/entities/*.ts"
   ],
   "migrations": [
     "./src/shared/infra/typeorm/migrations/*.ts"

@@ -1,35 +1,30 @@
-import express /* , { Request, Response, NextFunction } */ from 'express';
+import 'reflect-metadata';
+
 import cors from 'cors';
 // import BullBoard from 'bull-board';
-// import { errors } from 'celebrate';
-// import { execSync as exec } from 'child_process';
+import { errors } from 'celebrate';
+import { container } from 'tsyringe';
+import express, { Request, Response, NextFunction } from 'express';
+
 import 'express-async-errors';
-import 'reflect-metadata';
 
 import '@shared/infra/typeorm';
 import '@shared/container';
-// import { container } from 'tsyringe';
-// import BullQueueProvider from '@shared/container/providers/QueueProvider/implementations/BullQueueProvider';
-// import uploadConfig from '@config/upload';
-// import AppError from '@shared/errors/AppError';
 
-// import DeleteUploadedFileService from './services/DeleteUploadedFileService';
-// import routes from './routes/index';
-// import { mailQueue, masaQueue } from './lib/Queue';
+import StorageProvider from '@shared/container/providers/StorageProvider/implementations/DiskStorageProvider';
+import BullQueueProvider from '@shared/container/providers/QueueProvider/implementations/BullQueueProvider';
+import AppError from '@shared/errors/AppError';
 
-require('dotenv').config({
-  path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
-});
+import routes from './routes';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// app.use(routes);
-// app.use(errors());
+app.use(routes);
+app.use(errors());
 
-/*
 app.use(
   (
     err: Error | AppError,
@@ -37,28 +32,28 @@ app.use(
     response: Response,
     _: NextFunction,
   ) => {
-    const deleteUploadedFileService = new DeleteUploadedFileService();
+    const storageProvider = container.resolve(StorageProvider);
 
     if (request.files) {
       let fileName;
 
       if (request.files.s0input) {
         fileName = request.files.s0input[0].filename;
-        deleteUploadedFileService.execute({ fileName });
+        storageProvider.deleteFastaFile(fileName);
       }
 
       if (request.files.s1input) {
         fileName = request.files.s1input[0].filename;
-        deleteUploadedFileService.execute({ fileName });
+        storageProvider.deleteFastaFile(fileName);
       }
     }
 
     if (request.savedFiles) {
       const { s0, s1 } = request.savedFiles;
 
-      if (s0) deleteUploadedFileService.execute({ fileName: s0 });
+      if (s0) storageProvider.deleteFastaFile(s0);
 
-      if (s1) deleteUploadedFileService.execute({ fileName: s1 });
+      if (s1) storageProvider.deleteFastaFile(s1);
     }
 
     if (err instanceof AppError) {
@@ -68,38 +63,23 @@ app.use(
       });
     }
 
+    console.log(err);
+
     return response.status(500).json({
       status: 'error',
       message: 'Internal Server Error',
     });
   },
 );
-*/
 
-/*
-BullBoard.setQueues([masaQueue.bull, mailQueue.bull]);
-app.use('/admin/queues', BullBoard.UI);
-*/
+// BullBoard.setQueues([masaQueue.bull, mailQueue.bull]);
+// app.use('/admin/queues', BullBoard.UI);
 
-/*
-setTimeout(() => {
-  const x = container.resolve(BullQueueProvider);
-
-  x.processMailJobs();
-  x.eventListnerMail();
-
-  x.addMailJob({
-    to: { name: 'Bernardo', email: 'bernardoc1104@gmail.com' },
-    subject: 'Lorem Ipsum',
-    template: {
-      file: 'todo',
-      variables: {
-        lorem: 'ipsum',
-      },
-    },
-  });
-}, 5000);
-*/
+const queue = container.resolve(BullQueueProvider);
+queue.processMASAJobs();
+queue.processMailJobs();
+queue.eventListnerMASA();
+queue.eventListnerMail();
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(process.env.PORT || 3334, () => {

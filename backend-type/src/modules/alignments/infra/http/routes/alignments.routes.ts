@@ -1,20 +1,16 @@
-import { Router, Request, Response } from 'express';
 import multer from 'multer';
+import { Router } from 'express';
 
-import uploadConfig from '../config/upload';
+import uploadConfig from '@config/upload';
 
 import validadeCreateAlignment from '../validations/validateCreateAlignment';
 
-import ShowAlignmentService from '../services/ShowAlignmentService';
-
-import { masaQueue } from '../lib/Queue';
+import AlignmentsController from '../controllers/AlignmentsController';
 
 const alignmentsRouter = Router();
 const upload = multer(uploadConfig);
 
-require('dotenv').config({
-  path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
-});
+const alignmentsController = new AlignmentsController();
 
 alignmentsRouter.post(
   '/',
@@ -23,17 +19,9 @@ alignmentsRouter.post(
     { name: 's1input', maxCount: 1 },
   ]),
   validadeCreateAlignment,
-  ,
+  alignmentsController.create,
 );
 
-alignmentsRouter.get('/:id', async (request, response) => {
-  const { id } = request.params;
-
-  const showAlignmentService = new ShowAlignmentService();
-
-  const result = await showAlignmentService.execute({ id });
-
-  return response.json(result);
-});
+alignmentsRouter.get('/:id', alignmentsController.show);
 
 export default alignmentsRouter;

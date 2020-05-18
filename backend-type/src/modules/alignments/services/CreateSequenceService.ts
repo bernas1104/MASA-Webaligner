@@ -1,45 +1,46 @@
-import { getRepository } from 'typeorm';
+import { injectable, inject } from 'tsyringe';
 
-import Alignment from '../models/Alignment';
-import Sequence from '../models/Sequence';
+import Sequence from '@modules/alignments/infra/typeorm/entities/Sequence';
 
-import AppError from '../errors/AppError';
+import IAlignmentsRepository from '@modules/alignments/repositories/IAlignmentsRepository';
+import ISequencesRepository from '@modules/alignments/repositories/ISequencesRepository';
 
-interface CreateSequenceServiceDTO {
+import AppError from '@shared/errors/AppError';
+
+interface IRequest {
   file: string;
   size: number;
   origin: number;
-  edge: string;
   alignment_id: string;
 }
 
+@injectable()
 export default class CreateSequenceService {
+  constructor(
+    @inject('AlignmentsRepository')
+    private alignmentsRepository: IAlignmentsRepository,
+
+    @inject('SequencesRepository')
+    private sequencesRepository: ISequencesRepository,
+  ) {}
+
   async execute({
     file,
     size,
     origin,
-    edge,
     alignment_id,
-  }: CreateSequenceServiceDTO): Promise<Sequence> {
-    const alignmentRepository = getRepository(Alignment);
-    const sequenceRepository = getRepository(Sequence);
-
-    const alignment = await alignmentRepository.findOne({
-      where: { id: alignment_id },
-    });
+  }: IRequest): Promise<Sequence> {
+    const alignment = await this.alignmentsRepository.findById(alignment_id);
 
     if (!alignment)
       throw new AppError('There is no Alignment to attach this sequence');
 
-    const sequence = sequenceRepository.create({
+    const sequence = this.sequencesRepository.create({
       file,
       size,
       origin,
-      edge,
       alignment_id,
     });
-
-    await sequenceRepository.save(sequence);
 
     return sequence;
   }

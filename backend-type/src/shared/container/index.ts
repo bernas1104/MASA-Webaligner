@@ -8,6 +8,9 @@ import AlignmentsRepository from '@modules/alignments/infra/typeorm/repositories
 import ISequencesRepository from '@modules/alignments/repositories/ISequencesRepository';
 import SequencesRepository from '@modules/alignments/infra/typeorm/repositories/SequencesRepository';
 
+import ISequenceFilesProvider from '@modules/files/providers/SequenceFilesProvider/models/ISequenceFilesProvider';
+import NCBISequenceFilesProvider from '@modules/files/providers/SequenceFilesProvider/implementations/NCBISequenceFilesProvider';
+
 container.registerSingleton<IAlignmentsRepository>(
   'AlignmentsRepository',
   AlignmentsRepository,
@@ -16,4 +19,9 @@ container.registerSingleton<IAlignmentsRepository>(
 container.registerSingleton<ISequencesRepository>(
   'SequencesRepository',
   SequencesRepository,
+);
+
+container.registerSingleton<ISequenceFilesProvider>(
+  'SequenceFilesProvider',
+  NCBISequenceFilesProvider,
 );

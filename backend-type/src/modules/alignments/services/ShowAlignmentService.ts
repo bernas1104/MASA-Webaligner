@@ -1,21 +1,18 @@
-import path from 'path';
 import fs from 'fs';
-import { getRepository } from 'typeorm';
+import path from 'path';
+import { injectable, inject } from 'tsyringe';
 
-import Alignment from '../models/Alignment';
-import Sequence from '../models/Sequence';
+import Alignment from '@modules/alignments/infra/typeorm/entities/Alignment';
+import Sequence from '@modules/alignments/infra/typeorm/entities/Sequence';
 
-import AppError from '../errors/AppError';
+import IAlignmentsRepository from '@modules/alignments/repositories/IAlignmentsRepository';
+import ISequencesRepository from '@modules/alignments/repositories/ISequencesRepository';
 
-require('dotenv').config({
-  path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
-});
+import AppError from '@shared/errors/AppError';
 
-interface ShowAlignmentServiceDTO {
-  id: string;
-}
+import uploadConfig from '@config/upload';
 
-interface ShowAlignment {
+interface IShowAlignment {
   alignment: Alignment;
   sequences: Sequence[];
   statistics: {
@@ -25,45 +22,46 @@ interface ShowAlignment {
   };
 }
 
+@injectable()
 export default class ShowAlignmentService {
-  async execute({ id }: ShowAlignmentServiceDTO): Promise<ShowAlignment> {
-    const alignmentRepository = getRepository(Alignment);
-    const sequenceRepository = getRepository(Sequence);
+  constructor(
+    @inject('AlignmentsRepository')
+    private alignmentsRepository: IAlignmentsRepository,
 
-    const alignment = await alignmentRepository.findOne({ where: { id } });
+    @inject('SequencesRepository')
+    private sequencesRepository: ISequencesRepository,
+  ) {}
 
-    if (!alignment) throw new AppError('Alignment not found', 400);
+  async execute(id: string): Promise<IShowAlignment> {
+    const alignment = await this.alignmentsRepository.findById(id);
 
-    const sequences = await sequenceRepository.find({
-      where: { alignment_id: id },
-    });
+    if (!alignment) throw new AppError('Alignment not found', 404);
 
-    if (sequences.length !== 2) throw new AppError('Sequences not found', 400);
+    const sequences = await this.sequencesRepository.findByAlignmentId(id);
+
+    if (sequences.length !== 2) throw new AppError('Sequences not found', 404);
 
     const folder = `${path.parse(sequences[0].file).name}-${
       path.parse(sequences[1].file).name
     }`;
 
-    const filesPath =
-      process.env.NODE_ENV !== 'test'
-        ? path.resolve(__dirname, '..', '..', 'results', folder)
-        : path.resolve(__dirname, '..', '..', '__tests__', 'results', folder);
+    const resultsPath = path.resolve(uploadConfig.resultsFolder, folder);
 
     const names = fs
-      .readFileSync(path.resolve(filesPath, 'info'), 'utf-8')
+      .readFileSync(path.resolve(resultsPath, 'info'), 'utf-8')
       .split('\n')
       .map(name => name.slice(5))
       .splice(0, 2);
 
     const globalStatistics = fs
-      .readFileSync(path.resolve(filesPath, 'statistics'), 'utf-8')
+      .readFileSync(path.resolve(resultsPath, 'statistics'), 'utf-8')
       .split('\n')
       .splice(3);
 
     if (alignment.only1) globalStatistics.splice(4, 5);
 
     let stageIStatistics = fs
-      .readFileSync(path.resolve(filesPath, 'statistics_01.00'), 'utf-8')
+      .readFileSync(path.resolve(resultsPath, 'statistics_01.00'), 'utf-8')
       .split('\n');
 
     if (stageIStatistics[14].includes('GPU')) stageIStatistics.splice(14, 4);
