@@ -11,3 +11,6 @@ tmp/uploads/*
 
 !tmp/results/.gitkeep
 !tmp/uploads/.gitkeep
+
+!tmp/tests/*.*
+!tmp/tests/*/*

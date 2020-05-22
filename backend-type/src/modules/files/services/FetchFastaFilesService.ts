@@ -25,12 +25,14 @@ export default class FetchFastaFilesService {
   ) {}
 
   public async execute({ alignment_id }: IRequest): Promise<IFastaFiles> {
-    const [
-      { file: s0 },
-      { file: s1 },
-    ] = await this.sequencesRepository.findByAlignmentId(alignment_id);
+    const sequences = await this.sequencesRepository.findByAlignmentId(
+      alignment_id,
+    );
 
-    if (!s0 || !s1) throw new AppError('Fasta files not found', 404);
+    if (sequences.length !== 2)
+      throw new AppError('Fasta files not found', 404);
+
+    const [{ file: s0 }, { file: s1 }] = sequences;
 
     const { s0file, s1file } = await this.storageProvider.loadFastaFiles({
       s0Filename: s0,

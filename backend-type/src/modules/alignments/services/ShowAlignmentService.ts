@@ -53,21 +53,26 @@ export default class ShowAlignmentService {
       .map(name => name.slice(5))
       .splice(0, 2);
 
-    const globalStatistics = fs
+    let globalStatistics: string | string[] = fs
       .readFileSync(path.resolve(resultsPath, 'statistics'), 'utf-8')
       .split('\n')
       .splice(3);
 
-    if (alignment.only1) globalStatistics.splice(4, 5);
+    if (alignment.only1) {
+      const tmp = globalStatistics.slice(0, 4);
+      globalStatistics = [...tmp, ...globalStatistics.slice(9, 13)];
+    }
 
-    let stageIStatistics = fs
-      .readFileSync(path.resolve(resultsPath, 'statistics_01.00'), 'utf-8')
-      .split('\n');
+    let stageIStatistics: string | string[] = fs.readFileSync(
+      path.resolve(resultsPath, 'statistics_01.00'),
+      'utf-8',
+    );
 
-    if (stageIStatistics[14].includes('GPU')) stageIStatistics.splice(14, 4);
-
-    if (!alignment.only1) stageIStatistics = stageIStatistics.splice(14, 10);
-    else stageIStatistics = stageIStatistics.splice(11, 10);
+    if (stageIStatistics.includes('GPU')) {
+      stageIStatistics = stageIStatistics.split('\n').splice(18, 11);
+    } else {
+      stageIStatistics = stageIStatistics.split('\n').splice(14, 12);
+    }
 
     const statistics = {
       names,

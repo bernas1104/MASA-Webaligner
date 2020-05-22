@@ -1,3 +1,8 @@
+import fs from 'fs';
+import path from 'path';
+
+import uploadConfig from '@config/upload';
+
 import IStorageProvider from '../models/IStorageProvider';
 import IFastaFilesResponse from '../dtos/IFastaFilesResponse';
 import IStatisticsFilesResponse from '../dtos/IStatisticsFilesResponse';
@@ -26,14 +31,24 @@ export default class FakeStorageProvider implements IStorageProvider {
   }
 
   public async loadFastaFiles(): Promise<IFastaFilesResponse> {
-    return {
-      s0file: "First file's contents",
-      s1file: "Second file's contents",
-    };
+    const s0file = await fs.promises.readFile(
+      path.resolve(uploadConfig.tmpFolder, 'tests', 'AF133821.1.fasta'),
+      'utf-8',
+    );
+
+    const s1file = await fs.promises.readFile(
+      path.resolve(uploadConfig.tmpFolder, 'tests', 'AY352275.1.fasta'),
+      'utf-8',
+    );
+
+    return { s0file, s1file };
   }
 
   public async loadBinaryFile(): Promise<Buffer> {
-    return Buffer.from('Binary contents');
+    const binFile = fs.promises.readFile(
+      path.resolve(uploadConfig.tmpFolder, 'tests', 'alignment.00.bin'),
+    );
+    return binFile;
   }
 
   public async loadStatisticsFiles(): Promise<IStatisticsFilesResponse> {
