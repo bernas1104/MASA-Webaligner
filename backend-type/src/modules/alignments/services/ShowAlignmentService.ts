@@ -7,6 +7,7 @@ import Sequence from '@modules/alignments/infra/typeorm/entities/Sequence';
 
 import IAlignmentsRepository from '@modules/alignments/repositories/IAlignmentsRepository';
 import ISequencesRepository from '@modules/alignments/repositories/ISequencesRepository';
+import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
 
 import AppError from '@shared/errors/AppError';
 
@@ -30,6 +31,9 @@ export default class ShowAlignmentService {
 
     @inject('SequencesRepository')
     private sequencesRepository: ISequencesRepository,
+
+    @inject('StorageProvider')
+    private storageProvider: IStorageProvider,
   ) {}
 
   async execute(id: string): Promise<IShowAlignment> {
@@ -47,31 +51,21 @@ export default class ShowAlignmentService {
 
     const resultsPath = path.resolve(uploadConfig.resultsFolder, folder);
 
-    const names = fs
-      .readFileSync(path.resolve(resultsPath, 'info'), 'utf-8')
-      .split('\n')
-      .map(name => name.slice(5))
-      .splice(0, 2);
+    const data = await this.storageProvider.loadStatisticsFiles(resultsPath);
+    const { names, globalStatistics: global, stageIStatistics: stageI } = data;
 
-    let globalStatistics: string | string[] = fs
-      .readFileSync(path.resolve(resultsPath, 'statistics'), 'utf-8')
-      .split('\n')
-      .splice(3);
+    let globalStatistics = global.split('\n').splice(3);
 
     if (alignment.only1) {
       const tmp = globalStatistics.slice(0, 4);
       globalStatistics = [...tmp, ...globalStatistics.slice(9, 13)];
     }
 
-    let stageIStatistics: string | string[] = fs.readFileSync(
-      path.resolve(resultsPath, 'statistics_01.00'),
-      'utf-8',
-    );
-
-    if (stageIStatistics.includes('GPU')) {
-      stageIStatistics = stageIStatistics.split('\n').splice(18, 11);
+    let stageIStatistics: string[];
+    if (stageI.includes('GPU')) {
+      stageIStatistics = stageI.split('\n').splice(18, 11);
     } else {
-      stageIStatistics = stageIStatistics.split('\n').splice(14, 12);
+      stageIStatistics = stageI.split('\n').splice(14, 12);
     }
 
     const statistics = {

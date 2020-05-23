@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>28/28</span>
+                <span class='fraction'>27/27</span>
             </div>
         
             
@@ -136,15 +136,10 @@
 <a name='L77'></a><a href='#L77'>77</a>
 <a name='L78'></a><a href='#L78'>78</a>
 <a name='L79'></a><a href='#L79'>79</a>
-<a name='L80'></a><a href='#L80'>80</a>
-<a name='L81'></a><a href='#L81'>81</a>
-<a name='L82'></a><a href='#L82'>82</a>
-<a name='L83'></a><a href='#L83'>83</a>
-<a name='L84'></a><a href='#L84'>84</a>
-<a name='L85'></a><a href='#L85'>85</a>
-<a name='L86'></a><a href='#L86'>86</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L80'></a><a href='#L80'>80</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -168,6 +163,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
@@ -192,23 +190,13 @@
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -236,6 +224,7 @@ import Sequence from '@modules/alignments/infra/typeorm/entities/Sequence';
 &nbsp;
 import IAlignmentsRepository from '@modules/alignments/repositories/IAlignmentsRepository';
 import ISequencesRepository from '@modules/alignments/repositories/ISequencesRepository';
+import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
 &nbsp;
 import AppError from '@shared/errors/AppError';
 &nbsp;
@@ -259,6 +248,9 @@ export default class ShowAlignmentService {
 &nbsp;
     @inject('SequencesRepository')
     private sequencesRepository: ISequencesRepository,
+&nbsp;
+    @inject('StorageProvider')
+    private storageProvider: IStorageProvider,
   ) {}
 &nbsp;
   async execute(id: string): Promise&lt;IShowAlignment&gt; {
@@ -276,31 +268,21 @@ export default class ShowAlignmentService {
 &nbsp;
     const resultsPath = path.resolve(uploadConfig.resultsFolder, folder);
 &nbsp;
-    const names = fs
-      .readFileSync(path.resolve(resultsPath, 'info'), 'utf-8')
-      .split('\n')
-      .map(name =&gt; name.slice(5))
-      .splice(0, 2);
+    const data = await this.storageProvider.loadStatisticsFiles(resultsPath);
+    const { names, globalStatistics: global, stageIStatistics: stageI } = data;
 &nbsp;
-    let globalStatistics: string | string[] = fs
-      .readFileSync(path.resolve(resultsPath, 'statistics'), 'utf-8')
-      .split('\n')
-      .splice(3);
+    let globalStatistics = global.split('\n').splice(3);
 &nbsp;
     if (alignment.only1) {
       const tmp = globalStatistics.slice(0, 4);
       globalStatistics = [...tmp, ...globalStatistics.slice(9, 13)];
     }
 &nbsp;
-    let stageIStatistics: string | string[] = fs.readFileSync(
-      path.resolve(resultsPath, 'statistics_01.00'),
-      'utf-8',
-    );
-&nbsp;
-    if (stageIStatistics.includes('GPU')) {
-      stageIStatistics = stageIStatistics.split('\n').splice(18, 11);
+    let stageIStatistics: string[];
+    if (stageI.includes('GPU')) {
+      stageIStatistics = stageI.split('\n').splice(18, 11);
     } else {
-      stageIStatistics = stageIStatistics.split('\n').splice(14, 12);
+      stageIStatistics = stageI.split('\n').splice(14, 12);
     }
 &nbsp;
     const statistics = {
@@ -319,7 +301,7 @@ export default class ShowAlignmentService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Fri May 22 2020 23:43:45 GMT-0300 (Brasilia Standard Time)
+                at Sat May 23 2020 12:45:48 GMT-0300 (Brasilia Standard Time)
             </div>
         </div>
         <script src="../../prettify.js"></script>

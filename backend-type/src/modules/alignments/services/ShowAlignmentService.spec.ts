@@ -6,6 +6,7 @@ import fs from 'fs-extra';
 import uploadConfig from '@config/upload';
 import AppError from '@shared/errors/AppError';
 
+import FakeStorageProvider from '@shared/container/providers/StorageProvider/fakes/FakeStorageProvider';
 import FakeAlignmentsRepository from '../repositories/fakes/FakeAlignmentsRepository';
 import FakeSequencesRepository from '../repositories/fakes/FakeSequencesRepository';
 
@@ -14,6 +15,7 @@ import Alignment from '../infra/typeorm/entities/Alignment';
 
 let fakeAlignmentsRepository: FakeAlignmentsRepository;
 let fakeSequencesRepository: FakeSequencesRepository;
+let fakeStorageProvider: FakeStorageProvider;
 let showAlignmentService: ShowAlignmentService;
 
 describe('ShowAlignment', () => {
@@ -42,10 +44,12 @@ describe('ShowAlignment', () => {
   beforeEach(() => {
     fakeAlignmentsRepository = new FakeAlignmentsRepository();
     fakeSequencesRepository = new FakeSequencesRepository();
+    fakeStorageProvider = new FakeStorageProvider();
 
     showAlignmentService = new ShowAlignmentService(
       fakeAlignmentsRepository,
       fakeSequencesRepository,
+      fakeStorageProvider,
     );
   });
 

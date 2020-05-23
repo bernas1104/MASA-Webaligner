@@ -51,10 +51,25 @@ export default class FakeStorageProvider implements IStorageProvider {
     return binFile;
   }
 
-  public async loadStatisticsFiles(): Promise<IStatisticsFilesResponse> {
-    return {
-      globalStatistics: 'Global statiscs content',
-      stageIStatistics: 'Stage I Statistics content',
-    };
+  public async loadStatisticsFiles(
+    statiscsFilepath: string,
+  ): Promise<IStatisticsFilesResponse> {
+    const names = fs
+      .readFileSync(path.resolve(statiscsFilepath, 'info'), 'utf-8')
+      .split('\n')
+      .map(name => name.slice(5))
+      .splice(0, 2);
+
+    const globalStatistics = await fs.promises.readFile(
+      path.resolve(statiscsFilepath, 'statistics'),
+      'utf-8',
+    );
+
+    const stageIStatistics = await fs.promises.readFile(
+      path.resolve(statiscsFilepath, 'statistics_01.00'),
+      'utf-8',
+    );
+
+    return { names, globalStatistics, stageIStatistics };
   }
 }

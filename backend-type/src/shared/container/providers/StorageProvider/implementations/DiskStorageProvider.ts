@@ -32,15 +32,12 @@ export default class DiskStorageProvider implements IStorageProvider {
   }
 
   public async deleteFastaFile(file: string): Promise<void> {
-    const filePath = path.resolve(uploadConfig.uploadsFolder, file);
+    const tmpPath = path.resolve(uploadConfig.tmpFolder, file);
+    const uploadPath = path.resolve(uploadConfig.uploadsFolder, file);
 
-    try {
-      await fs.promises.stat(filePath);
-    } catch (err) {
-      throw new AppError('Fasta file does not exist', 404);
-    }
+    if (fs.existsSync(tmpPath)) await fs.unlink(tmpPath);
 
-    await fs.promises.unlink(filePath);
+    if (fs.existsSync(uploadPath)) await fs.unlink(uploadPath);
   }
 
   public async deleteMASAResults(folder: string): Promise<void> {
@@ -83,6 +80,12 @@ export default class DiskStorageProvider implements IStorageProvider {
   public async loadStatisticsFiles(
     statiscsFilepath: string,
   ): Promise<IStatisticsFilesResponse> {
+    const names = fs
+      .readFileSync(path.resolve(statiscsFilepath, 'info'), 'utf-8')
+      .split('\n')
+      .map(name => name.slice(5))
+      .splice(0, 2);
+
     const globalStatistics = await fs.promises.readFile(
       path.resolve(statiscsFilepath, 'statistics'),
       'utf-8',
@@ -93,6 +96,6 @@ export default class DiskStorageProvider implements IStorageProvider {
       'utf-8',
     );
 
-    return { globalStatistics, stageIStatistics };
+    return { names, globalStatistics, stageIStatistics };
   }
 }
