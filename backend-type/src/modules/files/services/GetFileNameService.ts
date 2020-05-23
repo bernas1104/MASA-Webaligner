@@ -14,9 +14,9 @@ interface IRequest {
   num: number;
   type: number;
   input?: string;
-  files?: null | {
-    s0input: Express.Multer.File[];
-    s1input: Express.Multer.File[];
+  files: {
+    s0input?: Express.Multer.File[];
+    s1input?: Express.Multer.File[];
   };
 }
 
@@ -30,12 +30,7 @@ export default class GetFileNameService {
     private sequeceFiles: ISequenceFilesProvider,
   ) {}
 
-  async execute({
-    num,
-    type,
-    input = '',
-    files = null,
-  }: IRequest): Promise<string> {
+  async execute({ num, type, input = '', files }: IRequest): Promise<string> {
     let fileName;
 
     const checkFastaFormatService = container.resolve(CheckFastaFormatService);
@@ -49,10 +44,9 @@ export default class GetFileNameService {
         break;
       }
       case 2: {
-        const file = num === 0 ? files?.s0input : files?.s1input;
+        const file = num === 0 ? files.s0input : files.s1input;
 
-        if (file === undefined)
-          throw new AppError('FASTA file was not uploaded.');
+        if (!file) throw new AppError('FASTA file was not uploaded');
 
         fileName = path.resolve(uploadConfig.tmpFolder, file[0].filename);
 
