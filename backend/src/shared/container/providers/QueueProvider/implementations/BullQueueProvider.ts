@@ -75,20 +75,20 @@ export default class BullQueueProvider implements IQueueProvider {
       console.log('Job completed', this.MASAQueue.name, job.data);
       const { full_name, email, id } = job.data;
 
+      const alignmentsRepository = container.resolve<IAlignmentsRepository>(
+        'AlignmentsRepository',
+      );
+
+      await alignmentsRepository.updateAlignmentSituation(id);
+
+      await job.progress(50);
+
       if (
         full_name !== undefined &&
         full_name !== '' &&
         email !== undefined &&
         email !== ''
       ) {
-        await job.progress(50);
-
-        const alignmentsRepository = container.resolve<IAlignmentsRepository>(
-          'AlignmentsRepository',
-        );
-
-        await alignmentsRepository.updateAlignmentSituation(id);
-
         await job.progress(75);
 
         await this.addMailJob({
@@ -132,5 +132,9 @@ export default class BullQueueProvider implements IQueueProvider {
       console.log('Job completed', this.MailQueue.name, job.data);
       await job.progress(100);
     });
+  }
+
+  public getQueues(): Queue[] {
+    return [this.MASAQueue, this.MailQueue];
   }
 }

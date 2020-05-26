@@ -47,6 +47,8 @@ export default class AlignmentsRepository implements IAlignmentsRepository {
   public async updateAlignmentSituation(id: string): Promise<void> {
     const updateId = await this.ormRepository.findOneOrFail({ where: { id } });
 
+    console.log(updateId);
+
     updateId.ready = true;
 
     await this.ormRepository.save(updateId);

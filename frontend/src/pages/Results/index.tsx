@@ -19,6 +19,8 @@ import FrozenScreen from '../../components/FrozenScreen';
 import TextInput from '../../components/TextInput';
 import Button from '../../components/Button';
 
+import { useToast } from '../../hooks/ToastContext';
+
 import Alignment from '../../services/MASA-Viewer/Alignment';
 import AlignmentBinaryFile from '../../services/MASA-Viewer/AlignmentBinaryFile';
 import SequenceData from '../../services/MASA-Viewer/SequenceData';
@@ -91,6 +93,8 @@ const Origins = ['NCBI API', 'File Upload', 'Text Input'];
 const Results: React.FC<ResultsProps> = (props) => {
   const chunksRef = useRef<HTMLDivElement>(null);
   const chunksSumRef = useRef<HTMLDivElement>(null);
+
+  const toast = useToast();
 
   const [tries, setTries] = useState(1);
   const [isToggled, setIsToggled] = useState(false);
@@ -192,62 +196,83 @@ const Results: React.FC<ResultsProps> = (props) => {
     (event: React.MouseEvent, reset: boolean) => {
       event.preventDefault();
 
-      setTimeout(() => {
-        if (alignmentData && graph) {
-          const xRange =
-            reset === false
-              ? [parseInt(min, 10), parseInt(max, 10)]
-              : [...resetValues];
+      const nroMin = Number(min);
+      const nroMax = Number(max);
 
-          setMin('');
-          setMax('');
+      let error = false;
 
-          if (xRange[0] > xRange[1]) {
-            const tmp = xRange[1];
-            xRange[0] = tmp;
-          }
+      if (!reset) {
+        if (
+          nroMin < resetValues[0] ||
+          nroMin > nroMax ||
+          nroMax > resetValues[1]
+        ) {
+          error = true;
 
-          const [x0, x0Coord] = binSearch(graph.xAxis, xRange[0]);
-          const [x1, x1Coord] = binSearch(graph.xAxis, xRange[1], false);
-          const y0 = graph.yAxis[x0Coord];
-          const y1 = graph.yAxis[x1Coord];
-          let offsetY0 = alignmentData.alignment.getSequenceOffset(1, y0);
-          let offsetY1 = alignmentData.alignment.getSequenceOffset(1, y1) + 1;
-          let offsetX0 = alignmentData.alignment.getSequenceOffset(0, x0);
-          let offsetX1 = alignmentData.alignment.getSequenceOffset(0, x1) + 1;
-
-          console.log(xRange, x0, x1, x0Coord, x1Coord, y0, y1, offsetY0, offsetY1, offsetX0, offsetX1);
-
-          let tmp;
-          if (offsetX0 > offsetX1) {
-            tmp = offsetX0;
-            offsetX0 = offsetX1;
-            offsetX1 = tmp;
-          }
-          if (offsetY0 > offsetY1) {
-            tmp = offsetY0;
-            offsetY0 = offsetY1;
-            offsetY1 = tmp;
-          }
-          let offset0 = Math.max(offsetY0, offsetX0);
-          let offset1 = Math.max(offsetY1, offsetX1);
-          if (offset0 < 0) offset0 = 0;
-          if (offset1 < 0) offset1 = 0;
-
-          const data = alignmentData;
-          data.alignment = data.alignment.truncate(offset0, offset1);
-          setAlignmentData({
-            alignment: data.alignment,
-            description: data.description,
+          toast.addToast({
+            type: 'error',
+            title: 'Adjustment Error',
+            description: `Make sure the limits are between ${resetValues[0]} and ${resetValues[1]}, and the inferior limit is smaller than the superior limit`,
           });
         }
-      }, 500);
+      }
+
+      if (!error) {
+        setTimeout(() => {
+          if (alignmentData && graph) {
+            const xRange =
+              reset === false
+                ? [parseInt(min, 10), parseInt(max, 10)]
+                : [...resetValues];
+
+            setMin('');
+            setMax('');
+
+            if (xRange[0] > xRange[1]) {
+              const tmp = xRange[1];
+              xRange[0] = tmp;
+            }
+
+            const [x0, x0Coord] = binSearch(graph.xAxis, xRange[0]);
+            const [x1, x1Coord] = binSearch(graph.xAxis, xRange[1], false);
+            const y0 = graph.yAxis[x0Coord];
+            const y1 = graph.yAxis[x1Coord];
+            let offsetY0 = alignmentData.alignment.getSequenceOffset(1, y0);
+            let offsetY1 = alignmentData.alignment.getSequenceOffset(1, y1) + 1;
+            let offsetX0 = alignmentData.alignment.getSequenceOffset(0, x0);
+            let offsetX1 = alignmentData.alignment.getSequenceOffset(0, x1) + 1;
+
+            let tmp;
+            if (offsetX0 > offsetX1) {
+              tmp = offsetX0;
+              offsetX0 = offsetX1;
+              offsetX1 = tmp;
+            }
+            if (offsetY0 > offsetY1) {
+              tmp = offsetY0;
+              offsetY0 = offsetY1;
+              offsetY1 = tmp;
+            }
+            let offset0 = Math.max(offsetY0, offsetX0);
+            let offset1 = Math.max(offsetY1, offsetX1);
+            if (offset0 < 0) offset0 = 0;
+            if (offset1 < 0) offset1 = 0;
+
+            const data = alignmentData;
+            data.alignment = data.alignment.truncate(offset0, offset1);
+            setAlignmentData({
+              alignment: data.alignment,
+              description: data.description,
+            });
+          }
+        }, 500);
+      }
     },
-    [alignmentData, binSearch, graph, resetValues, min, max],
+    [alignmentData, binSearch, graph, resetValues, min, max, toast],
   );
 
   const renderGraph = useCallback(() => {
-    if(!graph){
+    if (!graph) {
       if (!alignmentInfo?.alignment.only1 && alignmentData) {
         const s0gapped = alignmentData?.alignment
           .getAlignmentWithGaps(0)
@@ -306,9 +331,9 @@ const Results: React.FC<ResultsProps> = (props) => {
   }, [alignmentData, alignmentInfo, graph]);
 
   useEffect(() => {
-    async function fetchAlignmentInfo() {
+    async function fetchAlignmentInfo(): Promise<void> {
       try {
-        const response = await api.get(`alignments/${props.match.params.id}`)
+        const response = await api.get(`alignments/${props.match.params.id}`);
         const { alignment, sequences, statistics } = response.data;
 
         if (alignment.only1) {
@@ -320,8 +345,12 @@ const Results: React.FC<ResultsProps> = (props) => {
 
           setRender(1);
         } else {
-          const { data: binary } = await api.get(`files/bin/${props.match.params.id}`);
-          const { data: fasta } = await api.get(`files/fasta/${props.match.params.id}`);
+          const { data: binary } = await api.get(
+            `files/bin/${props.match.params.id}`,
+          );
+          const { data: fasta } = await api.get(
+            `files/fasta/${props.match.params.id}`,
+          );
 
           setAlignmentInfo({
             alignment,
@@ -332,7 +361,7 @@ const Results: React.FC<ResultsProps> = (props) => {
           });
         }
       } catch (err) {
-        if (err.message.includes('452')){
+        if (err.message.includes('452')) {
           setTimeout(() => {
             setTries(tries + 1);
           }, 5000 * tries);
@@ -487,7 +516,9 @@ const Results: React.FC<ResultsProps> = (props) => {
                     name="min"
                     placeholder="Ex: 423"
                     value={min}
-                    onChange={(event) => {setMin(event.target.value)}}
+                    onChange={(event) => {
+                      setMin(event.target.value);
+                    }}
                   >
                     Inferior limit
                   </TextInput>
@@ -495,7 +526,9 @@ const Results: React.FC<ResultsProps> = (props) => {
                     name="max"
                     placeholder="Ex: 9794"
                     value={max}
-                    onChange={(event) => {setMax(event.target.value)}}
+                    onChange={(event) => {
+                      setMax(event.target.value);
+                    }}
                   >
                     Superior limit
                   </TextInput>

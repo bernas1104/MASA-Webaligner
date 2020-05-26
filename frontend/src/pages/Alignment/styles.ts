@@ -46,6 +46,10 @@ export const Form = styled.form`
   max-width: 100%;
   flex-direction: column;
 
+  small {
+    color: #007715;
+  }
+
   > div button {
     margin: 0 auto;
   }
