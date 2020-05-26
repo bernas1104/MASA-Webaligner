@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import cors from 'cors';
-// import BullBoard from 'bull-board';
+import BullBoard from 'bull-board';
 import { errors } from 'celebrate';
 import { container } from 'tsyringe';
 import express, { Request, Response, NextFunction } from 'express';
@@ -63,8 +63,6 @@ app.use(
       });
     }
 
-    console.log(err);
-
     return response.status(500).json({
       status: 'error',
       message: 'Internal Server Error',
@@ -72,14 +70,14 @@ app.use(
   },
 );
 
-// BullBoard.setQueues([masaQueue.bull, mailQueue.bull]);
-// app.use('/admin/queues', BullBoard.UI);
-
 const queue = container.resolve(BullQueueProvider);
 queue.processMASAJobs();
 queue.processMailJobs();
 queue.eventListnerMASA();
 queue.eventListnerMail();
+
+BullBoard.setQueues(queue.getQueues());
+app.use('/admin/queues', BullBoard.UI);
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(process.env.PORT || 3334, () => {
