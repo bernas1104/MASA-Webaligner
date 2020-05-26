@@ -1,6 +1,6 @@
 import path from 'path';
 import Bull, { Job, Queue } from 'bull';
-import { injectable, inject } from 'tsyringe';
+import { injectable, inject, container } from 'tsyringe';
 
 import redisConfig from '@config/redis';
 import '@shared/container/providers';
@@ -25,9 +25,6 @@ export default class BullQueueProvider implements IQueueProvider {
 
     @inject('MASAAlignerProvider')
     private masaProvider: IAlignerProvider,
-
-    @inject('AlignmentsRepository')
-    private alignmentsRepository: IAlignmentsRepository,
   ) {
     this.MASAQueue = new Bull('MASAQueue', {
       redis: {
@@ -86,7 +83,11 @@ export default class BullQueueProvider implements IQueueProvider {
       ) {
         await job.progress(50);
 
-        await this.alignmentsRepository.updateAlignmentSituation(id);
+        const alignmentsRepository = container.resolve<IAlignmentsRepository>(
+          'AlignmentsRepository',
+        );
+
+        await alignmentsRepository.updateAlignmentSituation(id);
 
         await job.progress(75);
 
