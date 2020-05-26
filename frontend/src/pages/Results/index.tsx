@@ -92,10 +92,9 @@ const Results: React.FC<ResultsProps> = (props) => {
   const chunksRef = useRef<HTMLDivElement>(null);
   const chunksSumRef = useRef<HTMLDivElement>(null);
 
-  const [tries, setTries] = useState(0);
+  const [tries, setTries] = useState(1);
   const [isToggled, setIsToggled] = useState(false);
 
-  const [id, setId] = useState('');
   const [alignmentData, setAlignmentData] = useState<AlignmentProps | null>(
     null,
   );
@@ -189,75 +188,160 @@ const Results: React.FC<ResultsProps> = (props) => {
     [getSeq0WithGaps, getSeq1WithGaps, hasMoreChunks],
   );
 
-  useEffect(() => {
-    const routeProps = props;
-    const { id: alignmentId } = routeProps.match.params;
+  const handleAdjustTextResults = useCallback(
+    (event: React.MouseEvent, reset: boolean) => {
+      event.preventDefault();
 
-    api.get(`alignments-exist/${alignmentId}`).then((response) => {
-      const {
-        data: { exists },
-      } = response;
+      setTimeout(() => {
+        if (alignmentData && graph) {
+          const xRange =
+            reset === false
+              ? [parseInt(min, 10), parseInt(max, 10)]
+              : [...resetValues];
 
-      if (exists) setId(alignmentId);
-      else setErrors(0x0001);
-    });
-  }, [props]);
+          setMin('');
+          setMax('');
 
-  useEffect(() => {
-    async function fetchAlignment(): Promise<void> {
-      const {
-        data: { alignment, sequences, statistics },
-      } = await api.get(`alignments/${id}`);
-
-      const { only1 } = alignment;
-
-      if (only1) {
-        setAlignmentInfo({
-          alignment,
-          sequences,
-          statistics,
-        });
-
-        setRender(1);
-      } else {
-        try {
-          const { data: binary } = await api.get(`files/bin/${id}`);
-
-          try {
-            const { data: fasta } = await api.get(`files/fasta/${id}`);
-
-            setAlignmentInfo({
-              alignment,
-              sequences,
-              statistics,
-              binary,
-              fasta,
-            });
-          } catch (err) {
-            setErrors(0x0004);
+          if (xRange[0] > xRange[1]) {
+            const tmp = xRange[1];
+            xRange[0] = tmp;
           }
-        } catch (err) {
-          setErrors(0x0002);
+
+          const [x0, x0Coord] = binSearch(graph.xAxis, xRange[0]);
+          const [x1, x1Coord] = binSearch(graph.xAxis, xRange[1], false);
+          const y0 = graph.yAxis[x0Coord];
+          const y1 = graph.yAxis[x1Coord];
+          let offsetY0 = alignmentData.alignment.getSequenceOffset(1, y0);
+          let offsetY1 = alignmentData.alignment.getSequenceOffset(1, y1) + 1;
+          let offsetX0 = alignmentData.alignment.getSequenceOffset(0, x0);
+          let offsetX1 = alignmentData.alignment.getSequenceOffset(0, x1) + 1;
+
+          console.log(xRange, x0, x1, x0Coord, x1Coord, y0, y1, offsetY0, offsetY1, offsetX0, offsetX1);
+
+          let tmp;
+          if (offsetX0 > offsetX1) {
+            tmp = offsetX0;
+            offsetX0 = offsetX1;
+            offsetX1 = tmp;
+          }
+          if (offsetY0 > offsetY1) {
+            tmp = offsetY0;
+            offsetY0 = offsetY1;
+            offsetY1 = tmp;
+          }
+          let offset0 = Math.max(offsetY0, offsetX0);
+          let offset1 = Math.max(offsetY1, offsetX1);
+          if (offset0 < 0) offset0 = 0;
+          if (offset1 < 0) offset1 = 0;
+
+          const data = alignmentData;
+          data.alignment = data.alignment.truncate(offset0, offset1);
+          setAlignmentData({
+            alignment: data.alignment,
+            description: data.description,
+          });
+        }
+      }, 500);
+    },
+    [alignmentData, binSearch, graph, resetValues, min, max],
+  );
+
+  const renderGraph = useCallback(() => {
+    if(!graph){
+      if (!alignmentInfo?.alignment.only1 && alignmentData) {
+        const s0gapped = alignmentData?.alignment
+          .getAlignmentWithGaps(0)
+          .getSB();
+        const s1gapped = alignmentData?.alignment
+          .getAlignmentWithGaps(1)
+          .getSB();
+
+        if (s0gapped && s1gapped) {
+          const xAxis = [];
+          const yAxis = [];
+          for (
+            let i = 0,
+              x = alignmentData?.alignment.getSequenceStartPosition(0),
+              y = alignmentData?.alignment.getSequenceStartPosition(1);
+            i < s0gapped.length;
+            i += 1
+          ) {
+            if (x && y) {
+              if (s0gapped[i] === s1gapped[i]) {
+                alignmentData?.alignment.getDir(0) === 1
+                  ? xAxis.push(x++)
+                  : xAxis.push(x--);
+                alignmentData?.alignment.getDir(1) === 1
+                  ? yAxis.push(y++)
+                  : yAxis.push(y--);
+              } else if (s0gapped[i] !== '-' && s1gapped[i] !== '-') {
+                alignmentData?.alignment.getDir(0) === 1
+                  ? xAxis.push(x++)
+                  : xAxis.push(x--);
+                alignmentData?.alignment.getDir(1) === 1
+                  ? yAxis.push(y++)
+                  : yAxis.push(y--);
+              } else if (s0gapped[i] === '-') {
+                xAxis.push(x);
+                alignmentData?.alignment.getDir(1) === 1
+                  ? yAxis.push(y++)
+                  : yAxis.push(y--);
+              } else {
+                alignmentData?.alignment.getDir(0) === 1
+                  ? xAxis.push(x++)
+                  : xAxis.push(x--);
+                yAxis.push(y);
+              }
+            }
+          }
+
+          setGraph({
+            xAxis,
+            yAxis,
+            range: s0gapped.length,
+          });
         }
       }
     }
+  }, [alignmentData, alignmentInfo, graph]);
 
-    if (id !== '') {
-      api.get(`alignments-ready/${id}`).then((response) => {
-        const {
-          data: { isReady },
-        } = response;
+  useEffect(() => {
+    async function fetchAlignmentInfo() {
+      try {
+        const response = await api.get(`alignments/${props.match.params.id}`)
+        const { alignment, sequences, statistics } = response.data;
 
-        if (isReady) {
-          fetchAlignment();
+        if (alignment.only1) {
+          setAlignmentInfo({
+            alignment,
+            sequences,
+            statistics,
+          });
+
+          setRender(1);
         } else {
+          const { data: binary } = await api.get(`files/bin/${props.match.params.id}`);
+          const { data: fasta } = await api.get(`files/fasta/${props.match.params.id}`);
+
+          setAlignmentInfo({
+            alignment,
+            sequences,
+            statistics,
+            binary,
+            fasta,
+          });
+        }
+      } catch (err) {
+        if (err.message.includes('452')){
           setTimeout(() => {
             setTries(tries + 1);
           }, 5000 * tries);
-        }
-      });
+        } else setErrors(0x0001);
+      }
     }
-  }, [id, tries]);
+
+    fetchAlignmentInfo();
+  }, [props, tries]);
 
   useEffect(() => {
     if (alignmentInfo) {
@@ -325,6 +409,8 @@ const Results: React.FC<ResultsProps> = (props) => {
 
   useEffect(() => {
     if (alignmentData) {
+      renderGraph();
+
       alignmentData.alignment
         .getAlignmentWithGaps(0)
         .reset(
@@ -357,69 +443,10 @@ const Results: React.FC<ResultsProps> = (props) => {
         min: alignmentData.alignment.getSequenceStartPosition(0),
         max: alignmentData.alignment.getSequenceEndPosition(0),
       });
+
+      setRender(2);
     }
-  }, [alignmentData, getNextChunk, hasMoreChunks]);
-
-  useEffect(() => {
-    if (!graph) {
-      if (!alignmentInfo?.alignment.only1 && alignmentData) {
-        const s0gapped = alignmentData?.alignment
-          .getAlignmentWithGaps(0)
-          .getSB();
-        const s1gapped = alignmentData?.alignment
-          .getAlignmentWithGaps(1)
-          .getSB();
-
-        if (s0gapped && s1gapped) {
-          const xAxis = [];
-          const yAxis = [];
-          for (
-            let i = 0,
-              x = alignmentData?.alignment.getSequenceStartPosition(0),
-              y = alignmentData?.alignment.getSequenceStartPosition(1);
-            i < s0gapped.length;
-            i += 1
-          ) {
-            if (x && y) {
-              if (s0gapped[i] === s1gapped[i]) {
-                alignmentData?.alignment.getDir(0) === 1
-                  ? xAxis.push(x++)
-                  : xAxis.push(x--);
-                alignmentData?.alignment.getDir(1) === 1
-                  ? yAxis.push(y++)
-                  : yAxis.push(y--);
-              } else if (s0gapped[i] !== '-' && s1gapped[i] !== '-') {
-                alignmentData?.alignment.getDir(0) === 1
-                  ? xAxis.push(x++)
-                  : xAxis.push(x--);
-                alignmentData?.alignment.getDir(1) === 1
-                  ? yAxis.push(y++)
-                  : yAxis.push(y--);
-              } else if (s0gapped[i] === '-') {
-                xAxis.push(x);
-                alignmentData?.alignment.getDir(1) === 1
-                  ? yAxis.push(y++)
-                  : yAxis.push(y--);
-              } else {
-                alignmentData?.alignment.getDir(0) === 1
-                  ? xAxis.push(x++)
-                  : xAxis.push(x--);
-                yAxis.push(y);
-              }
-            }
-          }
-
-          setGraph({
-            xAxis,
-            yAxis,
-            range: s0gapped.length,
-          });
-
-          setRender(2);
-        }
-      }
-    }
-  }, [alignmentText, alignmentInfo, alignmentData, graph]);
+  }, [alignmentData, getNextChunk, hasMoreChunks, renderGraph]);
 
   useEffect(() => {
     if (render === 2) {
@@ -431,61 +458,6 @@ const Results: React.FC<ResultsProps> = (props) => {
       }
     }
   }, [render, alignmentText]);
-
-  const handleAdjustTextResults = useCallback(
-    (event: React.MouseEvent, reset: boolean) => {
-      event.preventDefault();
-
-      setTimeout(() => {
-        if (alignmentData && graph) {
-          const xRange =
-            reset === false
-              ? [parseInt(min, 10), parseInt(max, 10)]
-              : [...resetValues];
-
-          setMin('');
-          setMax('');
-
-          if (xRange[0] > xRange[1]) {
-            const tmp = xRange[1];
-            xRange[0] = tmp;
-          }
-
-          const [x0, x0Coord] = binSearch(graph.xAxis, xRange[0]);
-          const [x1, x1Coord] = binSearch(graph.xAxis, xRange[1], false);
-          const y0 = graph.yAxis[x0Coord];
-          const y1 = graph.yAxis[x1Coord];
-          let offsetY0 = alignmentData.alignment.getSequenceOffset(1, y0);
-          let offsetY1 = alignmentData.alignment.getSequenceOffset(1, y1) + 1;
-          let offsetX0 = alignmentData.alignment.getSequenceOffset(0, x0);
-          let offsetX1 = alignmentData.alignment.getSequenceOffset(0, x1) + 1;
-
-          let tmp;
-          if (offsetX0 > offsetX1) {
-            tmp = offsetX0;
-            offsetX0 = offsetX1;
-            offsetX1 = tmp;
-          }
-          if (offsetY0 > offsetY1) {
-            tmp = offsetY0;
-            offsetY0 = offsetY1;
-            offsetY1 = tmp;
-          }
-          let offset0 = Math.max(offsetY0, offsetX0);
-          let offset1 = Math.max(offsetY1, offsetX1);
-          if (offset0 < 0) offset0 = 0;
-          if (offset1 < 0) offset1 = 0;
-          const data = alignmentData;
-          data.alignment = data.alignment.truncate(offset0, offset1);
-          setAlignmentData({
-            alignment: data.alignment,
-            description: data.description,
-          });
-        }
-      }, 500);
-    },
-    [alignmentData, binSearch, graph, resetValues, min, max],
-  );
 
   return (
     <>
@@ -515,33 +487,7 @@ const Results: React.FC<ResultsProps> = (props) => {
                     name="min"
                     placeholder="Ex: 423"
                     value={min}
-                    onChange={(event) => {
-                      const value = parseInt(event.target.value, 10);
-
-                      if (
-                        value <
-                        alignmentData?.alignment.getSequenceStartPosition(0)!
-                      ) {
-                        setMin(
-                          String(
-                            alignmentData?.alignment.getSequenceStartPosition(
-                              0,
-                            )!,
-                          ),
-                        );
-                      } else if (
-                        value >
-                        alignmentData?.alignment.getSequenceEndPosition(0)!
-                      ) {
-                        setMin(
-                          String(
-                            alignmentData?.alignment.getSequenceEndPosition(0)!,
-                          ),
-                        );
-                      } else {
-                        setMin(event.target.value);
-                      }
-                    }}
+                    onChange={(event) => {setMin(event.target.value)}}
                   >
                     Inferior limit
                   </TextInput>
@@ -549,25 +495,7 @@ const Results: React.FC<ResultsProps> = (props) => {
                     name="max"
                     placeholder="Ex: 9794"
                     value={max}
-                    onChange={(event) => {
-                      const value = parseInt(event.target.value, 10);
-
-                      if (value < parseInt(min, 10)) {
-                        setMax(min);
-                      } else if (
-                        value > parseInt(min, 10) &&
-                        value <
-                          alignmentData?.alignment.getSequenceEndPosition(0)!
-                      ) {
-                        setMax(event.target.value);
-                      } else {
-                        setMax(
-                          String(
-                            alignmentData?.alignment.getSequenceEndPosition(0)!,
-                          ),
-                        );
-                      }
-                    }}
+                    onChange={(event) => {setMax(event.target.value)}}
                   >
                     Superior limit
                   </TextInput>
