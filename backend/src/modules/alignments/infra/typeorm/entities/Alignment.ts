@@ -38,6 +38,9 @@ class Alignment {
   @Column('varchar')
   email: string;
 
+  @Column('boolean')
+  ready: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

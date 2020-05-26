@@ -43,4 +43,12 @@ export default class FakeAlignmentsRepository implements IAlignmentsRepository {
     const findId = this.alignments.find(alignment => alignment.id === id);
     return findId;
   }
+
+  public async updateAlignmentSituation(id: string): Promise<void> {
+    const updatedId = this.alignments.findIndex(
+      alignment => alignment.id === id,
+    );
+
+    this.alignments[updatedId].ready = true;
+  }
 }

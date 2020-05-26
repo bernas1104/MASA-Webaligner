@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import { injectable, inject } from 'tsyringe';
 
@@ -40,6 +39,8 @@ export default class ShowAlignmentService {
     const alignment = await this.alignmentsRepository.findById(id);
 
     if (!alignment) throw new AppError('Alignment not found', 404);
+
+    if (!alignment.ready) throw new AppError('Alignment not ready', 452);
 
     const sequences = await this.sequencesRepository.findByAlignmentId(id);
 

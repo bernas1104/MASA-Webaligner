@@ -7,6 +7,7 @@ import '@shared/container/providers';
 
 import IMailProvider from '@shared/container/providers/MailProvider/models/IMailProvider';
 import IAlignerProvider from '@shared/container/providers/AlignerProvider/models/IAlignerProvider';
+import IAlignmentsRepository from '@modules/alignments/repositories/IAlignmentsRepository';
 
 import IRequestAlignmentDTO from '@shared/container/providers/AlignerProvider/dtos/IRequestAlignmentDTO';
 import ISendMailDTO from '@shared/container/providers/MailProvider/dtos/ISendMailDTO';
@@ -24,6 +25,9 @@ export default class BullQueueProvider implements IQueueProvider {
 
     @inject('MASAAlignerProvider')
     private masaProvider: IAlignerProvider,
+
+    @inject('AlignmentsRepository')
+    private alignmentsRepository: IAlignmentsRepository,
   ) {
     this.MASAQueue = new Bull('MASAQueue', {
       redis: {
@@ -81,6 +85,10 @@ export default class BullQueueProvider implements IQueueProvider {
         email !== ''
       ) {
         await job.progress(50);
+
+        await this.alignmentsRepository.updateAlignmentSituation(id);
+
+        await job.progress(75);
 
         await this.addMailJob({
           to: {

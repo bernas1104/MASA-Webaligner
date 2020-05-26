@@ -11,7 +11,6 @@ import FakeAlignmentsRepository from '../repositories/fakes/FakeAlignmentsReposi
 import FakeSequencesRepository from '../repositories/fakes/FakeSequencesRepository';
 
 import ShowAlignmentService from './ShowAlignmentService';
-import Alignment from '../infra/typeorm/entities/Alignment';
 
 let fakeAlignmentsRepository: FakeAlignmentsRepository;
 let fakeSequencesRepository: FakeSequencesRepository;
@@ -65,6 +64,8 @@ describe('ShowAlignment', () => {
       email: 'johndoe@gmail.com',
       full_name: 'John Doe',
     });
+
+    await fakeAlignmentsRepository.updateAlignmentSituation(id);
 
     await fakeSequencesRepository.create({
       alignment_id: id,
@@ -171,6 +172,8 @@ describe('ShowAlignment', () => {
       full_name: 'John Doe',
     });
 
+    await fakeAlignmentsRepository.updateAlignmentSituation(id);
+
     await fakeSequencesRepository.create({
       alignment_id: id,
       file: 'seq1cuda2.fasta',
@@ -270,6 +273,8 @@ describe('ShowAlignment', () => {
       email: 'johndoe@gmail.com',
       full_name: 'John Doe',
     });
+
+    await fakeAlignmentsRepository.updateAlignmentSituation(id);
 
     await fakeSequencesRepository.create({
       alignment_id: id,
@@ -376,6 +381,8 @@ describe('ShowAlignment', () => {
       full_name: 'John Doe',
     });
 
+    await fakeAlignmentsRepository.updateAlignmentSituation(id);
+
     await fakeSequencesRepository.create({
       alignment_id: id,
       file: 'seq1open1.fasta',
@@ -469,6 +476,38 @@ describe('ShowAlignment', () => {
     ).rejects.toBeInstanceOf(AppError);
   });
 
+  it('should not show an alignment if it is not ready', async () => {
+    const { id } = await fakeAlignmentsRepository.create({
+      extension: 2,
+      type: 'local',
+      only1: true,
+      clearn: false,
+      block_pruning: true,
+      complement: 0,
+      reverse: 0,
+      email: 'johndoe@gmail.com',
+      full_name: 'John Doe',
+    });
+
+    await fakeSequencesRepository.create({
+      alignment_id: id,
+      file: 'seq1open1.fasta',
+      size: 10035,
+      origin: 1,
+    });
+
+    await fakeSequencesRepository.create({
+      alignment_id: id,
+      file: 'seq2open1.fasta',
+      size: 10035,
+      origin: 1,
+    });
+
+    await expect(showAlignmentService.execute(id)).rejects.toBeInstanceOf(
+      AppError,
+    );
+  });
+
   it('should not show an alignment info if sequences do not exist', async () => {
     const alignment = await fakeAlignmentsRepository.create({
       extension: 1,
@@ -481,6 +520,8 @@ describe('ShowAlignment', () => {
       email: 'johndoe@gmail.com',
       full_name: 'John Doe',
     });
+
+    await fakeAlignmentsRepository.updateAlignmentSituation(alignment.id);
 
     await expect(
       showAlignmentService.execute(alignment.id),
