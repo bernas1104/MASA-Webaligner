@@ -1,0 +1,16 @@
+node_modules/
+node_modules/*
+
+yarn.lock
+yarn-error.log
+
+tmp/
+tmp/*
+tmp/results/*
+tmp/uploads/*
+
+!tmp/results/.gitkeep
+!tmp/uploads/.gitkeep
+
+!tmp/tests/*.*
+!tmp/tests/*/*
