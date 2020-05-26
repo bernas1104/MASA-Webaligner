@@ -39,7 +39,7 @@
       "controlComponents": ["CustomInput"],
       "depth": 3
     }],
-    "@typescript-eslint/camelcase": "warn",
+    "@typescript-eslint/camelcase": "off",
     "no-cond-assign": "warn",
     "no-bitwise": "warn",
     "no-continue": "off",

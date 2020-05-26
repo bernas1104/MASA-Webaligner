@@ -24,11 +24,11 @@ import Button from '../../components/Button';
 import RadioInput from '../../components/RadioInput';
 import TextInput from '../../components/TextInput';
 import TextAreaInput from '../../components/TextAreaInput';
-import SelectInput from '../../components/SelectInput';
 import UploadInput from '../../components/UploadInput';
 import FrozenScreen from '../../components/FrozenScreen';
 
 import api from '../../services/apiClient';
+import { useToast } from '../../hooks/ToastContext';
 
 interface StateNames {
   [key: string]: Function;
@@ -38,10 +38,9 @@ interface FormDateProps {
   [key: string]: string | Blob;
 }
 
-const edges: string[] = ['1', '2', '3', '+', '*'];
-
 const Alignment: React.FC = () => {
   const history = useHistory();
+  const toast = useToast();
 
   const btnRef = useRef<HTMLButtonElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -49,18 +48,17 @@ const Alignment: React.FC = () => {
   const [isShowing, setIsShowing] = useState(false);
 
   const [extension, setExtension] = useState('');
+  const [type, setType] = useState('');
   const [only1, setOnly1] = useState('');
   const [clearn, setClearN] = useState('false');
-  const [blockPruning, setBlockPruning] = useState('true');
+  const [block_pruning, setBlockPruning] = useState('true');
   const [complement, setComplement] = useState('0');
   const [reverse, setReverse] = useState('0');
   const [s0origin, setS0Origin] = useState('');
   const [s1origin, setS1Origin] = useState('');
   const [s0input, setS0Input] = useState('');
   const [s1input, setS1Input] = useState('');
-  const [s0edge, setS0Edge] = useState('');
-  const [s1edge, setS1Edge] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [full_name, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [isToggled, setIsToggled] = useState(false);
 
@@ -69,18 +67,17 @@ const Alignment: React.FC = () => {
 
   const states: StateNames = {
     extension: setExtension,
+    type: setType,
     only1: setOnly1,
     clearn: setClearN,
-    blockPruning: setBlockPruning,
+    block_pruning: setBlockPruning,
     complement: setComplement,
     reverse: setReverse,
     s0origin: setS0Origin,
     s1origin: setS1Origin,
     s0input: setS0Input,
     s1input: setS1Input,
-    s0edge: setS0Edge,
-    s1edge: setS1Edge,
-    fullName: setFullName,
+    full_name: setFullName,
     email: setEmail,
   };
 
@@ -110,49 +107,49 @@ const Alignment: React.FC = () => {
       try {
         const data: FormDateProps = {
           extension,
+          type,
           only1,
           clearn,
-          blockPruning,
+          block_pruning,
           complement,
           reverse,
           s0origin,
           s1origin,
           s0input,
           s1input,
-          s0edge,
-          s1edge,
-          fullName,
+          full_name,
           email,
         };
 
         const schema = Yup.object().shape({
           extension: Yup.number()
+            .typeError('Extension must be selected')
             .min(1)
             .max(3)
             .required('extension must select a MASA Extension'),
-          only1: Yup.boolean().required(
-            'only1 must select the stages to be executed',
+          type: Yup.string().matches(
+            /^(local)|(global)$/g,
+            'Alignment type must be selected',
           ),
+          only1: Yup.boolean()
+            .typeError('Stage must be selected')
+            .required('must select the stages to be executed'),
           clearn: Yup.boolean().optional().default(false),
-          blockPuning: Yup.boolean().optional().default(true),
+          block_puning: Yup.boolean().optional().default(true),
           complement: Yup.number().optional().min(0).max(3).default(0),
           reverse: Yup.number().optional().min(0).max(3).default(0),
           s0origin: Yup.number()
+            .typeError('Sequence S0 origin must be selected')
             .min(1)
             .max(3)
             .required('s0origin must select the first sequence origin'),
           s1origin: Yup.number()
+            .typeError('Sequence S1 origin must be selected')
             .min(1)
             .max(3)
             .required('s1origin must select the second sequence origin'),
-          s0edge: Yup.string()
-            .matches(/^[1|2|3|+|*]$/g)
-            .required('s0edge must be one of: 1, 2, 3, +, *'),
-          s1edge: Yup.string()
-            .matches(/^[1|2|3|+|*]$/g)
-            .required('s1edge must be one of: 1, 2, 3, +, *'),
-          fullName: Yup.string().optional(),
-          email: Yup.string().email().optional(),
+          full_name: Yup.string().optional(),
+          email: Yup.string().email('must be a valid e-mail').optional(),
         });
 
         await schema.validate(data, { abortEarly: false });
@@ -166,28 +163,55 @@ const Alignment: React.FC = () => {
 
         const response = await api.post('alignments', formData);
 
+        toast.addToast({
+          type: 'success',
+          title: 'Alignment requested',
+          description:
+            'Your requested alignment has been submited and it is being processed',
+        });
+
         history.push(`/results/${response.data.alignment.id}`);
       } catch (err) {
+        if (err.message.includes('Request failed')) {
+          if (s0input === '' || s1input === '') {
+            toast.addToast({
+              type: 'error',
+              title: 'Sequence error',
+              description:
+                "There's been an error with one or both of the given sequences. Try again",
+            });
+          }
+        } else {
+          const { errors } = err as Yup.ValidationError;
+
+          errors.forEach((error) => {
+            toast.addToast({
+              type: 'error',
+              title: 'Request error',
+              description: error,
+            });
+          });
+        }
+
         setIsToggled(false);
-        console.log(err);
       }
     },
     [
       extension,
+      type,
       only1,
       clearn,
-      blockPruning,
+      block_pruning,
       complement,
       reverse,
       s0origin,
       s1origin,
       s0input,
       s1input,
-      s0edge,
-      s1edge,
-      fullName,
+      full_name,
       email,
       history,
+      toast,
     ],
   );
 
@@ -207,7 +231,7 @@ const Alignment: React.FC = () => {
             <InputConfiguration>
               <div className="configuration-title">
                 <MdInfoOutline size={25} />
-                <h2>MASA Extension</h2>
+                <h2>MASA Extension*</h2>
               </div>
               <div className="input-control">
                 {[
@@ -230,7 +254,29 @@ const Alignment: React.FC = () => {
             <InputConfiguration>
               <div className="configuration-title">
                 <MdInfoOutline size={25} />
-                <h2>Stages</h2>
+                <h2>Alignment Type*</h2>
+              </div>
+              <div className="input-control">
+                {[
+                  ['Local', 'local'],
+                  ['Global', 'global'],
+                ].map((option) => (
+                  <RadioInput
+                    key={option[1]}
+                    name="type"
+                    value={option[1]}
+                    label={option[0]}
+                    checked={option[1] === type}
+                    onClick={() => handleInput('type', option[1])}
+                  />
+                ))}
+              </div>
+            </InputConfiguration>
+
+            <InputConfiguration>
+              <div className="configuration-title">
+                <MdInfoOutline size={25} />
+                <h2>Stage*</h2>
               </div>
               <div className="input-control">
                 {[
@@ -301,11 +347,11 @@ const Alignment: React.FC = () => {
                   ].map((option) => (
                     <RadioInput
                       key={option[1]}
-                      name="blockPruning"
+                      name="block_pruning"
                       value={option[1]}
                       label={option[0]}
-                      checked={option[1] === blockPruning}
-                      onClick={() => handleInput('blockPruning', option[1])}
+                      checked={option[1] === block_pruning}
+                      onClick={() => handleInput('block_pruning', option[1])}
                     />
                   ))}
                 </div>
@@ -368,9 +414,9 @@ const Alignment: React.FC = () => {
 
               <ContactInput>
                 <TextInput
-                  value={fullName}
-                  onChange={(e) => handleInput('fullName', e.target.value)}
-                  name="fullName"
+                  value={full_name}
+                  onChange={(e) => handleInput('full_name', e.target.value)}
+                  name="full_name"
                   placeholder="Ex: John Doe"
                 >
                   Your name
@@ -388,11 +434,11 @@ const Alignment: React.FC = () => {
 
             <SequencesContainer>
               <SequenceInput>
-                <h2>Sequence S0</h2>
+                <h2>Sequence S0*</h2>
 
                 <div className="input-type">
                   <MdInfoOutline size={25} />
-                  <h3>Type</h3>
+                  <h3>Origin</h3>
                 </div>
 
                 <div className="radio-type">
@@ -448,30 +494,14 @@ const Alignment: React.FC = () => {
                     </TextAreaInput>
                   )}
                 </div>
-
-                <div className="input-edge">
-                  <div className="edge-title">
-                    <MdInfoOutline size={25} color="#007715" />
-                    <h3>Edge</h3>
-                  </div>
-
-                  <SelectInput
-                    icon={MdArrowDropDown}
-                    options={edges}
-                    label="Edge of first sequence"
-                    name="s0edge"
-                    value={s0edge}
-                    onChange={(e) => handleInput('s0edge', e.target.value)}
-                  />
-                </div>
               </SequenceInput>
 
               <SequenceInput>
-                <h2>Sequence S1</h2>
+                <h2>Sequence S1*</h2>
 
                 <div className="input-type">
                   <MdInfoOutline size={25} />
-                  <h3>Type</h3>
+                  <h3>Origin</h3>
                 </div>
 
                 <div className="radio-type">
@@ -526,22 +556,6 @@ const Alignment: React.FC = () => {
                     </TextAreaInput>
                   )}
                 </div>
-
-                <div className="input-edge">
-                  <div className="edge-title">
-                    <MdInfoOutline size={25} color="#007715" />
-                    <h3>Edge</h3>
-                  </div>
-
-                  <SelectInput
-                    icon={MdArrowDropDown}
-                    options={edges}
-                    label="Edge for the second sequence"
-                    name="s1edge"
-                    value={s1edge}
-                    onChange={(e) => handleInput('s1edge', e.target.value)}
-                  />
-                </div>
               </SequenceInput>
             </SequencesContainer>
 
@@ -551,6 +565,8 @@ const Alignment: React.FC = () => {
               value="Align Sequences"
               align="center"
             />
+
+            <small>* required fields</small>
           </Form>
         </AlignerContainer>
       </Container>
