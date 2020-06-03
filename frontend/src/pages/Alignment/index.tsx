@@ -172,24 +172,28 @@ const Alignment: React.FC = () => {
 
         history.push(`/results/${response.data.alignment.id}`);
       } catch (err) {
-        if (err.message.includes('Request failed')) {
-          if (s0input === '' || s1input === '') {
-            toast.addToast({
-              type: 'error',
-              title: 'Sequence error',
-              description:
-                "There's been an error with one or both of the given sequences. Try again",
-            });
-          }
-        } else {
+        if (err instanceof Yup.ValidationError) {
           const { errors } = err as Yup.ValidationError;
 
           errors.forEach((error) => {
             toast.addToast({
               type: 'error',
-              title: 'Request error',
+              title: 'Request Error',
               description: error,
             });
+          });
+        } else if (err.response.status === 400) {
+          toast.addToast({
+            type: 'error',
+            title: err.response.data.message,
+            description:
+              'There was a problem with one or both of the provided sequences. Try again',
+          });
+        } else {
+          toast.addToast({
+            type: 'error',
+            title: 'Unknown Error',
+            description: 'There was an unexpected error. Try again later',
           });
         }
 
@@ -466,7 +470,7 @@ const Alignment: React.FC = () => {
                       placeholder="Ex: AF133821.1"
                       onChange={(e) => handleInput('s0input', e.target.value)}
                     >
-                      Second sequence
+                      First sequence
                     </TextInput>
                   )}
 
