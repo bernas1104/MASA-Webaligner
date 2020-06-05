@@ -373,7 +373,30 @@ export const ErrorContainer = styled.div`
   height: calc(100vh - 78px);
 
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   margin: 78px auto 0 auto;
+
+  text-align: center;
+
+  h1 {
+    font-size: 100px;
+    color: #00376f;
+
+    span {
+      color: #007715;
+    }
+
+    margin-bottom: 50px;
+  }
+
+  p {
+    font-size: 24px;
+    color: #007715;
+
+    & + p {
+      margin-top: 10px;
+    }
+  }
 `;

@@ -65,14 +65,14 @@ export default class AlignmentsController {
 
     const createSequenceService = container.resolve(CreateSequenceService);
 
-    const sequence0 = await createSequenceService.execute({
+    await createSequenceService.execute({
       file: s0,
       size: fs.statSync(path.resolve(uploadConfig.uploadsFolder, s0)).size,
       origin: s0origin,
       alignment_id: alignment.id,
     });
 
-    const sequence1 = await createSequenceService.execute({
+    await createSequenceService.execute({
       file: s1,
       size: fs.statSync(path.resolve(uploadConfig.uploadsFolder, s1)).size,
       origin: s1origin,
@@ -105,7 +105,7 @@ export default class AlignmentsController {
       email,
     });
 
-    return response.json({ alignment, sequence0, sequence1 });
+    return response.json({ id: alignment.id });
   }
 
   public async show(request: Request, response: Response): Promise<Response> {

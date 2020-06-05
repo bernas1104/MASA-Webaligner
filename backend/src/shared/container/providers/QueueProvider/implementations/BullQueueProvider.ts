@@ -10,14 +10,11 @@ import IAlignerProvider from '@shared/container/providers/AlignerProvider/models
 import IAlignmentsRepository from '@modules/alignments/repositories/IAlignmentsRepository';
 
 import IRequestAlignmentDTO from '@shared/container/providers/AlignerProvider/dtos/IRequestAlignmentDTO';
-import ISendMailDTO from '@shared/container/providers/MailProvider/dtos/ISendMailDTO';
 import IQueueProvider from '../models/IQueueProvider';
 
 @injectable()
 export default class BullQueueProvider implements IQueueProvider {
   private MASAQueue: Queue;
-
-  private MailQueue: Queue;
 
   constructor(
     @inject('MailProvider')
@@ -32,22 +29,10 @@ export default class BullQueueProvider implements IQueueProvider {
         port: redisConfig.port,
       },
     });
-
-    this.MailQueue = new Bull('MailQueue', {
-      redis: {
-        host: redisConfig.host,
-        port: redisConfig.port,
-      },
-    });
   }
 
   public async addMASAJob(data: IRequestAlignmentDTO): Promise<Job> {
     const job = await this.MASAQueue.add(data);
-    return job;
-  }
-
-  public async addMailJob(data: ISendMailDTO): Promise<Job> {
-    const job = await this.MailQueue.add(data);
     return job;
   }
 
@@ -56,13 +41,8 @@ export default class BullQueueProvider implements IQueueProvider {
       const data = job.data as IRequestAlignmentDTO;
       return this.masaProvider.processAlignment(data);
     });
-  }
 
-  public async processMailJobs(): Promise<void> {
-    this.MailQueue.process(async job => {
-      const data = job.data as ISendMailDTO;
-      return this.mailProvider.sendMail(data);
-    });
+    this.eventListnerMASA();
   }
 
   public eventListnerMASA(): void {
@@ -79,21 +59,18 @@ export default class BullQueueProvider implements IQueueProvider {
         'AlignmentsRepository',
       );
 
-      await alignmentsRepository.updateAlignmentSituation(id);
+      setTimeout(async () => {
+        await alignmentsRepository.updateAlignmentSituation(id);
+      }, 2000);
 
       await job.progress(50);
 
-      if (
-        full_name !== undefined &&
-        full_name !== '' &&
-        email !== undefined &&
-        email !== ''
-      ) {
+      if (email !== undefined && email !== '') {
         await job.progress(75);
 
-        await this.addMailJob({
+        await this.mailProvider.sendMail({
           to: {
-            name: full_name,
+            name: full_name || 'user',
             email,
           },
           subject: 'Your sequence alignment is ready!',
@@ -122,19 +99,7 @@ export default class BullQueueProvider implements IQueueProvider {
     });
   }
 
-  public eventListnerMail(): void {
-    this.MailQueue.on('failed', (job, err) => {
-      console.log('Job failed', this.MailQueue.name, job.data);
-      console.log(err);
-    });
-
-    this.MailQueue.on('completed', async job => {
-      console.log('Job completed', this.MailQueue.name, job.data);
-      await job.progress(100);
-    });
-  }
-
   public getQueues(): Queue[] {
-    return [this.MASAQueue, this.MailQueue];
+    return [this.MASAQueue];
   }
 }

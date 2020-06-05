@@ -78,8 +78,6 @@ interface AlignmentProps {
 interface ChunksProps {
   chunks: string[];
   chunkSum: string;
-  min: number;
-  max: number;
 }
 
 interface GraphProps {
@@ -469,8 +467,6 @@ const Results: React.FC<ResultsProps> = (props) => {
       setAlignmentText({
         chunks,
         chunkSum: textChunkSum.getHTMLString(),
-        min: alignmentData.alignment.getSequenceStartPosition(0),
-        max: alignmentData.alignment.getSequenceEndPosition(0),
       });
 
       setRender(2);
@@ -656,7 +652,17 @@ const Results: React.FC<ResultsProps> = (props) => {
 
       {errors !== 0x0000 && (
         <ErrorContainer>
-          <h1>Error!</h1>
+          <h1>
+            OPS
+            <span>!</span>
+          </h1>
+          <p>
+            There was an error while rendering your results. Try refreshing the
+            page.
+          </p>
+          <p>
+            If the error persists, request a new alignment or contact our team.
+          </p>
         </ErrorContainer>
       )}
     </>

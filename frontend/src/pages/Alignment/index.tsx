@@ -26,6 +26,7 @@ import TextInput from '../../components/TextInput';
 import TextAreaInput from '../../components/TextAreaInput';
 import UploadInput from '../../components/UploadInput';
 import FrozenScreen from '../../components/FrozenScreen';
+import Tooltip from '../../components/Tooltip';
 
 import api from '../../services/apiClient';
 import { useToast } from '../../hooks/ToastContext';
@@ -170,26 +171,30 @@ const Alignment: React.FC = () => {
             'Your requested alignment has been submited and it is being processed',
         });
 
-        history.push(`/results/${response.data.alignment.id}`);
+        history.push(`/results/${response.data.id}`);
       } catch (err) {
-        if (err.message.includes('Request failed')) {
-          if (s0input === '' || s1input === '') {
-            toast.addToast({
-              type: 'error',
-              title: 'Sequence error',
-              description:
-                "There's been an error with one or both of the given sequences. Try again",
-            });
-          }
-        } else {
+        if (err instanceof Yup.ValidationError) {
           const { errors } = err as Yup.ValidationError;
 
           errors.forEach((error) => {
             toast.addToast({
               type: 'error',
-              title: 'Request error',
+              title: 'Request Error',
               description: error,
             });
+          });
+        } else if (err.response.status === 400) {
+          toast.addToast({
+            type: 'error',
+            title: err.response.data.message,
+            description:
+              'There was a problem with one or both of the provided sequences. Try again',
+          });
+        } else {
+          toast.addToast({
+            type: 'error',
+            title: 'Unknown Error',
+            description: 'There was an unexpected error. Try again later',
           });
         }
 
@@ -230,7 +235,9 @@ const Alignment: React.FC = () => {
           <Form ref={formRef} onSubmit={handleSubmit}>
             <InputConfiguration>
               <div className="configuration-title">
-                <MdInfoOutline size={25} />
+                <Tooltip title="CUDAlign uses GPU to process and should be used for bigger sequences. OpenMP uses CPU and should be used for smaller sequences.">
+                  <MdInfoOutline size={25} />
+                </Tooltip>
                 <h2>MASA Extension*</h2>
               </div>
               <div className="input-control">
@@ -253,7 +260,9 @@ const Alignment: React.FC = () => {
 
             <InputConfiguration>
               <div className="configuration-title">
-                <MdInfoOutline size={25} />
+                <Tooltip title="Selects between using the Smith-Waterman (Local) and Needleman-Wunsch (Global) algorithms.">
+                  <MdInfoOutline size={25} />
+                </Tooltip>
                 <h2>Alignment Type*</h2>
               </div>
               <div className="input-control">
@@ -275,7 +284,9 @@ const Alignment: React.FC = () => {
 
             <InputConfiguration>
               <div className="configuration-title">
-                <MdInfoOutline size={25} />
+                <Tooltip title="'Auto' will perform the complete alignment. 'Only Stage I' will generate only the similarity best score and it's position.">
+                  <MdInfoOutline size={25} />
+                </Tooltip>
                 <h2>Stage*</h2>
               </div>
               <div className="input-control">
@@ -315,13 +326,15 @@ const Alignment: React.FC = () => {
             <OptionalContainer isShowing={isShowing}>
               <OptionalConfigurationsInput isShowing={isShowing}>
                 <div className="configuration-title">
-                  <MdInfoOutline size={25} />
+                  <Tooltip title="If enabled, will remove all the 'N' characters.">
+                    <MdInfoOutline size={25} />
+                  </Tooltip>
                   <h2>ClearN</h2>
                 </div>
                 <div className="input-control">
                   {[
-                    ['True', 'true'],
-                    ['False', 'false'],
+                    ['Enabled', 'true'],
+                    ['Disabled', 'false'],
                   ].map((option) => (
                     <RadioInput
                       key={option[1]}
@@ -337,7 +350,9 @@ const Alignment: React.FC = () => {
 
               <OptionalConfigurationsInput isShowing={isShowing}>
                 <div className="configuration-title">
-                  <MdInfoOutline size={25} />
+                  <Tooltip title="If enabled, will execute the 'Block Pruning' optimization.">
+                    <MdInfoOutline size={25} />
+                  </Tooltip>
                   <h2>Block Pruning</h2>
                 </div>
                 <div className="input-control">
@@ -359,7 +374,9 @@ const Alignment: React.FC = () => {
 
               <OptionalConfigurationsInput isShowing={isShowing}>
                 <div className="configuration-title">
-                  <MdInfoOutline size={25} />
+                  <Tooltip title="It substitutes any base for its complement. Can be applied to the first sequence, second or both sequences.">
+                    <MdInfoOutline size={25} />
+                  </Tooltip>
                   <h2>Complement</h2>
                 </div>
                 <div className="input-control">
@@ -382,7 +399,9 @@ const Alignment: React.FC = () => {
 
               <OptionalConfigurationsInput isShowing={isShowing}>
                 <div className="configuration-title">
-                  <MdInfoOutline size={25} />
+                  <Tooltip title="It reverses the first sequence, second or both sequences.">
+                    <MdInfoOutline size={25} />
+                  </Tooltip>
                   <h2>Reverse</h2>
                 </div>
                 <div className="input-control">
@@ -407,7 +426,9 @@ const Alignment: React.FC = () => {
             <ContactContainer>
               <ContactTitle>
                 <div className="configuration-title">
-                  <MdInfoOutline size={25} />
+                  <Tooltip title="If you're requesting the alignment of big sequences, you can be warned when the results are ready.">
+                    <MdInfoOutline size={25} />
+                  </Tooltip>
                   <h2>Contact Information</h2>
                 </div>
               </ContactTitle>
@@ -437,7 +458,9 @@ const Alignment: React.FC = () => {
                 <h2>Sequence S0*</h2>
 
                 <div className="input-type">
-                  <MdInfoOutline size={25} />
+                  <Tooltip title="You can input a sequence with the NCBI API, upload a fasta file or write you own sequence.">
+                    <MdInfoOutline size={25} />
+                  </Tooltip>
                   <h3>Origin</h3>
                 </div>
 
@@ -466,7 +489,7 @@ const Alignment: React.FC = () => {
                       placeholder="Ex: AF133821.1"
                       onChange={(e) => handleInput('s0input', e.target.value)}
                     >
-                      Second sequence
+                      First sequence
                     </TextInput>
                   )}
 
@@ -500,7 +523,9 @@ const Alignment: React.FC = () => {
                 <h2>Sequence S1*</h2>
 
                 <div className="input-type">
-                  <MdInfoOutline size={25} />
+                  <Tooltip title="You can input a sequence with the NCBI API, upload a fasta file or write you own sequence.">
+                    <MdInfoOutline size={25} />
+                  </Tooltip>
                   <h3>Origin</h3>
                 </div>
 
