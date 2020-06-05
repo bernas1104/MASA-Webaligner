@@ -72,9 +72,6 @@ app.use(
 
 const queue = container.resolve(BullQueueProvider);
 queue.processMASAJobs();
-queue.processMailJobs();
-queue.eventListnerMASA();
-queue.eventListnerMail();
 
 BullBoard.setQueues(queue.getQueues());
 app.use('/admin/queues', BullBoard.UI);

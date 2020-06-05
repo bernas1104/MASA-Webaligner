@@ -168,7 +168,8 @@ export const OptionalConfigurationsInput = styled.div<OptConfigProps>`
   display: flex;
 
   margin-top: 30px;
-  padding-left: 45px;
+  /* margin-left: 45px; */
+  margin-left: 70px;
   opacity: 0;
   transition: opacity ease 0.5s;
   -webkit-transition: opacity ease 0.5s;
@@ -177,7 +178,7 @@ export const OptionalConfigurationsInput = styled.div<OptConfigProps>`
     display: flex;
     align-items: center;
 
-    width: calc(100% - 85px);
+    width: calc(100% - 140px);
 
     svg {
       fill: #007715;
