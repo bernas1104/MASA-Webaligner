@@ -97,6 +97,21 @@ export default class TextChunkSum {
 
   getGapExtScore = (): number => this.gapExtScore;
 
+  getTextString = (): string =>
+    `Total Score:         ${pad(this.score, 8)}\n` +
+    `Matches:             ${pad(this.matchesCount, 8)} (+${
+      this.matchScore
+    })\n` +
+    `Mismatches:          ${pad(this.mismatchesCount, 8)} (${
+      this.mismatchScore
+    })\n` +
+    `Gap Openings:        ${pad(this.gapOpeningsCount, 8)} (${
+      this.gapOpenScore
+    })\n` +
+    `Gap Extensions:      ${pad(this.gapExtensionsCount, 8)} (${
+      this.gapExtScore
+    })\n`;
+
   getHTMLString = (): string =>
     `<div><pre>` +
     `Total Score:         ${pad(this.score, 8)}<br>` +

@@ -108,6 +108,11 @@ export const Container = styled.div`
         }
       }
     }
+
+    > div button {
+      margin-top: 25px;
+      width: 100%;
+    }
   }
 
   @media screen and (max-width: 1600px) {

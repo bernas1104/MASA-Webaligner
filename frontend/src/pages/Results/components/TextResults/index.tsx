@@ -48,6 +48,8 @@ const TextResults: React.FC<TextResultsProps> = ({
   const [alignmentText, setAlignmentText] = useState<ChunksProps | null>(null);
   const [min, setMin] = useState('');
   const [max, setMax] = useState('');
+  const [downloadChunks, setDownloadChunks] = useState<string[]>([]);
+  const [downloadChunkSum, setDownloadChunkSum] = useState<string>('');
 
   const binSearch = useCallback((arr, coord, low = true): number[] => {
     let start = 0;
@@ -203,6 +205,20 @@ const TextResults: React.FC<TextResultsProps> = ({
     [alignmentData, binSearch, graph, resetValues, min, max, addToast],
   );
 
+  const handleDownloadResults = useCallback(() => {
+    const element = document.createElement('a');
+    const file = new Blob(
+      [`${downloadChunks.join('\n')}\n\n${downloadChunkSum}`],
+      {
+        type: 'text/plain;charset=utf-8',
+      },
+    );
+    element.href = URL.createObjectURL(file);
+    element.download = 'results.txt';
+    document.body.appendChild(element);
+    element.click();
+  }, [downloadChunks, downloadChunkSum]);
+
   useEffect(() => {
     if (alignmentData) {
       alignmentData
@@ -226,15 +242,20 @@ const TextResults: React.FC<TextResultsProps> = ({
       );
 
       const chunks: string[] = [];
+      const dChunks: string[] = [];
       while (hasMoreChunks()) {
         const chunk = getNextChunk(60, textChunkSum);
         chunks.push(chunk.getHTMLString());
+        dChunks.push(chunk.getTextString());
       }
 
       setAlignmentText({
         chunks,
         chunkSum: textChunkSum.getHTMLString(),
       });
+
+      setDownloadChunks(dChunks);
+      setDownloadChunkSum(textChunkSum.getTextString());
     }
   }, [alignmentData, getNextChunk, hasMoreChunks]);
 
@@ -295,6 +316,11 @@ const TextResults: React.FC<TextResultsProps> = ({
             </div>
           </div>
         </div>
+
+        <Button
+          value="Download results"
+          onClick={() => handleDownloadResults()}
+        />
       </div>
     </Container>
   );
