@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { MdInfoOutline, MdArrowDropDown } from 'react-icons/md';
+import xml2js from 'xml2js';
 import * as Yup from 'yup';
+import AppError from '../../errors/AppError';
 
 import Header from '../../components/Header';
 import {
@@ -28,7 +30,8 @@ import UploadInput from '../../components/UploadInput';
 import FrozenScreen from '../../components/FrozenScreen';
 import Tooltip from '../../components/Tooltip';
 
-import api from '../../services/apiClient';
+import apiMASA from '../../services/apiClient';
+import apiNCBI from '../../services/apiNCBI';
 import { useToast } from '../../hooks/ToastContext';
 
 interface StateNames {
@@ -57,8 +60,8 @@ const Alignment: React.FC = () => {
   const [reverse, setReverse] = useState('0');
   const [s0origin, setS0Origin] = useState('');
   const [s1origin, setS1Origin] = useState('');
-  const [s0input, setS0Input] = useState('');
-  const [s1input, setS1Input] = useState('');
+  const [s0input, setS0Input] = useState<any>('');
+  const [s1input, setS1Input] = useState<any>('');
   const [full_name, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [isToggled, setIsToggled] = useState(false);
@@ -92,6 +95,51 @@ const Alignment: React.FC = () => {
     setS1FileName('');
   }, [s1origin]);
 
+  const getInputSize = useCallback(
+    async (input: number, origin: string): Promise<number> => {
+      let size = 0;
+
+      switch (origin) {
+        case '1': {
+          try {
+            const seq_id = input === 0 ? String(s0input) : String(s1input);
+            const xmlSummary = await apiNCBI.get(`?db=nuccore&id=${seq_id}`);
+
+            const xml = `<?xml version="1.0" enconding="UTF-8" ?>
+                          ${xmlSummary.data}`;
+
+            xml2js.parseString(xml, (err, result) => {
+              if (err) {
+                throw err;
+              }
+
+              size = result.eSummaryResult.DocSum[0].Item[8]._;
+            });
+          } catch (err) {
+            throw new AppError('Invalid NCBI Sequence ID.');
+          }
+          break;
+        }
+        case '2': {
+          if (input === 0) size = s0input.size;
+          else size = s1input.size;
+          break;
+        }
+        case '3': {
+          if (input === 0) size = s0input.length;
+          else size = s1input.length;
+          break;
+        }
+        default: {
+          console.log('Invalid origin option');
+        }
+      }
+
+      return size;
+    },
+    [s0input, s1input],
+  );
+
   const handleInput = useCallback(
     (field: string, value: string | File) => {
       states[field](value);
@@ -122,6 +170,11 @@ const Alignment: React.FC = () => {
           email,
         };
 
+        const s0size = await getInputSize(0, s0origin);
+        const s1size = await getInputSize(1, s1origin);
+
+        const required = s0size >= 1000000 || s1size >= 1000000;
+
         const schema = Yup.object().shape({
           extension: Yup.number()
             .typeError('Extension must be selected')
@@ -149,8 +202,12 @@ const Alignment: React.FC = () => {
             .min(1)
             .max(3)
             .required('s1origin must select the second sequence origin'),
-          full_name: Yup.string().optional(),
-          email: Yup.string().email('must be a valid e-mail').optional(),
+          full_name: required
+            ? Yup.string().required()
+            : Yup.string().optional(),
+          email: required
+            ? Yup.string().email('must be a valid e-mail').required()
+            : Yup.string().email('must be a valid e-mail').optional(),
         });
 
         await schema.validate(data, { abortEarly: false });
@@ -162,7 +219,7 @@ const Alignment: React.FC = () => {
           formData.append(key, data[key]);
         });
 
-        const response = await api.post('alignments', formData);
+        const response = await apiMASA.post('alignments', formData);
 
         toast.addToast({
           type: 'success',
@@ -177,11 +234,31 @@ const Alignment: React.FC = () => {
           const { errors } = err as Yup.ValidationError;
 
           errors.forEach((error) => {
-            toast.addToast({
-              type: 'error',
-              title: 'Request Error',
-              description: error,
-            });
+            if (
+              error.includes('email is a required') ||
+              error.includes('full_name is a required')
+            ) {
+              toast.addToast({
+                type: 'error',
+                title: 'Request Error',
+                description: error.includes('email')
+                  ? 'email is required for sequences bigger than 1MB'
+                  : 'full name is required for sequences bigger than 1MB',
+              });
+            } else {
+              toast.addToast({
+                type: 'error',
+                title: 'Request Error',
+                description: error,
+              });
+            }
+          });
+        } else if (err.message === 'Invalid NCBI Sequence ID.') {
+          toast.addToast({
+            type: 'error',
+            title: err.message,
+            description:
+              'One or both of the sequence IDs given are invalid. Try again',
           });
         } else if (err.response.status === 400) {
           toast.addToast({
@@ -217,6 +294,7 @@ const Alignment: React.FC = () => {
       email,
       history,
       toast,
+      getInputSize,
     ],
   );
 

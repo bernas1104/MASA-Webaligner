@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { MdArrowDropDown } from 'react-icons/md';
 import ReactEcharts from 'echarts-for-react';
@@ -6,7 +6,6 @@ import ReactEcharts from 'echarts-for-react';
 import {
   Container,
   GraphContainer,
-  TextContainer,
   Sidemenu,
   ResultsCard,
   ErrorContainer,
@@ -16,17 +15,11 @@ import api from '../../services/apiClient';
 
 import Header from '../../components/Header';
 import FrozenScreen from '../../components/FrozenScreen';
-import TextInput from '../../components/TextInput';
-import Button from '../../components/Button';
-
-import { useToast } from '../../hooks/ToastContext';
+import TextResults from './components/TextResults';
 
 import Alignment from '../../services/MASA-Viewer/Alignment';
 import AlignmentBinaryFile from '../../services/MASA-Viewer/AlignmentBinaryFile';
 import SequenceData from '../../services/MASA-Viewer/SequenceData';
-import TextChunk from '../../services/MASA-Viewer/TextChunk';
-import TextChunkSum from '../../services/MASA-Viewer/TextChunkSum';
-import SequenceWithGaps from '../../services/MASA-Viewer/SequenceWithGaps';
 import AlignmentUtils from '../../services/MASA-Viewer/AlignmentUtils';
 
 import ChartOptions from './ChartOptions';
@@ -75,11 +68,6 @@ interface AlignmentProps {
   description: string[];
 }
 
-interface ChunksProps {
-  chunks: string[];
-  chunkSum: string;
-}
-
 interface GraphProps {
   xAxis: number[];
   yAxis: number[];
@@ -89,11 +77,6 @@ interface GraphProps {
 const Origins = ['NCBI API', 'File Upload', 'Text Input'];
 
 const Results: React.FC<ResultsProps> = (props) => {
-  const chunksRef = useRef<HTMLDivElement>(null);
-  const chunksSumRef = useRef<HTMLDivElement>(null);
-
-  const toast = useToast();
-
   const [tries, setTries] = useState(1);
   const [isToggled, setIsToggled] = useState(false);
 
@@ -103,171 +86,11 @@ const Results: React.FC<ResultsProps> = (props) => {
   const [alignmentInfo, setAlignmentInfo] = useState<AlignmentInfoProps | null>(
     null,
   );
-  const [alignmentText, setAlignmentText] = useState<ChunksProps | null>(null);
   const [graph, setGraph] = useState<GraphProps | null>(null);
   const [resetValues, setResetValues] = useState<number[]>([]);
-  const [min, setMin] = useState('');
-  const [max, setMax] = useState('');
 
   const [render, setRender] = useState(0);
   const [errors, setErrors] = useState(0x0000);
-
-  const binSearch = useCallback((arr, coord, low = true): number[] => {
-    let start = 0;
-    let end = arr.length - 1;
-    let result: number[] = [];
-
-    if (low) {
-      while (start <= end) {
-        const mid = Math.floor((start + end) / 2);
-
-        if (arr[mid] >= coord) {
-          end = mid - 1;
-
-          if (arr[mid] === coord) result = [arr[mid], mid];
-        } else {
-          start = mid + 1;
-        }
-      }
-    } else {
-      while (start <= end) {
-        const mid = Math.floor((start + end) / 2);
-
-        if (arr[mid] <= coord) {
-          start = mid + 1;
-
-          if (arr[mid] === coord) result = [arr[mid], mid];
-        } else {
-          end = mid - 1;
-        }
-      }
-    }
-
-    return result;
-  }, []);
-
-  const hasMoreChunks = useCallback((): boolean => {
-    return (
-      !alignmentData?.alignment.getAlignmentWithGaps(0).isDone() &&
-      !alignmentData?.alignment.getAlignmentWithGaps(1).isDone()
-    );
-  }, [alignmentData]);
-
-  const getSeq0WithGaps = useCallback((): SequenceWithGaps => {
-    return alignmentData?.alignment.getAlignmentWithGaps(0)!;
-  }, [alignmentData]);
-
-  const getSeq1WithGaps = useCallback((): SequenceWithGaps => {
-    return alignmentData?.alignment.getAlignmentWithGaps(1)!;
-  }, [alignmentData]);
-
-  const getNextChunk = useCallback(
-    (cols: number, textChunkSum: TextChunkSum): TextChunk => {
-      const chunk = new TextChunk();
-
-      if (hasMoreChunks()) {
-        chunk.setStartPositions(
-          getSeq0WithGaps().getCurrentPosition(),
-          getSeq1WithGaps().getCurrentPosition(),
-        );
-
-        const chunk0 = getSeq0WithGaps().getNextChunk(cols);
-        const chunk1 = getSeq1WithGaps().getNextChunk(cols);
-
-        chunk.setEndPositions(
-          getSeq0WithGaps().getCurrentPosition(),
-          getSeq1WithGaps().getCurrentPosition(),
-        );
-
-        chunk.setChunks(chunk0, chunk1);
-
-        const chunkScore = textChunkSum.sumChunk(chunk);
-        chunk.setSuffix(`[${chunkScore}]/[${textChunkSum.getScore()}]`);
-      }
-
-      return chunk;
-    },
-    [getSeq0WithGaps, getSeq1WithGaps, hasMoreChunks],
-  );
-
-  const handleAdjustTextResults = useCallback(
-    (event: React.MouseEvent, reset: boolean) => {
-      event.preventDefault();
-
-      const nroMin = Number(min);
-      const nroMax = Number(max);
-
-      let error = false;
-
-      if (!reset) {
-        if (
-          nroMin < resetValues[0] ||
-          nroMin > nroMax ||
-          nroMax > resetValues[1]
-        ) {
-          error = true;
-
-          toast.addToast({
-            type: 'error',
-            title: 'Adjustment Error',
-            description: `Make sure the limits are between ${resetValues[0]} and ${resetValues[1]}, and the inferior limit is smaller than the superior limit`,
-          });
-        }
-      }
-
-      if (!error) {
-        setTimeout(() => {
-          if (alignmentData && graph) {
-            const xRange =
-              reset === false
-                ? [parseInt(min, 10), parseInt(max, 10)]
-                : [...resetValues];
-
-            setMin('');
-            setMax('');
-
-            if (xRange[0] > xRange[1]) {
-              const tmp = xRange[1];
-              xRange[0] = tmp;
-            }
-
-            const [x0, x0Coord] = binSearch(graph.xAxis, xRange[0]);
-            const [x1, x1Coord] = binSearch(graph.xAxis, xRange[1], false);
-            const y0 = graph.yAxis[x0Coord];
-            const y1 = graph.yAxis[x1Coord];
-            let offsetY0 = alignmentData.alignment.getSequenceOffset(1, y0);
-            let offsetY1 = alignmentData.alignment.getSequenceOffset(1, y1) + 1;
-            let offsetX0 = alignmentData.alignment.getSequenceOffset(0, x0);
-            let offsetX1 = alignmentData.alignment.getSequenceOffset(0, x1) + 1;
-
-            let tmp;
-            if (offsetX0 > offsetX1) {
-              tmp = offsetX0;
-              offsetX0 = offsetX1;
-              offsetX1 = tmp;
-            }
-            if (offsetY0 > offsetY1) {
-              tmp = offsetY0;
-              offsetY0 = offsetY1;
-              offsetY1 = tmp;
-            }
-            let offset0 = Math.max(offsetY0, offsetX0);
-            let offset1 = Math.max(offsetY1, offsetX1);
-            if (offset0 < 0) offset0 = 0;
-            if (offset1 < 0) offset1 = 0;
-
-            const data = alignmentData;
-            data.alignment = data.alignment.truncate(offset0, offset1);
-            setAlignmentData({
-              alignment: data.alignment,
-              description: data.description,
-            });
-          }
-        }, 500);
-      }
-    },
-    [alignmentData, binSearch, graph, resetValues, min, max, toast],
-  );
 
   const renderGraph = useCallback(() => {
     if (!graph) {
@@ -437,52 +260,9 @@ const Results: React.FC<ResultsProps> = (props) => {
   useEffect(() => {
     if (alignmentData) {
       renderGraph();
-
-      alignmentData.alignment
-        .getAlignmentWithGaps(0)
-        .reset(
-          alignmentData.alignment.getSequenceStartOffset(0),
-          alignmentData.alignment.getSequenceEndOffset(0),
-        );
-      alignmentData.alignment
-        .getAlignmentWithGaps(1)
-        .reset(
-          alignmentData.alignment.getSequenceStartOffset(1),
-          alignmentData.alignment.getSequenceEndOffset(1),
-        );
-
-      const textChunkSum = new TextChunkSum(
-        alignmentData.alignment.getAlignmentParams().getMatch(),
-        alignmentData.alignment.getAlignmentParams().getMismatch(),
-        alignmentData.alignment.getAlignmentParams().getGapOpen(),
-        alignmentData.alignment.getAlignmentParams().getGapExtension(),
-      );
-
-      const chunks: string[] = [];
-      while (hasMoreChunks()) {
-        const chunk = getNextChunk(60, textChunkSum);
-        chunks.push(chunk.getHTMLString());
-      }
-
-      setAlignmentText({
-        chunks,
-        chunkSum: textChunkSum.getHTMLString(),
-      });
-
       setRender(2);
     }
-  }, [alignmentData, getNextChunk, hasMoreChunks, renderGraph]);
-
-  useEffect(() => {
-    if (render === 2) {
-      if (alignmentText) {
-        if (chunksRef.current)
-          chunksRef.current.innerHTML = alignmentText.chunks.join('');
-        if (chunksSumRef.current)
-          chunksSumRef.current.innerHTML = alignmentText.chunkSum;
-      }
-    }
-  }, [render, alignmentText]);
+  }, [alignmentData, renderGraph]);
 
   return (
     <>
@@ -500,55 +280,11 @@ const Results: React.FC<ResultsProps> = (props) => {
             />
           </GraphContainer>
 
-          <TextContainer>
-            <div className="results-card">
-              <div className="results-text" ref={chunksRef} />
-
-              <div className="results-summary">
-                <div className="summary" ref={chunksSumRef} />
-
-                <div className="adjust">
-                  <TextInput
-                    name="min"
-                    placeholder="Ex: 423"
-                    value={min}
-                    onChange={(event) => {
-                      setMin(event.target.value);
-                    }}
-                  >
-                    Inferior limit
-                  </TextInput>
-                  <TextInput
-                    name="max"
-                    placeholder="Ex: 9794"
-                    value={max}
-                    onChange={(event) => {
-                      setMax(event.target.value);
-                    }}
-                  >
-                    Superior limit
-                  </TextInput>
-
-                  <div className="submit">
-                    <Button
-                      type="submit"
-                      value="Adjust"
-                      onClick={(e) => {
-                        handleAdjustTextResults(e, false);
-                      }}
-                    />
-                    <Button
-                      type="submit"
-                      value="Reset"
-                      onClick={(e) => {
-                        handleAdjustTextResults(e, true);
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TextContainer>
+          <TextResults
+            alignment={alignmentData?.alignment}
+            resetValues={resetValues}
+            graph={graph}
+          />
         </Container>
       )}
 
