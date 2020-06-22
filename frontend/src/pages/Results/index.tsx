@@ -6,6 +6,7 @@ import ReactEcharts from 'echarts-for-react';
 import {
   Container,
   GraphContainer,
+  NoGraphRenderedError,
   Sidemenu,
   ResultsCard,
   ErrorContainer,
@@ -86,13 +87,14 @@ const Results: React.FC<ResultsProps> = (props) => {
   const [alignmentInfo, setAlignmentInfo] = useState<AlignmentInfoProps | null>(
     null,
   );
+  const [renderGraph, setRenderGraph] = useState(true);
   const [graph, setGraph] = useState<GraphProps | null>(null);
   const [resetValues, setResetValues] = useState<number[]>([]);
 
   const [render, setRender] = useState(0);
   const [errors, setErrors] = useState(0x0000);
 
-  const renderGraph = useCallback(() => {
+  const buildGraphData = useCallback(() => {
     if (!graph) {
       if (!alignmentInfo?.alignment.only1 && alignmentData) {
         const s0gapped = alignmentData?.alignment
@@ -101,6 +103,9 @@ const Results: React.FC<ResultsProps> = (props) => {
         const s1gapped = alignmentData?.alignment
           .getAlignmentWithGaps(1)
           .getSB();
+
+        if (s0gapped.length >= 1000000 || s1gapped.length >= 1000000)
+          setRenderGraph(false);
 
         if (s0gapped && s1gapped) {
           const xAxis = [];
@@ -259,10 +264,10 @@ const Results: React.FC<ResultsProps> = (props) => {
 
   useEffect(() => {
     if (alignmentData) {
-      renderGraph();
+      buildGraphData();
       setRender(2);
     }
-  }, [alignmentData, renderGraph]);
+  }, [alignmentData, buildGraphData]);
 
   return (
     <>
@@ -270,14 +275,24 @@ const Results: React.FC<ResultsProps> = (props) => {
       {render === 2 && errors === 0x0000 && (
         <Container render={render}>
           <GraphContainer>
-            <ReactEcharts
-              option={ChartOptions({
-                xAxis: graph?.xAxis,
-                yAxis: graph?.yAxis,
-                range: graph?.range,
-                description: alignmentData?.description,
-              })}
-            />
+            {renderGraph && (
+              <ReactEcharts
+                option={ChartOptions({
+                  xAxis: graph?.xAxis,
+                  yAxis: graph?.yAxis,
+                  range: graph?.range,
+                  description: alignmentData?.description,
+                })}
+              />
+            )}
+            {!renderGraph && (
+              <NoGraphRenderedError>
+                <h1>No Graph Available</h1>
+                <p>
+                  The requested alignment is too big to safelly render a graph.
+                </p>
+              </NoGraphRenderedError>
+            )}
           </GraphContainer>
 
           <TextResults

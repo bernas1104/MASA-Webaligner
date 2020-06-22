@@ -99,6 +99,23 @@ export const GraphContainer = styled.div`
   }
 `;
 
+export const NoGraphRenderedError = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  h1 {
+    font-size: 40px;
+    color: #007715;
+    margin-bottom: 25px;
+  }
+
+  p {
+    font-size: 24px;
+  }
+`;
+
 export const Sidemenu = styled.div<SidemenuProps>`
   display: flex;
   position: fixed;
