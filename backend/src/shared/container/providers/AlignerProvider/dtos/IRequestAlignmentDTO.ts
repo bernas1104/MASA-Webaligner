@@ -1,4 +1,4 @@
-export default interface IAlignerProvider {
+export default interface IRequestAlignmentDTO {
   id: string;
   masa: string;
   type?: string;

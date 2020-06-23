@@ -19,8 +19,9 @@ import routes from './routes';
 
 const app = express();
 
+// app.use(express.bodyParser({ limit: '50mb' }));
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
 
 app.use(routes);
 app.use(errors());
@@ -33,6 +34,7 @@ app.use(
     _: NextFunction,
   ) => {
     const storageProvider = container.resolve(StorageProvider);
+    console.log(err);
 
     if (request.files) {
       let fileName;

@@ -90,7 +90,7 @@ export default class AlignmentsController {
     });
 
     const masaQueue = container.resolve(BullQueueProvider);
-    masaQueue.addMASAJob({
+    await masaQueue.addMASAJob({
       id: alignment.id,
       masa,
       type,

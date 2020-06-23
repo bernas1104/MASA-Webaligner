@@ -35,7 +35,7 @@ export default class NCBISequenceFilesProvider
 
     try {
       const response = await this.api(
-        `?db=nucleotide&id=${file_id}&rettype=fasta`,
+        `?db=nucleotide&id=${file_id}&rettype=fasta&api_key=93b3340e0c955117678db86e55ccb5af4308`,
         {
           method: 'GET',
           responseType: 'stream',
@@ -55,6 +55,7 @@ export default class NCBISequenceFilesProvider
 
       return name;
     } catch (err) {
+      console.log(err);
       await this.storageProvider.deleteFastaFile(path.parse(filePath).name);
       throw new AppError('Invalid NCBI Sequence ID.', 400);
     }

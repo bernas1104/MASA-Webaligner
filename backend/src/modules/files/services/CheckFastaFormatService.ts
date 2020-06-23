@@ -7,11 +7,12 @@ interface IRequest {
 @injectable()
 export default class CheckFastaFormatService {
   execute({ sequence }: IRequest): boolean {
-    let oneLinSequence: string | string[] = sequence.split('\n');
-    oneLinSequence[0] += ';';
-    oneLinSequence = oneLinSequence.filter(line => line !== '').join('');
+    let oneLineSequence: string | string[] = sequence.split('\n');
+    oneLineSequence[0] += ';';
+    oneLineSequence = oneLineSequence.filter(line => line !== '').join('');
 
-    const verifier = /^>(.*);[ATCGN]+$/gi;
-    return verifier.test(oneLinSequence);
+    const verifier = /^>(.*);[ACGTUNXVHDBMRWSYK]+$/gi;
+    
+    return verifier.test(oneLineSequence);
   }
 }
