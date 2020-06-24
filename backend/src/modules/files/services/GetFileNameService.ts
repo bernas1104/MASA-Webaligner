@@ -52,8 +52,8 @@ export default class GetFileNameService {
 
         const fileData = fs.readFileSync(fileName, 'utf-8');
 
-        if (checkFastaFormatService.execute({ sequence: fileData }) === false)
-          throw new AppError('Sequence is not FASTA type.');
+        const check = checkFastaFormatService.execute({ sequence: fileData });
+        if (!check) throw new AppError('Sequence is not FASTA type.');
 
         fileName = await this.storageProvider.saveFastaFile(file[0].filename);
 

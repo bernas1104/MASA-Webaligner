@@ -1,24 +1,16 @@
 import { container } from 'tsyringe';
 
-import IStorageProvider from './StorageProvider/models/IStorageProvider';
-import DiskStorageProvider from './StorageProvider/implementations/DiskStorageProvider';
+import IAlignerProvider from '@shared/container/providers/AlignerProvider/models/IAlignerProvider';
+import IQueueProvider from '@shared/container/providers/QueueProvider/models/IQueueProvider';
+
+import MASAAlignerProvider from './AlignerProvider/implementations/MASAAlignerProvider';
+import BullQueueProvider from './QueueProvider/implementations/BullQueueProvider';
 
 import IMailProvider from './MailProvider/models/IMailProvider';
 import EtherealMailProvider from './MailProvider/implementations/EtherealMailProvider';
 
 import IMailTemplateProvider from './MailTemplateProvider/models/IMailTemplateProvider';
 import HandlebarsMailTemplateProvider from './MailTemplateProvider/implementations/HandlebarsMailTemplateProvider';
-
-import IAlignerProvider from './AlignerProvider/models/IAlignerProvider';
-import MASAAlignerProvider from './AlignerProvider/implementations/MASAAlignerProvider';
-
-import IQueueProvider from './QueueProvider/models/IQueueProvider';
-import BullQueueProvider from './QueueProvider/implementations/BullQueueProvider';
-
-container.registerSingleton<IStorageProvider>(
-  'StorageProvider',
-  DiskStorageProvider,
-);
 
 container.registerSingleton<IMailTemplateProvider>(
   'MailTemplateProvider',

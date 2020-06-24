@@ -9,7 +9,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 
 import '@shared/infra/typeorm';
-import '@shared/container';
+import '@shared/container/serverIndex';
 
 import StorageProvider from '@shared/container/providers/StorageProvider/implementations/DiskStorageProvider';
 import BullQueueProvider from '@shared/container/providers/QueueProvider/implementations/BullQueueProvider';
@@ -19,7 +19,6 @@ import routes from './routes';
 
 const app = express();
 
-// app.use(express.bodyParser({ limit: '50mb' }));
 app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 
@@ -73,9 +72,8 @@ app.use(
 );
 
 const queue = container.resolve(BullQueueProvider);
-queue.processMASAJobs();
 
-BullBoard.setQueues(queue.getQueues());
+BullBoard.setQueues([queue.getMASAQueue()]);
 app.use('/admin/queues', BullBoard.UI);
 
 if (process.env.NODE_ENV !== 'test') {

@@ -55,9 +55,11 @@ export default class NCBISequenceFilesProvider
 
       return name;
     } catch (err) {
-      console.log(err);
       await this.storageProvider.deleteFastaFile(path.parse(filePath).name);
-      throw new AppError('Invalid NCBI Sequence ID.', 400);
+
+      if (err.response.status === 429)
+        throw new AppError('Too Many Requests to NCBI API', 429);
+      else throw new AppError('Invalid NCBI Sequence ID.', 400);
     }
   }
 }

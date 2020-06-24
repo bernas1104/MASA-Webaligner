@@ -12,7 +12,9 @@ export default class CheckFastaFormatService {
     oneLineSequence = oneLineSequence.filter(line => line !== '').join('');
 
     const verifier = /^>(.*);[ACGTUNXVHDBMRWSYK]+$/gi;
-    
-    return verifier.test(oneLineSequence);
+
+    const check = verifier.test(oneLineSequence);
+
+    return check;
   }
 }
