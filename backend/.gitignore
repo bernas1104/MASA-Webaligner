@@ -1,18 +1,16 @@
-# node modules
 node_modules/
 node_modules/*
 
-src/uploads/
-src/uploads/*
-uploads/
-uploads/*
-
-src/results/
-src/results/*
-results/
-results/*
-
-.env
-.env.test
-yarn-*.*
 yarn.lock
+yarn-error.log
+
+tmp/
+tmp/*
+tmp/results/*
+tmp/uploads/*
+
+!tmp/results/.gitkeep
+!tmp/uploads/.gitkeep
+
+!tmp/tests/*.*
+!tmp/tests/*/*
