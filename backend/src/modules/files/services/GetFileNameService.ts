@@ -14,10 +14,7 @@ interface IRequest {
   num: number;
   type: number;
   input?: string;
-  files: {
-    s0input?: Express.Multer.File[];
-    s1input?: Express.Multer.File[];
-  };
+  files: any;
 }
 
 @injectable()
